@@ -35,10 +35,13 @@ and this project does not yet follow SemVer releases (pre-alpha).
 
 ### Changed
 
-- Owner-invoice `invoices.saveDraft` and `invoices.addLines` stay `not_captured`.
-  A 3 Sep 2026 dedicated-profile capture of the draft UI (`/false`) redirected
-  to Auth0 login (`auth_required`). No Save click and no
-  `EntityAttachmentsToInvoice` request. Do not invent those write bodies.
+- Owner-invoice `invoices.saveDraft` and `invoices.addLines` captured 4 Sep 2026
+  via `PUT /apix/v3/Invoices/save-invoice` with `application/merge-patch+json`.
+  `addLines` uses the same Save with `lineItems` / `ownerInvoiceLineItems`;
+  related picker is `GET /api/LineItems/EntityLineItemsToInvoice`. Gateway
+  forces `notifyOwner` / `createInvoiceChkbox` false and `status` Draft.
+  Never Send. An earlier 3 Sep dedicated-profile attempt redirected to Auth0
+  (`auth_required`) and fired no invoice write.
 
 - Bill create payload now matches the 2 Sep 2026 capture (`status` 9,
   `saveDraftToJob` false, `purchaseOrderId` -1, amounts on PUT). The old

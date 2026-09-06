@@ -107,7 +107,7 @@ Dedicated gateway profile (`/home/box/bt-gateway-profile`). Save fired:
 - Keys: title, customInvoiceId, description, closingText, status, amountPaid, ownerEmail, createInvoiceChkbox, notifyOwner, customFields, attachedFiles, files, showLineItemsToOwner, groupLineItemsByCostCode, showPaymentCode, showCustomFields, showCostCodes, showCategories, showContractorCertification, showArchitectCertification, showRetainage, showStoredMaterials, showItems, showInvoiceDescription, lineItems, builderCost, unifiedDeadlineRequest, internalNotes, priceType, containerIsValid, costCodeIds, ownerInvoiceLineItems, amount, taxMethod, taxGroupId, columnPreferences, invoiceFormat, lineItemGroupStrategy, hideLaborCostAndMarkup, invoiceId, useLineItems, invoicedFromEntity, job
 - Captured Save had `notifyOwner: false`, `createInvoiceChkbox: false`, `status: 1` (Draft). Gateway forces those on every `invoices.saveDraft`.
 
-`invoices.addLines` / `EntityAttachmentsToInvoice` still **not_captured**. Capture on a **different** unsent draft — do **not** use Cubbaroo `invoiceId` 18059815 / job 41648716 (Ops filling in BT UI). Never Send / pay / notify.
+`invoices.addLines` is the same Save write (`lineItems` / `ownerInvoiceLineItems`). Related picker is `GET /api/LineItems/EntityLineItemsToInvoice`. JS also has GET `/api/LineItems/EntityAttachmentsToInvoice` (picker hint, not an uncaptured write). Never Send / pay / notify.
 
 ---
 
