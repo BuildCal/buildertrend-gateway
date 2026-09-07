@@ -16,6 +16,7 @@ Writes that were **actually fired** this pass:
 | DELETE | `/apix/v2/LineItems/delete-change-order-line-items` | `application/json` |
 | POST | `/api/jobpicker/GetJobPickerData` | `application/json` |
 | POST | `/api/jobpicker/SetJobPickerData` | `application/json` |
+| PUT | `/api/PurchaseOrders/{id}` | `application/json` |
 
 Bill draft capture (2 Sep 2026, sandbox project-expense, status 9):
 
@@ -174,9 +175,16 @@ If a create payload is ever captured: `readyForPayment`, `payInFull`, `payOnline
 | `pos.linkedBills` | GET | `/api/PurchaseOrders/{id}/LinkedBills` | Captured (overnight) |
 | `pos.linkedBids` | GET | `/api/PurchaseOrders/{id}/linked-bids` | Captured (overnight) |
 | `pos.approvals` | GET | `/api/PurchaseOrders/{id}/EntityApprovals` | Captured (overnight). Do not auto-approve |
-| `pos.create` / `update` | | | **not_captured** |
+| `pos.create` | | Hypothesis only: `POST /api/PurchaseOrders` or PUT with a new id | **not_captured**. Do not invent create |
+| `pos.update` | PUT | `/api/PurchaseOrders/{id}` | **Captured** (7 Sep 2026). `application/json`. GET existing → merge safe draft fields → PUT. Force Draft; `saveAndRelease` **false**. Status stayed Draft |
 
-Project expenses only. Never workers comp / icare / tax / payroll.
+Project expenses only. Never workers comp / icare / tax / payroll. Never approve / release / send / mark ready for payment.
+
+Captured write flags (do not “fix” these):
+
+- PUT save-draft: `application/json` on `/api/PurchaseOrders/{id}`. Observed keys: `isVariance`, `isEntirePoVariance`, `varianceCode`, `relatedPOs`, `relatedCO`, `hasLineItemCustomerVariance`, `relatedCOsToRemove`, `skipVarianceValidation`, `attachedFiles`, `attachedFilesPostApproval`, `customFields`, `internalNotes`, `materialsOnly`, `performingUserId`, `performingUserName`, `performingUserType`, `purchaseOrderName`, `statusChangeComments`, `title`, `containerIsValid`, `varianceCount`, `lineItems`, `purchaseOrderLineItems`, `priceType`, `unifiedDeadlineRequest`, `unlinkedBids`, `scopeOfWork`, `disclaimer`, `linkedBids`, `availableBids`, `saveAndRelease`
+- Force `saveAndRelease` **false**. Do not approve. Draft only.
+- Two sandbox saves on draft PO **76899300** (NMC0008-0001, job 43320680): $13 then $14. Status stayed Draft.
 
 ---
 
@@ -236,3 +244,13 @@ APIx writes often use `application/merge-patch+json`. `/api/*` grids use `applic
 ## Capture appends
 
 New captures from `pnpm --filter gateway capture` are appended below. Cookies are stripped.
+
+## Capture 2026-09-07
+
+PO draft save (`pos.update`) on draft PO id 76899300 (NMC0008-0001, job 43320680). Two saves ($13 then $14). Status stayed Draft. No cookies.
+
+- `PUT /api/PurchaseOrders/{id}` `application/json` keys: isVariance, isEntirePoVariance, varianceCode, relatedPOs, relatedCO, hasLineItemCustomerVariance, relatedCOsToRemove, skipVarianceValidation, attachedFiles, attachedFilesPostApproval, customFields, internalNotes, materialsOnly, performingUserId, performingUserName, performingUserType, purchaseOrderName, statusChangeComments, title, containerIsValid, varianceCount, lineItems, purchaseOrderLineItems, priceType, unifiedDeadlineRequest, unlinkedBids, scopeOfWork, disclaimer, linkedBids, availableBids, saveAndRelease
+
+`pos.create` still **not_captured**. Hypothesis only: `POST /api/PurchaseOrders` or PUT with a new id — do not implement without capture.
+
+`costing.lines` POST `/apix/v2/JobCostingBudget/line-items` body was **not** captured this session (only GET budget-cost-codes). Leave a TODO; do not invent the write body.

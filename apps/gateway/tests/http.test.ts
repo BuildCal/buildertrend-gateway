@@ -43,6 +43,19 @@ describe("HTTP /v1", () => {
     expect(res.status).toBe(401);
   });
 
+  it("returns not_captured for pos.create (create capture still pending)", async () => {
+    const { adapter, store, config } = createHarness(undefined, { gatewayToken: "secret" });
+    const app = createHttpApp(config, adapter, store);
+    const res = await app.request("/v1/pos/create", {
+      method: "POST",
+      headers: { "content-type": CONTENT_JSON, "x-bt-gateway-token": "secret" },
+      body: JSON.stringify({ jobId: 43320680, dry_run: false }),
+    });
+    expect(res.status).toBe(501);
+    const body = (await res.json()) as { error: string };
+    expect(body.error).toBe("not_captured");
+  });
+
   it("returns not_captured for invoice draft save", async () => {
     const { adapter, store, config } = createHarness(undefined, { gatewayToken: "secret" });
     const app = createHttpApp(config, adapter, store);

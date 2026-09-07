@@ -33,6 +33,7 @@ import {
   billSaveDraftPayload,
   seedFromDefaultInfo,
 } from "./bills-payload.js";
+import { assertPoSendPayLocked, poSaveDraftPayload, seedFromPoGet } from "./pos-payload.js";
 import {
   bt,
   btJson,
@@ -658,6 +659,38 @@ registerVerb("pos.approvals", async (ctx) => {
   );
 });
 
+registerVerb("pos.update", async (ctx) => {
+  const purchaseOrderId = requireNumber(ctx.args, "purchaseOrderId");
+  assertPoSendPayLocked(ctx.args);
+  const currentRaw = await btJson(ctx, {
+    method: "GET",
+    path: `/api/PurchaseOrders/${purchaseOrderId}`,
+  });
+  const current = seedFromPoGet(currentRaw);
+  await guardConflict(ctx, "po", String(purchaseOrderId), current);
+  const saveBody = poSaveDraftPayload(ctx.args, current, purchaseOrderId);
+  const savedRaw = await btJson(ctx, {
+    method: "PUT",
+    path: `/api/PurchaseOrders/${purchaseOrderId}`,
+    contentType: CONTENT_JSON,
+    json: saveBody,
+  });
+  const saved = seedFromPoGet(savedRaw);
+  await upsertRows(ctx, "po", [asRecord(saved)]);
+  await ctx.store.setSyncState({
+    entityType: "po",
+    externalId: String(purchaseOrderId),
+    lastPulledHash: hashEntity(saved),
+    lastPulledAt: new Date().toISOString(),
+  });
+  return {
+    purchaseOrderId,
+    status: saved.status ?? current.status ?? "Draft",
+    saveAndRelease: false,
+    raw: saved,
+  };
+});
+
 registerVerb("estimates.worksheet", async (ctx) => {
   const jobId = requireNumber(ctx.args, "jobId");
   const payload = await btJson(ctx, { method: "GET", path: `/api/Proposals/${jobId}/Worksheet` });
@@ -721,6 +754,8 @@ registerVerb("costing.views", async (ctx) => {
 
 registerVerb("costing.lines", async (ctx) => {
   const jobId = requireNumber(ctx.args, "jobId");
+  // TODO: POST /apix/v2/JobCostingBudget/line-items body not captured this
+  // session (only GET budget-cost-codes). Do not invent a write body.
   return unwrapData(
     await btJson(ctx, {
       method: "POST",

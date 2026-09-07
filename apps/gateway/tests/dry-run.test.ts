@@ -19,6 +19,18 @@ describe("dry_run", () => {
     expect(calls).toHaveLength(0);
   });
 
+  it("does not hit the network for pos.update when dry_run is true", async () => {
+    const { calls, invoke } = createHarness();
+    const result = await invoke("pos.update", {
+      purchaseOrderId: 76899300,
+      title: "Should not send",
+      dry_run: true,
+    });
+    expect(result.dry_run).toBe(true);
+    expect(result.ok).toBe(true);
+    expect(calls).toHaveLength(0);
+  });
+
   it("still hits the network for reads", async () => {
     const { calls, invoke } = createHarness();
     await invoke("jobs.get", { jobId: 42 });
