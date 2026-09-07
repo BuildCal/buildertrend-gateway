@@ -9,6 +9,11 @@ and this project does not yet follow SemVer releases (pre-alpha).
 
 ### Added
 
+- Captured `pos.update` from the 7 Sep 2026 draft-PO save: GET
+  `/api/PurchaseOrders/{id}` then PUT the same path
+  (`application/json`). Safe draft fields merge onto the existing PO.
+  Force Draft; `saveAndRelease` stays false. Project expense only.
+  `pos.create` stays `not_captured`.
 - Captured `bills.create` + `bills.update` (Save draft) + `bills.attach`
   from the 2 Sep 2026 sandbox pass: GET `defaultinfo` → POST `/api/v1/bills`
   (status 9, amounts 0) → PUT save-draft (exclusive amounts,

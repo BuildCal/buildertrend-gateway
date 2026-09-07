@@ -89,10 +89,21 @@ No anti-CSRF header is required despite the cookie existing.
 - `GET /api/jobpicker/GetExistingJobList` — all jobs for the user.
 - `POST /api/jobpicker/GetJobPickerData` — paginated/filtered jobs.
 
+### Purchase order draft save
+- `GET /api/PurchaseOrders/{id}` — existing draft PO.
+- `PUT /api/PurchaseOrders/{id}` — Save draft (`application/json`).
+  Captured 7 Sep 2026 on draft PO 76899300 (status stayed Draft).
+  Gateway forces `saveAndRelease: false` and refuses approve / send /
+  ready-for-payment. Project expense only.
+- `pos.create` is **not captured**. Do not guess `POST /api/PurchaseOrders`.
+
 ### Not yet captured (TODO)
 - Real PO link (`GET /api/v1/Bills/GetBillMapping`) — list helper is captured
+- `pos.create` (hypothesis only: `POST /api/PurchaseOrders` or PUT with a new id)
 - Bill deletion
 - Job-folder `docs.upload` (bill PDF attach is captured as `bills.attach`)
+- `costing.lines` POST body (`/apix/v2/JobCostingBudget/line-items`) — GET
+  budget-cost-codes only this session; do not invent the write body
 
 The TypeScript gateway (`apps/gateway`) is the living map for jobs, leads,
 contacts, owner invoices, variations, POs, estimates, documents, and costing.

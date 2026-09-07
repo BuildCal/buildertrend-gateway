@@ -616,14 +616,9 @@ export const VERBS: VerbSpec[] = [
     httpPath: "/v1/pos/update",
     httpMethod: "POST",
     kind: "write",
-    captured: false,
-    description: "Update a PO. Do not auto-approve.",
-    discovery: {
-      ui: "Purchase order detail",
-      click: "Edit a restoreable field, Save, revert.",
-      sandboxHint: "Sandbox PO.",
-      expectedPaths: ["/api/PurchaseOrders/{id}"],
-    },
+    captured: true,
+    description:
+      "Save draft PO (GET then PUT /api/PurchaseOrders/{id}, application/json). Force Draft; saveAndRelease false. Project expense only. Never approve / release / send / ready-for-payment.",
   },
   {
     verb: "estimates.worksheet",
