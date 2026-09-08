@@ -186,6 +186,11 @@ describe("bill payload builder (captured 2 Sep 2026)", () => {
     expect(formFieldValue({ value: 42, options: [] })).toBe(42);
     expect(formFieldValue("plain")).toBe("plain");
 
+    const vendorOption = {
+      id: VENDOR_ID,
+      name: "AAA Test Sub Vendor",
+      extraData: { email: "a@test" },
+    };
     const formGet = {
       success: true,
       data: {
@@ -193,40 +198,31 @@ describe("bill payload builder (captured 2 Sep 2026)", () => {
         billNumber: { value: "TEST-1" },
         billTitle: { value: "Gateway capture" },
         invoiceDate: { value: "2026-09-02T00:00:00" },
-        status: { value: BILL_DRAFT_STATUS },
+        description: { value: "" },
         billStatus: { status: BILL_DRAFT_STATUS, statusText: "Draft" },
-        jobId: { value: JOB_ID },
-        concurrencyToken: { value: "tok-1" },
+        jobId: JOB_ID,
+        concurrencyToken: "tok-1",
         customFields: genericDefaultInfo().data.customFields,
-        lienWaiverFormId: { value: 42 },
-        lienWaiverTemplateId: { value: 7 },
-        variance: { value: null },
-        varianceInfo: { value: null },
-        deadLineInfo: { value: { dueDate: "2026-09-16T00:00:00" } },
+        lienWaiverFormId: 42,
         assignedTo: {
           value: VENDOR_ID,
-          options: [{ id: VENDOR_ID, name: "AAA Test Sub Vendor", extraData: { email: "a@test" } }],
+          options: [{ options: [vendorOption] }],
         },
-        deadline: {
-          value: {
-            isDeadlineLinked: false,
-            deadlineOffset: 0,
-            deadlineIsAfterLinkedItem: true,
-            scheduleItemSelectedValue: -1,
-            dueDate: "2026-09-16T00:00:00",
-            paymentTerms: null,
-          },
+        deadlineInfo: {
+          deadline: { value: "2026-09-16T00:00:00" },
+          isDeadlineLinked: { value: false },
+          deadlineOffset: { value: 0 },
         },
         lineItems: {
           value: [
             {
               lineItemId: LINE_ID,
-              title: { value: "" },
-              unitCost: { value: 0 },
-              builderCost: { value: 0 },
-              costCodeId: { value: 88 },
-              costTypes: { value: [] },
-              pageTypeEnum: { value: 17 },
+              title: "",
+              unitCost: 0,
+              builderCost: 0,
+              costCodeId: 88,
+              costTypes: [],
+              pageTypeEnum: 17,
               validators: [{ field: "title" }],
             },
           ],
@@ -239,13 +235,12 @@ describe("bill payload builder (captured 2 Sep 2026)", () => {
 
     const seed = normalizeBillSeed(formGet);
     expect(seed.billNumber).toBe("TEST-1");
+    expect(seed.billTitle).toBe("Gateway capture");
+    expect(seed.description).toBe("");
     expect(seed.concurrencyToken).toBe("tok-1");
-    expect(seed.lienWaiverFormId).toBe(42);
     expect(seed.status).toBe(BILL_DRAFT_STATUS);
-    expect(seed.assignedTo).toBe(VENDOR_ID);
-    expect(seed.assignedToOptions).toEqual(
-      (formGet.data.assignedTo as { options: unknown[] }).options,
-    );
+    expect(seed.performingUserId).toBe(VENDOR_ID);
+    expect((seed.assignedTo as { options: unknown[] }).options).toEqual([vendorOption]);
     expect((seed.unifiedDeadlineRequest as { dueDate: string }).dueDate).toBe(
       "2026-09-16T00:00:00",
     );
@@ -255,10 +250,36 @@ describe("bill payload builder (captured 2 Sep 2026)", () => {
     expect(body.concurrencyToken).toBe("tok-1");
     expect(body.customFields).toEqual(genericDefaultInfo().data.customFields);
     expect(body.lienWaiverFormId).toBe(42);
-    expect(body.lienWaiverTemplateId).toBe(7);
-    expect(body.variance).toBeNull();
-    expect(body.varianceInfo).toBeNull();
-    expect(body.deadLineInfo).toEqual({ dueDate: "2026-09-16T00:00:00" });
+    expect(body.lienWaiverId).toBe(0);
+    expect(body.lienWaiverType).toBe(0);
+    expect(body.sendLienWaiverWithPayment).toBe(false);
+    expect(body.lienWaiverAttachedFiles).toBeNull();
+    expect(body.variance).toEqual({
+      isVariance: false,
+      isEntirePoVariance: false,
+      varianceCode: 0,
+      relatedPOs: -1,
+      relatedCO: -1,
+      hasLineItemCustomerVariance: false,
+      relatedCOsToRemove: [],
+      skipVarianceWarning: true,
+    });
+    expect(body.varianceInfo).toEqual({
+      varianceCount: 0,
+      isVariance: false,
+      varianceCode: 0,
+      isEntireBillVariance: false,
+      hasLineItemCustomerVariance: false,
+      relatedChangeOrderId: -1,
+      relatedPurchaseOrderId: -1,
+    });
+    expect(body.deadLineInfo).toEqual({
+      isDeadlineLinked: false,
+      deadlineOffset: 0,
+      deadlineIsAfterLinkedItem: true,
+      scheduleItemSelectedValue: -1,
+      paymentTerms: null,
+    });
     expect(body.billLineItems).toEqual([]);
     expect(body.selectedApprovers).toEqual([]);
     expect(body.approvers).toEqual([]);
@@ -272,7 +293,6 @@ describe("bill payload builder (captured 2 Sep 2026)", () => {
     expect(body).not.toHaveProperty("validators");
     expect(body).not.toHaveProperty("isValid");
     expect(body).not.toHaveProperty("formOnlyKey");
-    expect(body).not.toHaveProperty("assignedToOptions");
     const assigned = body.assignedToInfo as Record<string, unknown>;
     expect(assigned.assignedToId).toBe(VENDOR_ID);
     expect(assigned.assignedToName).toBe("AAA Test Sub Vendor");

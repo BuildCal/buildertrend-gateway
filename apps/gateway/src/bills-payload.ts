@@ -127,85 +127,102 @@ export function seedFromDefaultInfo(raw: unknown): Record<string, unknown> {
   return data;
 }
 
+/** Unwrap BT form-field `{ value }` wrappers; leave plain values unchanged. */
+export function formFieldValue(raw: unknown): unknown {
+  if (raw && typeof raw === "object" && !Array.isArray(raw) && "value" in (raw as object)) {
+    return (raw as { value: unknown }).value;
+  }
+  return raw;
+}
+
+/**
+ * Normalize GET /api/v1/bills/{id} into the save-draft seed shape.
+ * Live BT returns a form UI object (billNumber.value, lineItems.value, assignedTo…).
+ * Captured PUT expects flat strings/numbers and lineItems as an array with `id`.
+ */
+export function normalizeBillSeed(raw: unknown): Record<string, unknown> {
+  const seed = seedFromDefaultInfo(raw);
+  const out: Record<string, unknown> = { ...seed };
+
+  for (const key of ["billNumber", "billTitle", "description", "invoiceDate", "miscPaidToName"] as const) {
+    if (seed[key] !== undefined) out[key] = formFieldValue(seed[key]);
+  }
+  if (typeof out.description !== "string") {
+    out.description = out.description == null ? "" : String(out.description);
+  }
+
+  // lineItems: { value: [...] } or already an array
+  const liRaw = seed.lineItems;
+  let lines: unknown[] = [];
+  if (Array.isArray(liRaw)) lines = liRaw;
+  else if (liRaw && typeof liRaw === "object") {
+    const v = (liRaw as { value?: unknown }).value;
+    if (Array.isArray(v)) lines = v;
+  }
+  out.lineItems = lines.map((row) => {
+    const line = asRecord(row);
+    const id = numberish(line.id) ?? numberish(line.lineItemId) ?? 0;
+    return {
+      ...line,
+      id,
+      costCodeId: numberish(line.costCodeId ?? line.costCode) ?? null,
+      costCode: numberish(line.costCode ?? line.costCodeId) ?? null,
+      unitCost: line.unitCost ?? 0,
+      builderCost: line.builderCost ?? line.unitCost ?? 0,
+      quantity: line.quantity ?? 1,
+      unitType: line.unitType ?? "ea",
+      title: line.title ?? "",
+      description: line.description ?? "",
+      costTypes: Array.isArray(line.costTypes) ? line.costTypes : [...BILL_SAVE_DRAFT_COST_TYPES],
+      markedAs: line.markedAs ?? BILL_LINE_MARKED_AS,
+      pageTypeEnum: line.pageTypeEnum ?? BILL_PAGE_TYPE_ENUM,
+    };
+  });
+
+  // assignedTo / performingUser
+  const assigned = asRecord(seed.assignedTo);
+  const assignedVal = assigned.value;
+  const vendorId =
+    numberish(seed.performingUserId) ??
+    (Array.isArray(assignedVal) ? numberish(assignedVal[0]) : numberish(assignedVal));
+  if (vendorId != null) out.performingUserId = vendorId;
+
+  // Flatten nested assignedTo.options groups for vendorNameFromSeed
+  if (Array.isArray(assigned.options)) {
+    const flat: unknown[] = [];
+    for (const group of assigned.options) {
+      const g = asRecord(group);
+      if (Array.isArray(g.options)) flat.push(...g.options);
+      else flat.push(group);
+    }
+    out.assignedTo = { ...assigned, options: flat, value: assignedVal };
+  }
+
+  // deadline → unifiedDeadlineRequest.dueDate
+  const deadlineInfo = asRecord(seed.deadlineInfo);
+  const deadline = formFieldValue(deadlineInfo.deadline);
+  const existingUdr = asRecord(seed.unifiedDeadlineRequest);
+  out.unifiedDeadlineRequest = {
+    isDeadlineLinked: formFieldValue(deadlineInfo.isDeadlineLinked) ?? existingUdr.isDeadlineLinked ?? false,
+    deadlineOffset: formFieldValue(deadlineInfo.deadlineOffset) ?? existingUdr.deadlineOffset ?? 0,
+    deadlineIsAfterLinkedItem: existingUdr.deadlineIsAfterLinkedItem ?? true,
+    scheduleItemSelectedValue: existingUdr.scheduleItemSelectedValue ?? -1,
+    dueDate: existingUdr.dueDate ?? deadline ?? null,
+    paymentTerms: existingUdr.paymentTerms ?? null,
+  };
+
+  // status from billStatus.status
+  const billStatus = asRecord(seed.billStatus);
+  if (numberish(billStatus.status) != null) out.status = numberish(billStatus.status);
+
+  return out;
+}
+
 export function copyDefaultInfoSeed(seed: Record<string, unknown>): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   for (const key of DEFAULTINFO_SEED_KEYS) {
     if (seed[key] !== undefined) out[key] = seed[key];
   }
-  return out;
-}
-
-/** Unwrap a GET form control `{ value }` (or return the scalar as-is). */
-export function formFieldValue(value: unknown): unknown {
-  if (value && typeof value === "object" && !Array.isArray(value) && "value" in value) {
-    return (value as { value: unknown }).value;
-  }
-  return value;
-}
-
-function unwrapFormFields(raw: Record<string, unknown>): Record<string, unknown> {
-  const out: Record<string, unknown> = {};
-  for (const [key, val] of Object.entries(raw)) {
-    out[key] = formFieldValue(val);
-  }
-  return out;
-}
-
-function normalizeLineItem(row: unknown): Record<string, unknown> {
-  const line = unwrapFormFields(asRecord(row));
-  const id = numberish(line.id) ?? numberish(line.lineItemId) ?? 0;
-  return { ...line, id };
-}
-
-function assignedToOptionsOf(seed: Record<string, unknown>): unknown[] {
-  if (Array.isArray(seed.assignedToOptions)) return seed.assignedToOptions;
-  const assigned = asRecord(seed.assignedTo);
-  if (Array.isArray(assigned.options)) return assigned.options;
-  return [];
-}
-
-function copyLienWaiverSeed(seed: Record<string, unknown>): Record<string, unknown> {
-  const out: Record<string, unknown> = {};
-  for (const [key, val] of Object.entries(seed)) {
-    if (key.startsWith("lienWaiver") && val !== undefined) out[key] = val;
-  }
-  return out;
-}
-
-/**
- * Flatten a live GET /api/v1/bills/{id} (or defaultinfo) form into PUT-shaped
- * scalars. Do not spread the raw form UI into a write body.
- */
-export function normalizeBillSeed(raw: unknown): Record<string, unknown> {
-  const seed = seedFromDefaultInfo(raw);
-  const assignedOptions = assignedToOptionsOf(seed);
-  const out = unwrapFormFields(seed);
-
-  if (assignedOptions.length) {
-    out.assignedToOptions = assignedOptions;
-  }
-
-  const linesRaw = formFieldValue(seed.lineItems);
-  out.lineItems = (Array.isArray(linesRaw) ? linesRaw : []).map(normalizeLineItem);
-
-  const unified = formFieldValue(seed.unifiedDeadlineRequest);
-  const deadline = formFieldValue(seed.deadline);
-  if (unified != null && typeof unified === "object" && !Array.isArray(unified)) {
-    out.unifiedDeadlineRequest = asRecord(unified);
-  } else if (deadline != null && typeof deadline === "object" && !Array.isArray(deadline)) {
-    out.unifiedDeadlineRequest = asRecord(deadline);
-  } else if (deadline != null && out.unifiedDeadlineRequest == null) {
-    out.unifiedDeadlineRequest = { dueDate: deadline };
-  }
-
-  const billStatus = asRecord(formFieldValue(seed.billStatus));
-  const status =
-    numberish(out.status) ?? numberish(billStatus.status) ?? numberish(formFieldValue(seed.status));
-  if (status != null) out.status = status;
-
-  const assignedInfo = unwrapFormFields(asRecord(formFieldValue(seed.assignedToInfo)));
-  if (Object.keys(assignedInfo).length) out.assignedToInfo = assignedInfo;
-
   return out;
 }
 
@@ -283,23 +300,16 @@ export function rejectGstDummyLines(lines: BillLineInput[]): void {
 }
 
 function performingUser(args: Record<string, unknown>, seed: Record<string, unknown>) {
-  const info = asRecord(seed.assignedToInfo);
-  const vendorId =
-    numberish(args.vendorId) ??
-    numberish(seed.performingUserId) ??
-    numberish(seed.assignedTo) ??
-    numberish(info.assignedToId);
+  const vendorId = numberish(args.vendorId) ?? numberish(seed.performingUserId);
   const fromOptions = vendorNameFromSeed(seed, vendorId);
   const name =
     (typeof args.vendorName === "string" && args.vendorName) ||
     (typeof seed.performingUserName === "string" && seed.performingUserName) ||
-    (typeof info.assignedToName === "string" && info.assignedToName) ||
     fromOptions.name ||
     "";
   const email =
     (typeof args.vendorEmail === "string" && args.vendorEmail) ||
     (typeof seed.performingUserEmail === "string" && seed.performingUserEmail) ||
-    (typeof info.assignedToEmail === "string" && info.assignedToEmail) ||
     fromOptions.email ||
     "";
   return {
@@ -307,6 +317,7 @@ function performingUser(args: Record<string, unknown>, seed: Record<string, unkn
     performingUserType: BILL_PERFORMING_USER_TYPE,
     performingUserName: name,
     performingUserEmail: email,
+    // Captured PUT shape uses assignedToId/Name/Email/Type (not id/name/email/userType).
     assignedToInfo: {
       assignedToId: vendorId,
       assignedToName: name,
@@ -321,7 +332,9 @@ function vendorNameFromSeed(
   vendorId: number | undefined,
 ): { name: string; email: string } {
   if (vendorId == null) return { name: "", email: "" };
-  for (const option of assignedToOptionsOf(seed)) {
+  const assigned = asRecord(seed.assignedTo);
+  const options = Array.isArray(assigned.options) ? assigned.options : [];
+  for (const option of options) {
     const row = asRecord(option);
     if (numberish(row.id) === vendorId) {
       const extra = asRecord(row.extraData);
@@ -380,11 +393,15 @@ export function saveDraftLinePayload(
   const exclusive = exclusiveAmountOf(caller);
   const costCode = costCodeOf(caller) ?? numberish(createdLine.costCodeId ?? createdLine.costCode);
   const id =
-    numberish(caller.id) ?? numberish(createdLine.id) ?? numberish(createdLine.lineItemId) ?? 0;
+    numberish(caller.id) ??
+    numberish(createdLine.id) ??
+    numberish(createdLine.lineItemId) ??
+    0;
+  // Emit only the captured save-draft line keys — do not spread form UI line junk.
   return {
     id,
-    costCodeId: costCode ?? createdLine.costCodeId ?? null,
-    costCode: costCode ?? createdLine.costCode ?? null,
+    costCodeId: costCode ?? null,
+    costCode: costCode ?? null,
     unitCost: exclusive,
     quantity: caller.quantity ?? createdLine.quantity ?? 1,
     unitType: caller.unitType ?? createdLine.unitType ?? "ea",
@@ -394,9 +411,9 @@ export function saveDraftLinePayload(
     internalNotes: createdLine.internalNotes ?? "",
     catalogItemId: createdLine.catalogItemId ?? null,
     pageType: createdLine.pageType ?? "",
-    pageTypeEnum: createdLine.pageTypeEnum ?? BILL_PAGE_TYPE_ENUM,
-    shouldUseAutoUpdates: createdLine.shouldUseAutoUpdates ?? false,
-    varianceCode: createdLine.varianceCode ?? 0,
+    pageTypeEnum: BILL_PAGE_TYPE_ENUM,
+    shouldUseAutoUpdates: false,
+    varianceCode: numberish(createdLine.varianceCode) ?? 0,
     parentId: createdLine.parentId ?? null,
     costTypes: [...BILL_SAVE_DRAFT_COST_TYPES],
     markedAs: createdLine.markedAs ?? BILL_LINE_MARKED_AS,
@@ -457,7 +474,7 @@ export function billCreatePayload(
   assertBillSendPayLocked(args);
   assertNoRealPurchaseOrder(args);
   assertBillFieldLengths(args);
-  const seed = normalizeBillSeed(seedRaw);
+  const seed = seedFromDefaultInfo(seedRaw);
   const user = performingUser(args, seed);
   const body: Record<string, unknown> = {
     ...copyDefaultInfoSeed(seed),
@@ -505,22 +522,23 @@ export function billSaveDraftPayload(
   assertBillSendPayLocked(args);
   assertNoRealPurchaseOrder(args);
   assertBillFieldLengths(args);
+  // Normalize form-shaped GET (billNumber.value / lineItems.value) into save-draft seed.
   const current = normalizeBillSeed(currentRaw);
   const jobId = numberish(args.jobId) ?? numberish(current.jobId) ?? numberish(current.selectedJobId);
   const user = performingUser(args, current);
   const body: Record<string, unknown> = {
+    // Do NOT spread the live form UI object — PUT expects the captured save-draft shape.
     ...copyDefaultInfoSeed(current),
-    ...copyLienWaiverSeed(current),
     ...user,
     billNumber: args.billNumber ?? current.billNumber ?? "",
     billTitle: args.billTitle ?? current.billTitle ?? "",
     invoiceDate: args.invoiceDate ?? current.invoiceDate ?? null,
     description: args.description ?? current.description ?? "",
+    miscPaidToName: args.miscPaidToName ?? current.miscPaidToName ?? "",
     unifiedDeadlineRequest: deadlineRequest(args, current),
     lineItems: saveDraftLines(args, current),
     jobId,
     selectedJobId: jobId,
-    id: numberish(current.id) ?? billId,
     billId,
     saveAsDraft: true,
     saveDraftToJob: false,
@@ -529,11 +547,6 @@ export function billSaveDraftPayload(
     purchaseOrderId: BILL_NONE_PO_ID,
     isCreateNewFromPO: false,
     priceType: BILL_PRICE_TYPE,
-    concurrencyToken: current.concurrencyToken ?? null,
-    customFields: current.customFields ?? [],
-    variance: current.variance ?? null,
-    varianceInfo: current.varianceInfo ?? null,
-    deadLineInfo: current.deadLineInfo ?? current.deadlineInfo ?? null,
     billLineItems: [],
     selectedApprovers: [],
     resetApprovalGlobalUserIds: [],
@@ -543,11 +556,44 @@ export function billSaveDraftPayload(
     approvalCommentMentionableUsers: [],
     varianceCount: current.varianceCount ?? 0,
     containerIsValid: current.containerIsValid ?? true,
-    documentType: current.documentType ?? 0,
-    isJobChange: current.isJobChange ?? false,
+    documentType: 0,
+    // Capture-parity fields required by live BT PUT (missing these → generic success=false).
+    concurrencyToken: current.concurrencyToken ?? null,
+    customFields: Array.isArray(current.customFields) ? current.customFields : [],
+    lienWaiverFormId: numberish(current.lienWaiverFormId) ?? 0,
+    lienWaiverId: numberish(current.lienWaiverId) ?? 0,
+    lienWaiverType: current.lienWaiverType ?? 0,
+    sendLienWaiverWithPayment: false,
+    lienWaiverAttachedFiles: current.lienWaiverAttachedFiles ?? null,
+    variance: current.variance ?? {
+      isVariance: false,
+      isEntirePoVariance: false,
+      varianceCode: 0,
+      relatedPOs: -1,
+      relatedCO: -1,
+      hasLineItemCustomerVariance: false,
+      relatedCOsToRemove: [],
+      skipVarianceWarning: true,
+    },
+    varianceInfo: current.varianceInfo ?? {
+      varianceCount: 0,
+      isVariance: false,
+      varianceCode: 0,
+      isEntireBillVariance: false,
+      hasLineItemCustomerVariance: false,
+      relatedChangeOrderId: -1,
+      relatedPurchaseOrderId: -1,
+    },
+    deadLineInfo: current.deadLineInfo ?? {
+      isDeadlineLinked: false,
+      deadlineOffset: 0,
+      deadlineIsAfterLinkedItem: true,
+      scheduleItemSelectedValue: -1,
+      paymentTerms: null,
+    },
+    isJobChange: false,
     undoReadyForPayment: false,
     resendForApproval: false,
-    miscPaidToName: current.miscPaidToName ?? "",
   };
   return lockWriteFlags(body);
 }
