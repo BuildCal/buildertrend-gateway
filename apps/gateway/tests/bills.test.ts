@@ -5,11 +5,15 @@ import {
   BILL_ENTITY_DOCUMENT_TYPE,
   BILL_NONE_PO_ID,
   BILL_SAVE_DRAFT_COST_TYPES,
+  BILL_SAVE_DRAFT_LINE_KEYS,
   BILL_TEMPFILE_FIELD,
   BILL_TEMPFILE_MEDIA_TYPE,
   billCreatePayload,
   billEntityDocsPayload,
   billSaveDraftPayload,
+  formFieldValue,
+  normalizeBillSeed,
+  saveDraftLinePayload,
   seedFromDefaultInfo,
 } from "../src/bills-payload.js";
 import { CONTENT_JSON } from "../src/adapter.js";
@@ -55,6 +59,9 @@ function createdBill(overrides: Record<string, unknown> = {}) {
       jobId: JOB_ID,
       customFields: genericDefaultInfo().data.customFields,
       lienWaiverFormId: 42,
+      assignedTo: {
+        options: [{ id: VENDOR_ID, name: "AAA Test Sub Vendor", extraData: { userType: 2 } }],
+      },
       lineItems: [
         {
           id: LINE_ID,
@@ -153,8 +160,153 @@ describe("bill payload builder (captured 2 Sep 2026)", () => {
     expect(line.builderCost).toBe(1);
     expect(line.costTypes).toEqual([...BILL_SAVE_DRAFT_COST_TYPES]);
     expect(line.title).toBe("Gateway capture line");
+    expect(line.internalNotes).toBe("");
+    expect(line.catalogItemId).toBeNull();
+    expect(line.pageType).toBe("");
+    expect(line.shouldUseAutoUpdates).toBe(false);
+    expect(line.varianceCode).toBe(0);
+    expect(line.parentId).toBeNull();
+    expect(Object.keys(line).sort()).toEqual([...BILL_SAVE_DRAFT_LINE_KEYS].sort());
     expect(body.readyForPayment).toBe(false);
+    expect(body.undoReadyForPayment).toBe(false);
+    expect(body.resendForApproval).toBe(false);
     expect(JSON.stringify(body)).not.toMatch(/taxGroup|4000 GST/);
+    const assigned = body.assignedToInfo as Record<string, unknown>;
+    expect(assigned).toEqual({
+      assignedToId: VENDOR_ID,
+      assignedToName: "AAA Test Sub Vendor",
+      assignedToEmail: "",
+      assignedToType: 2,
+    });
+    expect(assigned).not.toHaveProperty("id");
+    expect(assigned).not.toHaveProperty("userType");
+  });
+
+  it("normalizeBillSeed unwraps GET form UI and PUT omits form junk", () => {
+    expect(formFieldValue({ value: 42, options: [] })).toBe(42);
+    expect(formFieldValue("plain")).toBe("plain");
+
+    const formGet = {
+      success: true,
+      data: {
+        id: BILL_ID,
+        billNumber: { value: "TEST-1" },
+        billTitle: { value: "Gateway capture" },
+        invoiceDate: { value: "2026-09-02T00:00:00" },
+        status: { value: BILL_DRAFT_STATUS },
+        billStatus: { status: BILL_DRAFT_STATUS, statusText: "Draft" },
+        jobId: { value: JOB_ID },
+        concurrencyToken: { value: "tok-1" },
+        customFields: genericDefaultInfo().data.customFields,
+        lienWaiverFormId: { value: 42 },
+        lienWaiverTemplateId: { value: 7 },
+        variance: { value: null },
+        varianceInfo: { value: null },
+        deadLineInfo: { value: { dueDate: "2026-09-16T00:00:00" } },
+        assignedTo: {
+          value: VENDOR_ID,
+          options: [{ id: VENDOR_ID, name: "AAA Test Sub Vendor", extraData: { email: "a@test" } }],
+        },
+        deadline: {
+          value: {
+            isDeadlineLinked: false,
+            deadlineOffset: 0,
+            deadlineIsAfterLinkedItem: true,
+            scheduleItemSelectedValue: -1,
+            dueDate: "2026-09-16T00:00:00",
+            paymentTerms: null,
+          },
+        },
+        lineItems: {
+          value: [
+            {
+              lineItemId: LINE_ID,
+              title: { value: "" },
+              unitCost: { value: 0 },
+              builderCost: { value: 0 },
+              costCodeId: { value: 88 },
+              costTypes: { value: [] },
+              pageTypeEnum: { value: 17 },
+              validators: [{ field: "title" }],
+            },
+          ],
+        },
+        validators: [{ field: "billNumber" }],
+        isValid: true,
+        formOnlyKey: { value: "junk", options: [] },
+      },
+    };
+
+    const seed = normalizeBillSeed(formGet);
+    expect(seed.billNumber).toBe("TEST-1");
+    expect(seed.concurrencyToken).toBe("tok-1");
+    expect(seed.lienWaiverFormId).toBe(42);
+    expect(seed.status).toBe(BILL_DRAFT_STATUS);
+    expect(seed.assignedTo).toBe(VENDOR_ID);
+    expect(seed.assignedToOptions).toEqual(
+      (formGet.data.assignedTo as { options: unknown[] }).options,
+    );
+    expect((seed.unifiedDeadlineRequest as { dueDate: string }).dueDate).toBe(
+      "2026-09-16T00:00:00",
+    );
+    expect((seed.lineItems as { id: number }[])[0]!.id).toBe(LINE_ID);
+
+    const body = billSaveDraftPayload(createArgs, formGet, BILL_ID);
+    expect(body.concurrencyToken).toBe("tok-1");
+    expect(body.customFields).toEqual(genericDefaultInfo().data.customFields);
+    expect(body.lienWaiverFormId).toBe(42);
+    expect(body.lienWaiverTemplateId).toBe(7);
+    expect(body.variance).toBeNull();
+    expect(body.varianceInfo).toBeNull();
+    expect(body.deadLineInfo).toEqual({ dueDate: "2026-09-16T00:00:00" });
+    expect(body.billLineItems).toEqual([]);
+    expect(body.selectedApprovers).toEqual([]);
+    expect(body.approvers).toEqual([]);
+    expect(body.varianceCount).toBe(0);
+    expect(body.containerIsValid).toBe(true);
+    expect(body.documentType).toBe(0);
+    expect(body.isJobChange).toBe(false);
+    expect(body.undoReadyForPayment).toBe(false);
+    expect(body.resendForApproval).toBe(false);
+    expect(body.miscPaidToName).toBe("");
+    expect(body).not.toHaveProperty("validators");
+    expect(body).not.toHaveProperty("isValid");
+    expect(body).not.toHaveProperty("formOnlyKey");
+    expect(body).not.toHaveProperty("assignedToOptions");
+    const assigned = body.assignedToInfo as Record<string, unknown>;
+    expect(assigned.assignedToId).toBe(VENDOR_ID);
+    expect(assigned.assignedToName).toBe("AAA Test Sub Vendor");
+    expect(assigned.assignedToEmail).toBe("a@test");
+    expect(assigned.assignedToType).toBe(2);
+    expect(assigned).not.toHaveProperty("id");
+    expect(assigned).not.toHaveProperty("userType");
+    const line = (body.lineItems as Record<string, unknown>[])[0]!;
+    expect(line.id).toBe(LINE_ID);
+    expect(line).not.toHaveProperty("validators");
+    expect(line).not.toHaveProperty("lineItemId");
+    expect(Object.keys(line).sort()).toEqual([...BILL_SAVE_DRAFT_LINE_KEYS].sort());
+    expect(body.readyForPayment).toBe(false);
+    expect(body.saveAsDraft).toBe(true);
+    expect(body.status).toBe(9);
+  });
+
+  it("saveDraftLinePayload uses lineItemId fallback and captured keys only", () => {
+    const line = saveDraftLinePayload(
+      {
+        lineItemId: LINE_ID,
+        title: { value: "form title" },
+        validators: [{ field: "title" }],
+        costCodeId: 88,
+      },
+      { title: "Gateway capture line", costCodeId: 88, unitCost: 1 },
+    );
+    expect(line.id).toBe(LINE_ID);
+    expect(line.title).toBe("Gateway capture line");
+    expect(line.unitCost).toBe(1);
+    expect(line.builderCost).toBe(1);
+    expect(line).not.toHaveProperty("validators");
+    expect(line).not.toHaveProperty("lineItemId");
+    expect(Object.keys(line).sort()).toEqual([...BILL_SAVE_DRAFT_LINE_KEYS].sort());
   });
 
   it("EntityDocs uses documentType 58 and one attachDocs entry", () => {

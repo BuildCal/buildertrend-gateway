@@ -7,6 +7,14 @@ and this project does not yet follow SemVer releases (pre-alpha).
 
 ## [Unreleased]
 
+### Fixed
+
+- `bills.update` save-draft PUT now uses capture-parity fields
+  (`normalizeBillSeed`, no GET form-UI spread, `assignedToId/Name/Email/Type`,
+  `concurrencyToken` / `lienWaiver*` / `variance` / `deadLineInfo`). Still
+  Draft-only (`saveAsDraft` true, status 9). Never Ready-for-Payment / pay /
+  send.
+
 ### Added
 
 - Captured `pos.update` from the 7 Sep 2026 draft-PO save: GET
