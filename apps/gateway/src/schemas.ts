@@ -143,7 +143,7 @@ export const VERB_SCHEMAS = {
   "bills.list": z.object({
     ...page,
     ...jobScope,
-    statusFilter: z.string().optional(),
+    statusFilter: z.coerce.string().optional(),
     sortColumn: z.string().optional(),
     sortDirection: z.string().optional(),
   }),
