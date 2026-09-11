@@ -11,6 +11,7 @@ from app.bills_payload import (
     BILL_NONE_PO_ID,
     BILL_SAVE_DRAFT_COST_TYPES,
     BillPayloadError,
+    bill_mapping_query,
     build_create_payload,
     build_entity_docs_payload,
     build_save_draft_payload,
@@ -111,6 +112,30 @@ def test_entity_docs_is_one_attach_document_type_58() -> None:
     assert body["notifyBuilder"] is False
 
 
-def test_real_po_id_is_rejected() -> None:
-    with pytest.raises(BillPayloadError, match="GetBillMapping"):
+def test_real_po_id_is_rejected_on_create() -> None:
+    with pytest.raises(BillPayloadError, match="isCreateNewFromPO"):
         build_create_payload(_req(purchase_order_id=44))
+
+
+def test_save_draft_accepts_real_purchase_order_id() -> None:
+    created = {
+        "id": 1001,
+        "lineItems": [{"id": 501, "title": "", "unitCost": 0, "builderCost": 0, "costTypes": []}],
+    }
+    body = build_save_draft_payload(created, _req(purchase_order_id=76574248), 1001)
+    assert body["purchaseOrderId"] == 76574248
+    assert body["isCreateNewFromPO"] is False
+    assert body["readyForPayment"] is False
+    assert body["saveAsDraft"] is True
+
+
+def test_bill_mapping_query_defaults_bill_id_to_zero() -> None:
+    assert bill_mapping_query(76574248, 41648716) == {
+        "purchaseOrderId": 76574248,
+        "jobId": 41648716,
+        "billId": 0,
+    }
+    with pytest.raises(BillPayloadError, match="purchaseOrderId"):
+        bill_mapping_query(None, 41648716)
+    with pytest.raises(BillPayloadError, match="jobId"):
+        bill_mapping_query(76574248, None)

@@ -1,8 +1,9 @@
 /**
- * Captured Buildertrend bill create + save-draft + PDF attach (2 Sep 2026).
+ * Captured Buildertrend bill create + save-draft + PDF attach (2 Sep 2026)
+ * and real PO link via GetBillMapping (11 Sep 2026).
  *
- * Replay only the observed cookie-session HTTP. Do not invent GetBillMapping /
- * real PO-link, Ready-for-Payment, pay, accounting, approve, or ocr-upload.
+ * Replay only the observed cookie-session HTTP. Do not invent Ready-for-Payment,
+ * pay, accounting, approve, ocr-upload, or isCreateNewFromPO: true.
  *
  * Product lock (not tenant-specific): bills are exclusive GST only. No GST
  * dummy line, no inclusive total as unitCost, no tax group.
@@ -70,16 +71,20 @@ export interface BillLineInput {
   quantity?: number;
   unitType?: string;
   taxGroupId?: unknown;
+  purchaseOrderLineItemId?: number;
+  amountBilled?: number;
 }
+
+export const BILL_MAPPING_PATH = "/api/v1/Bills/GetBillMapping";
 
 export const BILL_PO_LINK_DISCOVERY = {
   ui: "Bill — Purchase Order dropdown",
   click:
     "Select a real PO (not -- None Selected --) on a sandbox bill so GetBillMapping fires. Leave Draft. Do not mark ready for payment.",
-  sandboxHint: "Project expense only. GetBillMapping was not in the 2 Sep 2026 capture.",
-  expectedPaths: ["/api/v1/Bills/GetBillMapping"],
+  sandboxHint: "Project expense only. GetBillMapping captured 11 Sep 2026. Never Ready-for-Payment.",
+  expectedPaths: [BILL_MAPPING_PATH],
   notes:
-    "GET /apix/v2/Bills/get-available-purchase-orders/{vendorId}/2/{jobId} is captured (read). Linking a real PO is not — do not guess isCreateNewFromPO: true.",
+    "GET GetBillMapping returns unwrapData (lineItems.validators + lineItems.value, lineItemPercentages). billId defaults to 0. Do not invent fields or isCreateNewFromPO: true.",
 };
 
 export function emptyAttachedFiles(): typeof EMPTY_ATTACHED_FILES {
@@ -126,9 +131,50 @@ export function assertNoRealPurchaseOrder(args: Record<string, unknown>): void {
   if (value == null || value === BILL_NONE_PO_ID) return;
   throw new GatewayError(
     "not_captured",
-    "Linking a real purchase order is not captured (GetBillMapping never fired). purchaseOrderId must be -1 (none).",
+    "Creating a bill from a PO is not captured (isCreateNewFromPO). Use bills.linkPurchaseOrder then bills.update.",
     { discovery: BILL_PO_LINK_DISCOVERY, purchaseOrderId: value },
   );
+}
+
+/** Query for captured GET /api/v1/Bills/GetBillMapping. billId defaults to 0. */
+export function billMappingQuery(args: Record<string, unknown>): {
+  purchaseOrderId: number;
+  jobId: number;
+  billId: number;
+} {
+  const purchaseOrderId = numberish(args.purchaseOrderId);
+  const jobId = numberish(args.jobId);
+  if (purchaseOrderId == null || purchaseOrderId === BILL_NONE_PO_ID || purchaseOrderId <= 0) {
+    throw new GatewayError("validation", "purchaseOrderId is required (real PO, not -1 / none).");
+  }
+  if (jobId == null || jobId <= 0) {
+    throw new GatewayError("validation", "jobId is required");
+  }
+  return {
+    purchaseOrderId,
+    jobId,
+    billId: numberish(args.billId) ?? 0,
+  };
+}
+
+export function mappingLineItems(raw: unknown): Record<string, unknown>[] {
+  const data = asRecord(raw);
+  const items = data.lineItems;
+  if (Array.isArray(items)) return items.map((row) => asRecord(row));
+  const wrapped = asRecord(items).value;
+  if (Array.isArray(wrapped)) return wrapped.map((row) => asRecord(row));
+  return [];
+}
+
+export function resolveSaveDraftPurchaseOrderId(
+  args: Record<string, unknown>,
+  current: Record<string, unknown>,
+): number {
+  const fromArgs = numberish(args.purchaseOrderId);
+  if (fromArgs != null && fromArgs !== BILL_NONE_PO_ID) return fromArgs;
+  const fromCurrent = numberish(current.purchaseOrderId);
+  if (fromCurrent != null && fromCurrent !== BILL_NONE_PO_ID) return fromCurrent;
+  return BILL_NONE_PO_ID;
 }
 
 export function assertBillFieldLengths(args: Record<string, unknown>): void {
@@ -277,6 +323,9 @@ export function saveDraftLinePayload(
   const exclusive = exclusiveAmountOf(caller);
   const costCode = costCodeOf(caller) ?? numberish(createdLine.costCodeId ?? createdLine.costCode);
   const id = numberish(caller.id) ?? numberish(createdLine.id) ?? 0;
+  const poLineId =
+    numberish(caller.purchaseOrderLineItemId) ?? numberish(createdLine.purchaseOrderLineItemId);
+  const amountBilled = caller.amountBilled ?? createdLine.amountBilled;
   return {
     ...createdLine,
     id,
@@ -291,6 +340,8 @@ export function saveDraftLinePayload(
     pageTypeEnum: createdLine.pageTypeEnum ?? BILL_PAGE_TYPE_ENUM,
     costTypes: [...BILL_SAVE_DRAFT_COST_TYPES],
     markedAs: createdLine.markedAs ?? BILL_LINE_MARKED_AS,
+    ...(poLineId != null ? { purchaseOrderLineItemId: poLineId } : {}),
+    ...(amountBilled !== undefined ? { amountBilled } : {}),
   };
 }
 
@@ -321,11 +372,14 @@ function saveDraftLines(
   return caller.map((line, index) => saveDraftLinePayload(existing[index] ?? {}, line));
 }
 
-function lockWriteFlags(body: Record<string, unknown>): Record<string, unknown> {
+function lockWriteFlags(
+  body: Record<string, unknown>,
+  purchaseOrderId = BILL_NONE_PO_ID,
+): Record<string, unknown> {
   for (const flag of BILL_SEND_PAY_FLAGS) {
     body[flag] = false;
   }
-  body.purchaseOrderId = BILL_NONE_PO_ID;
+  body.purchaseOrderId = purchaseOrderId;
   body.isCreateNewFromPO = false;
   body.saveDraftToJob = false;
   body.status = BILL_DRAFT_STATUS;
@@ -394,11 +448,11 @@ export function billSaveDraftPayload(
   billId: number,
 ): Record<string, unknown> {
   assertBillSendPayLocked(args);
-  assertNoRealPurchaseOrder(args);
   assertBillFieldLengths(args);
   const current = seedFromDefaultInfo(currentRaw);
   const jobId = numberish(args.jobId) ?? numberish(current.jobId) ?? numberish(current.selectedJobId);
   const user = performingUser(args, current);
+  const purchaseOrderId = resolveSaveDraftPurchaseOrderId(args, current);
   const body: Record<string, unknown> = {
     ...current,
     ...user,
@@ -415,11 +469,11 @@ export function billSaveDraftPayload(
     saveDraftToJob: false,
     status: BILL_DRAFT_STATUS,
     attachedFiles: emptyAttachedFiles(),
-    purchaseOrderId: BILL_NONE_PO_ID,
+    purchaseOrderId,
     isCreateNewFromPO: false,
     priceType: BILL_PRICE_TYPE,
   };
-  return lockWriteFlags(body);
+  return lockWriteFlags(body, purchaseOrderId);
 }
 
 export function billEntityDocsPayload(opts: {

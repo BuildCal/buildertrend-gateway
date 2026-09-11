@@ -15,6 +15,8 @@ const billLineSchema = z.object({
   quantity: z.coerce.number().optional(),
   unitType: z.string().optional(),
   taxGroupId: z.unknown().optional(),
+  purchaseOrderLineItemId: z.coerce.number().int().optional(),
+  amountBilled: z.coerce.number().optional(),
 });
 const billAttachSchema = z.object({
   filename: z.string().min(1),
@@ -200,9 +202,10 @@ export const VERB_SCHEMAS = {
     ...dry,
   }),
   "bills.linkPurchaseOrder": z.object({
-    billId: z.coerce.number().int().positive(),
+    purchaseOrderId: z.coerce.number().int().positive(),
     jobId: z.coerce.number().int().positive(),
-    purchaseOrderId: z.coerce.number().int(),
+    billId: z.coerce.number().int().optional(),
+    ...billSendPayFlags,
     ...dry,
   }),
   "bills.markReadyForPayment": z.object({ billId: z.coerce.number().int().positive(), ...dry }),

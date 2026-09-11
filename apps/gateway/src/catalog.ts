@@ -482,7 +482,7 @@ export const VERBS: VerbSpec[] = [
     kind: "read",
     captured: true,
     description:
-      "Open POs for a vendor on a job. Captured read. A real PO link still needs GetBillMapping (not captured).",
+      "Open POs for a vendor on a job. Captured read. Link a real PO with bills.linkPurchaseOrder (GetBillMapping).",
   },
   {
     verb: "bills.create",
@@ -503,7 +503,7 @@ export const VERBS: VerbSpec[] = [
     kind: "write",
     captured: true,
     description:
-      "Save draft (PUT /api/v1/bills/{id}, saveAsDraft true, status 9). Exclusive amounts only. Never Ready-for-Payment.",
+      "Save draft (PUT /api/v1/bills/{id}, saveAsDraft true, status 9). Exclusive amounts only. May persist a real purchaseOrderId after GetBillMapping. Never Ready-for-Payment / isCreateNewFromPO.",
   },
   {
     verb: "bills.attach",
@@ -521,18 +521,9 @@ export const VERBS: VerbSpec[] = [
     httpPath: "/v1/bills/link-purchase-order",
     httpMethod: "POST",
     kind: "write",
-    captured: false,
+    captured: true,
     description:
-      "Link a real PO onto a bill. GetBillMapping was not captured — purchaseOrderId stays -1 (none).",
-    discovery: {
-      ui: "Bill — Purchase Order dropdown",
-      click:
-        "Select a real PO (not -- None Selected --) on a sandbox bill so GetBillMapping fires. Leave Draft. Do not mark ready for payment.",
-      sandboxHint: "Project expense only. Do not guess isCreateNewFromPO: true.",
-      expectedPaths: ["/api/v1/Bills/GetBillMapping"],
-      notes:
-        "GET get-available-purchase-orders is captured. Linking is not. purchaseOrderId: -1 means none.",
-    },
+      "GET /api/v1/Bills/GetBillMapping?purchaseOrderId=&jobId=&billId=0 (captured 11 Sep 2026). Args: purchaseOrderId, jobId, optional billId default 0. Returns unwrapData of the envelope (lineItems.value, lineItemPercentages). Never Ready-for-Payment / pay / send / isCreateNewFromPO.",
   },
   {
     verb: "bills.markReadyForPayment",

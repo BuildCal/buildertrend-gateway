@@ -23,13 +23,14 @@ import {
   assertBillSendPayLocked,
   assertNoRealPurchaseOrder,
   attachArgsOf,
+  BILL_MAPPING_PATH,
   BILL_NONE_PO_ID,
-  BILL_PO_LINK_DISCOVERY,
   BILL_TEMPFILE_FIELD,
   BILL_TEMPFILE_MEDIA_TYPE,
   billCreatePayload,
   billEntityDocsPayload,
   billIdFrom,
+  billMappingQuery,
   billSaveDraftPayload,
   seedFromDefaultInfo,
 } from "./bills-payload.js";
@@ -570,7 +571,6 @@ registerVerb("bills.create", async (ctx) => {
 registerVerb("bills.update", async (ctx) => {
   const billId = requireNumber(ctx.args, "billId");
   assertBillSendPayLocked(ctx.args);
-  assertNoRealPurchaseOrder(ctx.args);
   assertBillFieldLengths(ctx.args);
   const currentRaw = await btJson(ctx, { method: "GET", path: `/api/v1/bills/${billId}` });
   const current = seedFromDefaultInfo(currentRaw);
@@ -610,12 +610,15 @@ registerVerb("bills.attach", async (ctx) => {
   return attachBillPdf(ctx, jobId, billId, attach);
 });
 
-registerVerb("bills.linkPurchaseOrder", async () => {
-  throw new GatewayError(
-    "not_captured",
-    "Linking a real purchase order is not captured (GetBillMapping never fired).",
-    { discovery: BILL_PO_LINK_DISCOVERY },
-  );
+registerVerb("bills.linkPurchaseOrder", async (ctx) => {
+  assertBillSendPayLocked(ctx.args);
+  const query = billMappingQuery(ctx.args);
+  const payload = await btJson(ctx, {
+    method: "GET",
+    path: BILL_MAPPING_PATH,
+    query,
+  });
+  return unwrapData(payload);
 });
 
 registerVerb("pos.list", async (ctx) => {

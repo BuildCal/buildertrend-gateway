@@ -9,6 +9,13 @@ and this project does not yet follow SemVer releases (pre-alpha).
 
 ### Added
 
+- Captured `bills.linkPurchaseOrder` from the 11 Sep 2026 Cubbaroo
+  GetBillMapping: `GET /api/v1/Bills/GetBillMapping?purchaseOrderId=76574248&jobId=41648716&billId=0`.
+  Returns `unwrapData` of the envelope (`lineItems.validators` /
+  `lineItems.value`, `lineItemPercentages: {}`). Do not invent fields.
+  `bills.update` may persist a real `purchaseOrderId` + mapped lines.
+  Create still forces `-1`. Never `isCreateNewFromPO: true` /
+  Ready-for-Payment / pay / send.
 - Captured `pos.update` from the 7 Sep 2026 draft-PO save: GET
   `/api/PurchaseOrders/{id}` then PUT the same path
   (`application/json`). Safe draft fields merge onto the existing PO.
@@ -20,7 +27,6 @@ and this project does not yet follow SemVer releases (pre-alpha).
   `saveAsDraft: true`) → optional PDF via `tempFile` + `EntityDocs`
   (`documentType` 58). One attach. Not `ocr-upload`. Not Ready-for-Payment.
 - Read helpers `bills.defaults` and `bills.availablePurchaseOrders`.
-  `bills.linkPurchaseOrder` stays `not_captured` until GetBillMapping fires.
 - Buildertrend Gateway (`apps/gateway`): one MCP + HTTP `/v1` surface for
   in-scope verbs. Writes default to `dry_run`. Send/pay/notify stay locked.
 - Captured variation draft + line add/update/delete with GST dummy-line
