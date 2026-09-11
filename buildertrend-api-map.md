@@ -151,7 +151,7 @@ Xero remains the pay path. Never pay from the gateway.
 | `bills.create` | GET + POST + PUT | defaultinfo → `POST /api/v1/bills?jobId=` → `PUT /api/v1/bills/{id}` | **Captured** (2 Sep 2026). Draft status **9**. Amounts on PUT. PDF is **not** on this POST/PUT |
 | `bills.update` | PUT | `/api/v1/bills/{id}` | **Captured** Save draft (`saveAsDraft: true`, status 9) |
 | `bills.attach` | POST + POST | `/api/documents/61/tempFile` then `/api/Documents/EntityDocs` (`documentType` 58) | **Captured**. One attach. Not `ocr-upload` |
-| `bills.linkPurchaseOrder` | GET | `/api/v1/Bills/GetBillMapping?purchaseOrderId={poId}&jobId={jobId}&billId=0` | **Captured** (11 Sep 2026). `billId=0` even on an existing draft. Returns `{ purchaseOrderId, builderId, jobId, jobName, canViewPrice, lineItems: { value: [...] }, lineItemPercentages? }`. Apply via `bills.update`. Never `isCreateNewFromPO: true` / Ready-for-Payment |
+| `bills.linkPurchaseOrder` | GET | `/api/v1/Bills/GetBillMapping?purchaseOrderId={poId}&jobId={jobId}&billId=0` | **Captured** (11 Sep 2026, Cubbaroo). Returns `unwrapData` of `{ success, data: { purchaseOrderId, builderId, jobId, jobName, canViewPrice, lineItems: { validators, value: [...] }, lineItemPercentages: {} } }`. First value row `[SURV040] House setout` / `purchaseOrderLineItemId` 132371670. Do not invent fields. Never Ready-for-Payment / `isCreateNewFromPO: true` |
 | `bills.markReadyForPayment` | | Separate UI `#markReadyForPaymentFromDraftButtonId` | **send_disabled** |
 
 Bills are exclusive GST only. No GST dummy line, no tax group, no inclusive `unitCost`.

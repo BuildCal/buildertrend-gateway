@@ -523,7 +523,7 @@ export const VERBS: VerbSpec[] = [
     kind: "write",
     captured: true,
     description:
-      "GET /api/v1/Bills/GetBillMapping (captured 11 Sep 2026). Args: purchaseOrderId, jobId, optional billId default 0. Returns PO line mapping. Apply via bills.update. Never isCreateNewFromPO / Ready-for-Payment / pay / send.",
+      "GET /api/v1/Bills/GetBillMapping?purchaseOrderId=&jobId=&billId=0 (captured 11 Sep 2026). Args: purchaseOrderId, jobId, optional billId default 0. Returns unwrapData of the envelope (lineItems.value, lineItemPercentages). Never Ready-for-Payment / pay / send / isCreateNewFromPO.",
   },
   {
     verb: "bills.markReadyForPayment",

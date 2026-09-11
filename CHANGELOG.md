@@ -9,12 +9,13 @@ and this project does not yet follow SemVer releases (pre-alpha).
 
 ### Added
 
-- Captured `bills.linkPurchaseOrder` from the 11 Sep 2026 GetBillMapping
-  pass: `GET /api/v1/Bills/GetBillMapping?purchaseOrderId=&jobId=&billId=0`
-  (billId defaults to 0 even on an existing draft). Returns PO line
-  mapping (`lineItems.value`). `bills.update` may persist a real
-  `purchaseOrderId` + mapped lines. Create still forces `-1`. Never
-  `isCreateNewFromPO: true` / Ready-for-Payment / pay / send.
+- Captured `bills.linkPurchaseOrder` from the 11 Sep 2026 Cubbaroo
+  GetBillMapping: `GET /api/v1/Bills/GetBillMapping?purchaseOrderId=76574248&jobId=41648716&billId=0`.
+  Returns `unwrapData` of the envelope (`lineItems.validators` /
+  `lineItems.value`, `lineItemPercentages: {}`). Do not invent fields.
+  `bills.update` may persist a real `purchaseOrderId` + mapped lines.
+  Create still forces `-1`. Never `isCreateNewFromPO: true` /
+  Ready-for-Payment / pay / send.
 - Captured `pos.update` from the 7 Sep 2026 draft-PO save: GET
   `/api/PurchaseOrders/{id}` then PUT the same path
   (`application/json`). Safe draft fields merge onto the existing PO.

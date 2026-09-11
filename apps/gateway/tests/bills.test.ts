@@ -16,7 +16,110 @@ import {
   seedFromDefaultInfo,
 } from "../src/bills-payload.js";
 import { parseVerbArgs } from "../src/schemas.js";
-import { CONTENT_JSON } from "../src/adapter.js";
+
+/** Captured 11 Sep 2026 — Cubbaroo draft GetBillMapping. Do not invent fields. */
+const GET_BILL_MAPPING_CAPTURE = {
+  success: true,
+  message: "",
+  needsToRelogin: false,
+  sessionJobInfo: null,
+  data: {
+    purchaseOrderId: 76574248,
+    builderId: 110310,
+    jobId: 41648716,
+    jobName: "0013 - 2 Cubbaroo St (Duplex)",
+    canViewPrice: true,
+    lineItems: {
+      validators: null,
+      value: [
+        {
+          amountBilled: 0.0,
+          costCodeTitle: "1090 House Peg Survey",
+          parentEntity: {
+            id: 76574248,
+            idString: null,
+            title: "090: House Peg Survey",
+            totalAmount: 3000.0,
+            parentId: null,
+            dateToFilter: null,
+            subTitle: null,
+            entityType: 0,
+            attachedFiles: null,
+            userName: null,
+            hasOvertime: false,
+          },
+          grandparentEntity: null,
+          lineItemType: 17,
+          costTypes: [7],
+          worksheetDisplayOrder: null,
+          id: 132371670,
+          costCode: 17072328,
+          unitCost: 1500.0,
+          unitPrice: 0.0,
+          quantity: 2.0,
+          unitType: "EA",
+          markupType: 0,
+          markupPercent: 0.0,
+          markupPerUnit: 0.0,
+          markupAmount: 0.0,
+          margin: null,
+          calculatedAmount: 0.0,
+          ownerPrice: 0.0,
+          description: "Setout Survey and Report",
+          internalNotes: "",
+          title: "[SURV040] House setout",
+          varianceCode: 0,
+          varianceCodeTitle: null,
+          estimateId: null,
+          relatedGeneralItemId: null,
+          builderCost: 3000.0,
+          excludeFromNewExpected: false,
+          catalogItemId: 11207960,
+          costCatalogUpdateType: null,
+          pendingCostCatalogUpdateDate: null,
+          isTBD: false,
+          costTypeId: null,
+          isCostCodeItem: false,
+          costCodeItemId: 11207960,
+          catalogsExist: false,
+          selectionChoiceLineItemId: null,
+          parentId: null,
+          purchaseOrderId: 76574248,
+          purchaseOrderLineItemId: 132371670,
+          purchaseOrderPaymentLineItemId: null,
+          billLineItemId: null,
+          relatedTimeCardLineItemId: null,
+          relatedChangeOrderLineItemId: null,
+          relatedParentId: null,
+          relatedParentTitle: null,
+          relatedParentType: 0,
+          relatedStackLinks: null,
+          costGroupId: null,
+          amountInvoiced: 0.0,
+          markedAs: null,
+          includeInCatalog: null,
+          costCategoryId: null,
+          relatedBidLineItemId: null,
+          allowanceId: null,
+          allowanceLineItemId: null,
+          relatedAccountingCostId: null,
+          globalProductCatalogId: null,
+          vendorProductId: null,
+          vendorType: null,
+          productUrl: null,
+          isDiscontinued: null,
+          isDeleted: null,
+          taxGroupId: null,
+          builderId: 110310,
+        },
+      ],
+    },
+    lineItemPercentages: {},
+  },
+  metadata: null,
+  forcedUpgrade: false,
+};
+import { CONTENT_JSON, unwrapData } from "../src/adapter.js";
 import { VERBS } from "../src/catalog.js";
 import { createHarness } from "./helpers.js";
 
@@ -206,20 +309,7 @@ describe("bill payload builder (captured 2 Sep 2026)", () => {
   });
 
   it("unwraps mapping lineItems.value", () => {
-    const lines = mappingLineItems({
-      lineItems: {
-        value: [
-          {
-            title: "[SURV040] House setout",
-            builderCost: 3000,
-            quantity: 2,
-            unitCost: 1500,
-            purchaseOrderId: 76574248,
-            purchaseOrderLineItemId: 132371670,
-          },
-        ],
-      },
-    });
+    const lines = mappingLineItems(GET_BILL_MAPPING_CAPTURE.data);
     expect(lines).toHaveLength(1);
     expect(lines[0]).toMatchObject({
       title: "[SURV040] House setout",
@@ -467,28 +557,7 @@ describe("bill verbs (scripted adapter, no live network)", () => {
       return {
         status: 200,
         contentType: CONTENT_JSON,
-        json: {
-          success: true,
-          data: {
-            purchaseOrderId: poId,
-            builderId: 99999,
-            jobId,
-            jobName: "Cubbaroo",
-            canViewPrice: true,
-            lineItems: {
-              value: [
-                {
-                  title: "[SURV040] House setout",
-                  builderCost: 3000,
-                  quantity: 2,
-                  unitCost: 1500,
-                  purchaseOrderId: poId,
-                  purchaseOrderLineItemId: 132371670,
-                },
-              ],
-            },
-          },
-        },
+        json: GET_BILL_MAPPING_CAPTURE,
       };
     });
 
@@ -502,18 +571,39 @@ describe("bill verbs (scripted adapter, no live network)", () => {
     expect(calls[0]!.method).toBe("GET");
     expect(calls[0]!.path).toBe("/api/v1/Bills/GetBillMapping");
     expect(calls[0]!.query).toEqual({ purchaseOrderId: poId, jobId, billId: 0 });
+    expect(result.data).toEqual(unwrapData(GET_BILL_MAPPING_CAPTURE));
     const data = result.data as {
       purchaseOrderId: number;
-      lineItems: Record<string, unknown>[];
-      isCreateNewFromPO: boolean;
+      jobId: number;
+      jobName: string;
+      lineItems: { validators: null; value: Record<string, unknown>[] };
+      lineItemPercentages: Record<string, unknown>;
     };
-    expect(data.purchaseOrderId).toBe(poId);
-    expect(data.isCreateNewFromPO).toBe(false);
-    expect(data.lineItems[0]).toMatchObject({
+    expect(data.purchaseOrderId).toBe(76574248);
+    expect(data.jobId).toBe(41648716);
+    expect(data.jobName).toBe("0013 - 2 Cubbaroo St (Duplex)");
+    expect(data.lineItemPercentages).toEqual({});
+    expect(data.lineItems.validators).toBeNull();
+    expect(data.lineItems.value[0]).toMatchObject({
       title: "[SURV040] House setout",
+      description: "Setout Survey and Report",
+      amountBilled: 0,
+      costCodeTitle: "1090 House Peg Survey",
+      costCode: 17072328,
+      unitCost: 1500,
+      quantity: 2,
+      unitType: "EA",
       builderCost: 3000,
+      costTypes: [7],
+      lineItemType: 17,
+      id: 132371670,
       purchaseOrderLineItemId: 132371670,
+      purchaseOrderId: 76574248,
+      catalogItemId: 11207960,
+      costCodeItemId: 11207960,
+      taxGroupId: null,
     });
+    expect(JSON.stringify(result.data)).not.toMatch(/isCreateNewFromPO/);
     expect(calls.some((c) => c.method === "PUT")).toBe(false);
     expect(calls.some((c) => c.path.toLowerCase().includes("markreadyforpayment"))).toBe(false);
   });

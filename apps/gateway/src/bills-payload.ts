@@ -84,7 +84,7 @@ export const BILL_PO_LINK_DISCOVERY = {
   sandboxHint: "Project expense only. GetBillMapping captured 11 Sep 2026. Never Ready-for-Payment.",
   expectedPaths: [BILL_MAPPING_PATH],
   notes:
-    "GET GetBillMapping pre-fills PO lines (billId defaults to 0). Apply via bills.update with purchaseOrderId + mapped lines. Do not guess isCreateNewFromPO: true.",
+    "GET GetBillMapping returns unwrapData (lineItems.validators + lineItems.value, lineItemPercentages). billId defaults to 0. Do not invent fields or isCreateNewFromPO: true.",
 };
 
 export function emptyAttachedFiles(): typeof EMPTY_ATTACHED_FILES {

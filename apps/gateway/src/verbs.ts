@@ -32,7 +32,6 @@ import {
   billIdFrom,
   billMappingQuery,
   billSaveDraftPayload,
-  mappingLineItems,
   seedFromDefaultInfo,
 } from "./bills-payload.js";
 import { assertPoSendPayLocked, poSaveDraftPayload, seedFromPoGet } from "./pos-payload.js";
@@ -619,18 +618,7 @@ registerVerb("bills.linkPurchaseOrder", async (ctx) => {
     path: BILL_MAPPING_PATH,
     query,
   });
-  const data = dataOf(payload);
-  return {
-    purchaseOrderId: numberish(data.purchaseOrderId) ?? query.purchaseOrderId,
-    builderId: numberish(data.builderId),
-    jobId: numberish(data.jobId) ?? query.jobId,
-    jobName: data.jobName,
-    canViewPrice: data.canViewPrice,
-    lineItems: mappingLineItems(data),
-    lineItemPercentages: data.lineItemPercentages,
-    isCreateNewFromPO: false,
-    raw: unwrapData(payload),
-  };
+  return unwrapData(payload);
 });
 
 registerVerb("pos.list", async (ctx) => {
