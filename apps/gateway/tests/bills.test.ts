@@ -3,15 +3,19 @@ import {
   BILL_CREATE_COST_TYPES,
   BILL_DRAFT_STATUS,
   BILL_ENTITY_DOCUMENT_TYPE,
+  BILL_MAPPING_PATH,
   BILL_NONE_PO_ID,
   BILL_SAVE_DRAFT_COST_TYPES,
   BILL_TEMPFILE_FIELD,
   BILL_TEMPFILE_MEDIA_TYPE,
   billCreatePayload,
   billEntityDocsPayload,
+  billMappingQuery,
   billSaveDraftPayload,
+  mappingLineItems,
   seedFromDefaultInfo,
 } from "../src/bills-payload.js";
+import { parseVerbArgs } from "../src/schemas.js";
 import { CONTENT_JSON } from "../src/adapter.js";
 import { VERBS } from "../src/catalog.js";
 import { createHarness } from "./helpers.js";
@@ -157,6 +161,73 @@ describe("bill payload builder (captured 2 Sep 2026)", () => {
     expect(JSON.stringify(body)).not.toMatch(/taxGroup|4000 GST/);
   });
 
+  it("PUT save-draft accepts a real purchaseOrderId after GetBillMapping", () => {
+    const poId = 76574248;
+    const body = billSaveDraftPayload(
+      {
+        ...createArgs,
+        purchaseOrderId: poId,
+        lineItems: [
+          {
+            title: "[SURV040] House setout",
+            unitCost: 1500,
+            builderCost: 3000,
+            quantity: 2,
+            purchaseOrderLineItemId: 132371670,
+          },
+        ],
+      },
+      createdBill(),
+      BILL_ID,
+    );
+    expect(body.purchaseOrderId).toBe(poId);
+    expect(body.isCreateNewFromPO).toBe(false);
+    expect(body.saveAsDraft).toBe(true);
+    expect(body.status).toBe(9);
+    expect(body.readyForPayment).toBe(false);
+    const line = (body.lineItems as Record<string, unknown>[])[0]!;
+    expect(line.purchaseOrderLineItemId).toBe(132371670);
+    expect(line.unitCost).toBe(1500);
+    expect(line.quantity).toBe(2);
+  });
+
+  it("builds GetBillMapping query with billId default 0", () => {
+    expect(
+      billMappingQuery({ purchaseOrderId: 76574248, jobId: 41648716 }),
+    ).toEqual({ purchaseOrderId: 76574248, jobId: 41648716, billId: 0 });
+    expect(
+      billMappingQuery({ purchaseOrderId: 76574248, jobId: 41648716, billId: 124540604 }),
+    ).toEqual({ purchaseOrderId: 76574248, jobId: 41648716, billId: 124540604 });
+    expect(() => billMappingQuery({ jobId: 41648716 })).toThrow(/purchaseOrderId/);
+    expect(() => billMappingQuery({ purchaseOrderId: 76574248 })).toThrow(/jobId/);
+    expect(() => billMappingQuery({ purchaseOrderId: -1, jobId: 41648716 })).toThrow(
+      /purchaseOrderId/,
+    );
+  });
+
+  it("unwraps mapping lineItems.value", () => {
+    const lines = mappingLineItems({
+      lineItems: {
+        value: [
+          {
+            title: "[SURV040] House setout",
+            builderCost: 3000,
+            quantity: 2,
+            unitCost: 1500,
+            purchaseOrderId: 76574248,
+            purchaseOrderLineItemId: 132371670,
+          },
+        ],
+      },
+    });
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).toMatchObject({
+      title: "[SURV040] House setout",
+      builderCost: 3000,
+      purchaseOrderLineItemId: 132371670,
+    });
+  });
+
   it("EntityDocs uses documentType 58 and one attachDocs entry", () => {
     const doc = tempDoc();
     const body = billEntityDocsPayload({
@@ -176,12 +247,12 @@ describe("bill payload builder (captured 2 Sep 2026)", () => {
     expect(attached[0]).toEqual(doc);
   });
 
-  it("rejects send/pay flags and a real PO id", () => {
+  it("rejects send/pay flags and a real PO id on create", () => {
     expect(() => billCreatePayload({ ...createArgs, readyForPayment: true }, JOB_ID)).toThrow(
       /locked/,
     );
     expect(() => billCreatePayload({ ...createArgs, purchaseOrderId: 77 }, JOB_ID)).toThrow(
-      /GetBillMapping/,
+      /isCreateNewFromPO/,
     );
     expect(() =>
       billCreatePayload(
@@ -203,11 +274,11 @@ describe("bill payload builder (captured 2 Sep 2026)", () => {
 });
 
 describe("bill verbs (scripted adapter, no live network)", () => {
-  it("marks create, update, and attach as captured; PO link stays not_captured", () => {
+  it("marks create, update, attach, and PO link as captured", () => {
     expect(VERBS.find((v) => v.verb === "bills.create")?.captured).toBe(true);
     expect(VERBS.find((v) => v.verb === "bills.update")?.captured).toBe(true);
     expect(VERBS.find((v) => v.verb === "bills.attach")?.captured).toBe(true);
-    expect(VERBS.find((v) => v.verb === "bills.linkPurchaseOrder")?.captured).toBe(false);
+    expect(VERBS.find((v) => v.verb === "bills.linkPurchaseOrder")?.captured).toBe(true);
     expect(VERBS.find((v) => v.verb === "bills.markReadyForPayment")?.kind).toBe("send");
     expect(VERBS.find((v) => v.verb === "docs.upload")?.captured).toBe(false);
   });
@@ -324,12 +395,48 @@ describe("bill verbs (scripted adapter, no live network)", () => {
     const put = calls.find((c) => c.method === "PUT");
     expect(put?.path).toBe(`/api/v1/bills/${BILL_ID}`);
     expect((put?.json as { saveAsDraft: boolean }).saveAsDraft).toBe(true);
+    expect((put?.json as { purchaseOrderId: number }).purchaseOrderId).toBe(BILL_NONE_PO_ID);
     expect((put?.json as { attachedFiles: { attachDocs: unknown[] } }).attachedFiles.attachDocs).toEqual(
       [],
     );
   });
 
-  it("fails closed on send/pay flags and real PO link", async () => {
+  it("bills.update PUTs a real purchaseOrderId from GetBillMapping", async () => {
+    const poId = 76574248;
+    const { calls, invoke } = createHarness(async (req) => {
+      if (req.method === "GET" && req.path === `/api/v1/bills/${BILL_ID}`) {
+        return { status: 200, contentType: CONTENT_JSON, json: createdBill() };
+      }
+      return { status: 200, contentType: CONTENT_JSON, json: createdBill() };
+    });
+    await invoke("bills.update", {
+      billId: BILL_ID,
+      jobId: JOB_ID,
+      purchaseOrderId: poId,
+      dry_run: false,
+      lineItems: [
+        {
+          title: "[SURV040] House setout",
+          unitCost: 1500,
+          quantity: 2,
+          purchaseOrderLineItemId: 132371670,
+        },
+      ],
+    });
+    const put = calls.find((c) => c.method === "PUT");
+    const body = put?.json as {
+      purchaseOrderId: number;
+      isCreateNewFromPO: boolean;
+      readyForPayment: boolean;
+      saveAsDraft: boolean;
+    };
+    expect(body.purchaseOrderId).toBe(poId);
+    expect(body.isCreateNewFromPO).toBe(false);
+    expect(body.readyForPayment).toBe(false);
+    expect(body.saveAsDraft).toBe(true);
+  });
+
+  it("fails closed on send/pay flags and create-from-PO", async () => {
     const { calls, invoke } = createHarness(undefined, { sandbox: true });
     await expect(
       invoke("bills.create", { ...createArgs, readyForPayment: true }),
@@ -339,12 +446,90 @@ describe("bill verbs (scripted adapter, no live network)", () => {
     ).rejects.toMatchObject({ code: "not_captured" });
     await expect(
       invoke("bills.linkPurchaseOrder", {
-        billId: BILL_ID,
         jobId: JOB_ID,
         purchaseOrderId: 44,
+        readyForPayment: true,
         dry_run: false,
       }),
-    ).rejects.toMatchObject({ code: "not_captured" });
+    ).rejects.toMatchObject({ code: "send_disabled" });
+    await expect(
+      invoke("bills.markReadyForPayment", { billId: BILL_ID, dry_run: false }),
+    ).rejects.toMatchObject({ code: "send_disabled" });
+    expect(calls).toHaveLength(0);
+  });
+
+  it("GET GetBillMapping with po/job and billId default 0", async () => {
+    const poId = 76574248;
+    const jobId = 41648716;
+    const { calls, invoke } = createHarness(async (req) => {
+      expect(req.method).toBe("GET");
+      expect(req.path).toBe(BILL_MAPPING_PATH);
+      return {
+        status: 200,
+        contentType: CONTENT_JSON,
+        json: {
+          success: true,
+          data: {
+            purchaseOrderId: poId,
+            builderId: 99999,
+            jobId,
+            jobName: "Cubbaroo",
+            canViewPrice: true,
+            lineItems: {
+              value: [
+                {
+                  title: "[SURV040] House setout",
+                  builderCost: 3000,
+                  quantity: 2,
+                  unitCost: 1500,
+                  purchaseOrderId: poId,
+                  purchaseOrderLineItemId: 132371670,
+                },
+              ],
+            },
+          },
+        },
+      };
+    });
+
+    const result = await invoke("bills.linkPurchaseOrder", {
+      purchaseOrderId: poId,
+      jobId,
+      dry_run: false,
+    });
+    expect(result.ok).toBe(true);
+    expect(calls).toHaveLength(1);
+    expect(calls[0]!.method).toBe("GET");
+    expect(calls[0]!.path).toBe("/api/v1/Bills/GetBillMapping");
+    expect(calls[0]!.query).toEqual({ purchaseOrderId: poId, jobId, billId: 0 });
+    const data = result.data as {
+      purchaseOrderId: number;
+      lineItems: Record<string, unknown>[];
+      isCreateNewFromPO: boolean;
+    };
+    expect(data.purchaseOrderId).toBe(poId);
+    expect(data.isCreateNewFromPO).toBe(false);
+    expect(data.lineItems[0]).toMatchObject({
+      title: "[SURV040] House setout",
+      builderCost: 3000,
+      purchaseOrderLineItemId: 132371670,
+    });
+    expect(calls.some((c) => c.method === "PUT")).toBe(false);
+    expect(calls.some((c) => c.path.toLowerCase().includes("markreadyforpayment"))).toBe(false);
+  });
+
+  it("rejects missing purchaseOrderId or jobId on link", async () => {
+    const { calls, invoke } = createHarness();
+    await expect(
+      invoke("bills.linkPurchaseOrder", { jobId: JOB_ID, dry_run: false }),
+    ).rejects.toMatchObject({ code: "validation" });
+    await expect(
+      invoke("bills.linkPurchaseOrder", { purchaseOrderId: 76574248, dry_run: false }),
+    ).rejects.toMatchObject({ code: "validation" });
+    expect(() => parseVerbArgs("bills.linkPurchaseOrder", { jobId: JOB_ID })).toThrow(/Required/);
+    expect(() => parseVerbArgs("bills.linkPurchaseOrder", { purchaseOrderId: 76574248 })).toThrow(
+      /Required/,
+    );
     expect(calls).toHaveLength(0);
   });
 

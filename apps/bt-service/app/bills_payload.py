@@ -1,8 +1,8 @@
 """Captured Buildertrend bill create + save-draft + EntityDocs payloads.
 
-Replay the 2 Sep 2026 cookie-session capture only. Do not invent
-GetBillMapping / real PO-link, Ready-for-Payment, pay, accounting,
-approve, or ocr-upload.
+Replay the 2 Sep 2026 cookie-session capture, plus GetBillMapping
+(11 Sep 2026). Do not invent Ready-for-Payment, pay, accounting,
+approve, ocr-upload, or isCreateNewFromPO: true.
 
 Bills are exclusive GST only — no dummy 4000 GST line, no tax group.
 Tenant customFields come from GET defaultinfo at runtime, never hardcoded.
@@ -96,15 +96,47 @@ def assert_no_real_purchase_order(purchase_order_id: int | None) -> None:
     if purchase_order_id is None or purchase_order_id == BILL_NONE_PO_ID:
         return
     raise BillPayloadError(
-        "Linking a real purchase order is not captured (GetBillMapping never fired). "
-        "purchaseOrderId must be -1 (none)."
+        "Creating a bill from a PO is not captured (isCreateNewFromPO). "
+        "Use bills.linkPurchaseOrder then bills.update."
     )
 
 
-def _lock_write_flags(body: dict[str, Any]) -> dict[str, Any]:
+def bill_mapping_query(
+    purchase_order_id: int | None,
+    job_id: int | None,
+    bill_id: int | None = None,
+) -> dict[str, int]:
+    """Query for captured GET /api/v1/Bills/GetBillMapping. billId defaults to 0."""
+    if purchase_order_id is None or purchase_order_id == BILL_NONE_PO_ID or purchase_order_id <= 0:
+        raise BillPayloadError("purchaseOrderId is required (real PO, not -1 / none).")
+    if job_id is None or job_id <= 0:
+        raise BillPayloadError("jobId is required")
+    return {
+        "purchaseOrderId": purchase_order_id,
+        "jobId": job_id,
+        "billId": 0 if bill_id is None else bill_id,
+    }
+
+
+def resolve_save_draft_purchase_order_id(
+    purchase_order_id: int | None,
+    current: dict[str, Any],
+) -> int:
+    if purchase_order_id is not None and purchase_order_id != BILL_NONE_PO_ID:
+        return purchase_order_id
+    current_id = current.get("purchaseOrderId")
+    if isinstance(current_id, int) and current_id != BILL_NONE_PO_ID:
+        return current_id
+    return BILL_NONE_PO_ID
+
+
+def _lock_write_flags(
+    body: dict[str, Any],
+    purchase_order_id: int = BILL_NONE_PO_ID,
+) -> dict[str, Any]:
     for flag in SEND_PAY_FLAGS:
         body[flag] = False
-    body["purchaseOrderId"] = BILL_NONE_PO_ID
+    body["purchaseOrderId"] = purchase_order_id
     body["isCreateNewFromPO"] = False
     body["saveDraftToJob"] = False
     body["status"] = BILL_DRAFT_STATUS
@@ -268,7 +300,9 @@ def build_save_draft_payload(
         "isCreateNewFromPO": False,
         "priceType": BILL_PRICE_TYPE,
     }
-    return _lock_write_flags(body)
+    po_id = resolve_save_draft_purchase_order_id(req.purchase_order_id, created)
+    body["purchaseOrderId"] = po_id
+    return _lock_write_flags(body, po_id)
 
 
 def build_entity_docs_payload(

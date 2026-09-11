@@ -72,8 +72,16 @@ No anti-CSRF header is required despite the cookie existing.
 - `GET /apix/v2/Bills/get-available-purchase-orders/{vendorId}/{vendorType}/{jobId}`
   - Open POs for vendor on job. `vendorType=2` for subs/vendors.
 - `GET /api/v1/Bills/GetBillMapping?purchaseOrderId={poId}&jobId={jobId}&billId=0`
-  - Pre-fills line items from a PO. **Not captured** on 2 Sep 2026.
-    `purchaseOrderId: -1` / `isCreateNewFromPO: false` until it is.
+  - **Captured** 11 Sep 2026 (PO-090 on Cubbaroo draft bill 124540604,
+    job 41648716). `billId=0` even when linking onto an existing draft.
+    Response: `{ success, data: { purchaseOrderId, builderId, jobId,
+    jobName, canViewPrice, lineItems: { value: [...] },
+    lineItemPercentages? } }`. First mapped line: title
+    `[SURV040] House setout`, builderCost 3000, quantity 2, unitCost 1500,
+    purchaseOrderId 76574248, purchaseOrderLineItemId 132371670.
+    Apply via `bills.update` with `purchaseOrderId` + mapped lines.
+    Never `isCreateNewFromPO: true` / Ready-for-Payment / pay / send.
+    Create still uses `purchaseOrderId: -1`.
 - `POST /api/v1/bills?jobId={jobId}` — create bill as Draft (`status` 9).
   Amounts stay 0 on this POST. Payload builder:
   `apps/gateway/src/bills-payload.ts` / `apps/bt-service/app/bills_payload.py`.
@@ -98,7 +106,6 @@ No anti-CSRF header is required despite the cookie existing.
 - `pos.create` is **not captured**. Do not guess `POST /api/PurchaseOrders`.
 
 ### Not yet captured (TODO)
-- Real PO link (`GET /api/v1/Bills/GetBillMapping`) — list helper is captured
 - `pos.create` (hypothesis only: `POST /api/PurchaseOrders` or PUT with a new id)
 - Bill deletion
 - Job-folder `docs.upload` (bill PDF attach is captured as `bills.attach`)
