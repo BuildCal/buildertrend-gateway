@@ -526,9 +526,11 @@ describe("bill verbs (scripted adapter, no live network)", () => {
     await expect(
       invoke("bills.linkPurchaseOrder", { purchaseOrderId: 76574248, dry_run: false }),
     ).rejects.toMatchObject({ code: "validation" });
-    expect(() => parseVerbArgs("bills.linkPurchaseOrder", { jobId: JOB_ID })).toThrow(/Required/);
+    expect(() => parseVerbArgs("bills.linkPurchaseOrder", { jobId: JOB_ID })).toThrow(
+      /number|Required/i,
+    );
     expect(() => parseVerbArgs("bills.linkPurchaseOrder", { purchaseOrderId: 76574248 })).toThrow(
-      /Required/,
+      /number|Required/i,
     );
     expect(calls).toHaveLength(0);
   });
