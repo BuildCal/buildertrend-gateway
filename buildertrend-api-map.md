@@ -35,10 +35,10 @@ All other writes below are **not_captured**. Do not invent them. Do not use `ocr
 
 | Verb | Method | Path | Notes |
 | --- | --- | --- | --- |
-| `session.status` | GET | `/apix/v2/context/init` | Builder context |
-| `session.status` | GET | `/api/AccountInfo/GlobalInfo` | `needsToRelogin` → stop writes |
+| `session.status` | GET | `/apix/v2/context/init` | Read only allowlisted user/org/job/expiry paths. Never return raw init/settings |
+| `session.status` | GET | `/api/AccountInfo/GlobalInfo` | `needsToRelogin` → stop writes. Allowlist identifiers + `sessionJobInfo` |
 | `jobs.picker.list` | POST | `/api/jobpicker/GetJobPickerData` | **Fired** |
-| `jobs.picker.select` | POST | `/api/jobpicker/SetJobPickerData` | **Fired.** Required before most job-scoped grids |
+| `jobs.picker.select` | POST | `/api/jobpicker/SetJobPickerData` | **Fired.** Body includes `jobID` (existing-job field) + camelCase ids; retry `[jobId]` if the picker stays on `Please select a job`. Read `sessionJobInfo`, not raw `data` |
 | `jobs.picker.existing` | GET | `/api/jobpicker/GetExistingJobList` | |
 
 Dedicated **gateway** Chrome profile / cookie jar only. Never dual-drive the human daily tab.

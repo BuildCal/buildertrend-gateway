@@ -20,6 +20,18 @@ export {
 export { sanitizeCapture, writeCapture, renderMapAppend, assertDedicatedGatewayProfile } from "./capture.js";
 export { parseVerbArgs, VERB_SCHEMAS } from "./schemas.js";
 export {
+  projectSessionStatus,
+  assertSessionStatusSafe,
+  findSecretShapedValues,
+  SESSION_STATUS_ALLOWLIST,
+} from "./session-status.js";
+export {
+  buildJobPickerSelectBody,
+  jobIdsFromPickerArgs,
+  pickerSelectionFromPayload,
+  requirePickerJobIds,
+} from "./job-picker.js";
+export {
   billCreatePayload,
   billSaveDraftPayload,
   billEntityDocsPayload,
