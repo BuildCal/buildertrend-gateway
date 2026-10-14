@@ -26,6 +26,13 @@ export {
   SESSION_STATUS_ALLOWLIST,
 } from "./session-status.js";
 export {
+  redactSecretShapedValues,
+  sanitizeReadOutput,
+  assertNoTokenShapedStrings,
+  SECRET_FIELD_NAME,
+  REDACTED_SECRET,
+} from "./secret-scan.js";
+export {
   buildJobPickerSelectBody,
   jobIdsFromPickerArgs,
   pickerSelectionFromPayload,

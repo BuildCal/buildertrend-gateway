@@ -1,6 +1,9 @@
 import { asRecord, numberish } from "./grids.js";
 import { GatewayError } from "./errors.js";
 import { unwrapData } from "./adapter.js";
+import { findSecretShapedValues } from "./secret-scan.js";
+
+export { findSecretShapedValues, SECRET_FIELD_NAME, type SecretFinding } from "./secret-scan.js";
 
 /** Keys that may appear on the `session.status` / `bt_session_status` payload. */
 export const SESSION_STATUS_ALLOWLIST = [
@@ -42,16 +45,6 @@ export interface SessionStatus {
 }
 
 const CURRENT_JOB_ALLOWLIST = ["jobId", "jobName", "jobNumber"] as const;
-
-/** Field names that must never appear in session.status output. */
-export const SECRET_FIELD_NAME =
-  /key|token|secret|password|license|licence|private/i;
-
-const PEM_BLOCK = /-----BEGIN [A-Z ]{0,40}KEY-----/;
-const GOOGLE_API_KEY = /AIza[0-9A-Za-z_-]{20,}/;
-const JWT = /eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/;
-const HEX_TOKEN = /^[0-9a-fA-F]{24,}$/;
-const BASE64_TOKEN = /^[A-Za-z0-9+/]{24,}={0,2}$/;
 
 function stringish(value: unknown): string | undefined {
   if (typeof value === "string") {
@@ -241,54 +234,6 @@ export function projectSessionStatus(
   if (age != null) status.sessionAgeSeconds = age;
 
   return status;
-}
-
-export interface SecretFinding {
-  path: string;
-  reason: string;
-  /** Never the secret itself — only a short shape label. */
-  shape: string;
-}
-
-function valueShape(value: string): string | undefined {
-  if (PEM_BLOCK.test(value)) return "pem";
-  if (GOOGLE_API_KEY.test(value)) return "google_api_key";
-  if (JWT.test(value)) return "jwt";
-  const trimmed = value.trim();
-  if (HEX_TOKEN.test(trimmed)) return "hex_token";
-  if (BASE64_TOKEN.test(trimmed)) return "base64_token";
-  return undefined;
-}
-
-/**
- * Walk a session.status payload and report token-shaped values or secret-named keys.
- * Findings never include the secret text.
- */
-export function findSecretShapedValues(value: unknown, path = "$"): SecretFinding[] {
-  const findings: SecretFinding[] = [];
-  walk(value, path, findings);
-  return findings;
-}
-
-function walk(value: unknown, path: string, findings: SecretFinding[]): void {
-  if (value == null) return;
-  if (typeof value === "string") {
-    const shape = valueShape(value);
-    if (shape) findings.push({ path, reason: "token-shaped string", shape });
-    return;
-  }
-  if (typeof value !== "object") return;
-  if (Array.isArray(value)) {
-    value.forEach((item, index) => walk(item, `${path}[${index}]`, findings));
-    return;
-  }
-  for (const [key, inner] of Object.entries(value as Record<string, unknown>)) {
-    const child = `${path}.${key}`;
-    if (SECRET_FIELD_NAME.test(key)) {
-      findings.push({ path: child, reason: "secret-named field", shape: "field_name" });
-    }
-    walk(inner, child, findings);
-  }
 }
 
 export function assertSessionStatusSafe(status: SessionStatus): SessionStatus {

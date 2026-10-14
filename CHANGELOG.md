@@ -15,6 +15,12 @@ and this project does not yet follow SemVer releases (pre-alpha).
   GlobalInfo objects (those included client settings such as API tokens).
   A regression test fails if PEM / Google-key / JWT / token-shaped values
   or secret-named fields appear in the output.
+- List/get `{ raw, rows }` (and `{ raw, jobs }`) plus `leads.defaults` /
+  `bills.defaults` run the same secret scan. Offending fields are
+  **redacted** (`[redacted]`) so the rest of the business record is kept;
+  the call fails closed only if a token-shaped string is still present
+  after redaction. `session.status` still fails closed (allowlist). Tests
+  use invented PEM / `AIza…` / JWT / hex / base64 values only.
 
 ### Fixed
 

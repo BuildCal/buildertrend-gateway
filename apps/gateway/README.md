@@ -32,7 +32,7 @@ Do **not** start a second MCP per app. Call these verbs.
 | New job / lead / contact | also needs `BT_GATEWAY_SANDBOX=true` |
 | GST on change orders | dummy line **4000 GST** resolved via Search, 1/11 of **owner** price |
 | Owner-invoice GST | tenant TaxGroups dropdown (not the CO dummy-line pattern) |
-| Secrets | never log `Cookie`, `Authorization`, or login HTML. `session.status` is allowlisted — never raw client settings |
+| Secrets | never log `Cookie`, `Authorization`, or login HTML. `session.status` is allowlisted — never raw client settings. List/get `{ raw, rows }` and form defaults redact token-shaped / secret-named fields |
 
 On `needsToRelogin: true` or 401 the gateway **stops writes** and returns `auth_required`. It does not loop logins.
 
