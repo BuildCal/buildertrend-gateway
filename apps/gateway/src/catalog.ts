@@ -28,7 +28,8 @@ export const VERBS: VerbSpec[] = [
     httpMethod: "GET",
     kind: "read",
     captured: true,
-    description: "Session + builder context (init + GlobalInfo).",
+    description:
+      "Session status only: authenticated, builder/user identifiers, current job, expiry/age. Never raw client settings.",
   },
   {
     verb: "jobs.picker.list",
@@ -46,7 +47,8 @@ export const VERBS: VerbSpec[] = [
     httpMethod: "POST",
     kind: "session",
     captured: true,
-    description: "Set the session job scope. Required before most job-scoped grids.",
+    description:
+      "Set the session job scope (jobId / jobID). Returns selected job fields, never the 'Please select a job' placeholder.",
   },
   {
     verb: "jobs.picker.existing",

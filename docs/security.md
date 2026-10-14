@@ -26,6 +26,9 @@ Realistic threats:
 ### NEVER
 
 - Log cookie values, the internal token, or the webhook secret.
+- Return raw `/apix/v2/context/init` or GlobalInfo from `session.status`.
+  That payload includes client settings (API tokens, licence keys). The
+  verb is allowlisted to session-status fields only.
 - Store cookies unencrypted in the database. `bt-service` encrypts at rest
   with `SESSION_ENCRYPTION_KEY`.
 - Expose `bt-service` publicly. Put it behind a VM firewall, a Fly private

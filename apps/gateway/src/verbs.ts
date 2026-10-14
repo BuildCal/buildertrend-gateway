@@ -43,6 +43,17 @@ import {
   requireNumber,
   type VerbContext,
 } from "./invoke.js";
+import {
+  assertSessionStatusSafe,
+  projectSessionStatus,
+} from "./session-status.js";
+import {
+  buildJobPickerSelectBody,
+  findExistingJobRow,
+  isPickerUnselectedError,
+  pickerSelectionFromPayload,
+  requirePickerJobIds,
+} from "./job-picker.js";
 
 function dataOf(payload: unknown): Record<string, unknown> {
   const unwrapped = unwrapData(payload);
@@ -71,16 +82,18 @@ function stripForbiddenGstFields(line: Record<string, unknown>): Record<string, 
   return out;
 }
 
-async function maybeSelectJob(ctx: VerbContext, jobId?: number): Promise<void> {
-  if (!jobId) return;
-  await btJson(ctx, {
+async function setJobPickerData(ctx: VerbContext, json: unknown): Promise<unknown> {
+  return btJson(ctx, {
     method: "POST",
     path: "/api/jobpicker/SetJobPickerData",
-    json: ctx.args.pickerBody ?? {
-      jobIds: [jobId],
-      selectedJobId: jobId,
-    },
+    json,
   });
+}
+
+async function maybeSelectJob(ctx: VerbContext, jobId?: number): Promise<void> {
+  if (!jobId) return;
+  const body = ctx.args.pickerBody ?? buildJobPickerSelectBody([jobId]);
+  await setJobPickerData(ctx, body);
 }
 
 async function filters(ctx: VerbContext, id: number): Promise<unknown> {
@@ -151,15 +164,10 @@ async function upsertRows(
 registerVerb("session.status", async (ctx) => {
   const init = await btJson(ctx, { method: "GET", path: "/apix/v2/context/init" });
   const globalInfo = await btJson(ctx, { method: "GET", path: "/api/AccountInfo/GlobalInfo" });
-  const info = dataOf(globalInfo);
-  const builderId = numberish(info.builderId ?? info.BuilderId) ?? ctx.config.builderId;
-  if (builderId) ctx.config.builderId = builderId;
-  return {
-    authenticated: true,
-    builderId,
-    init: unwrapData(init),
-    globalInfo: info,
-  };
+  const status = assertSessionStatusSafe(projectSessionStatus(init, globalInfo));
+  if (status.builderId) ctx.config.builderId = status.builderId;
+  else if (ctx.config.builderId > 0) status.builderId = ctx.config.builderId;
+  return status;
 });
 
 registerVerb("jobs.picker.list", async (ctx) => {
@@ -175,18 +183,65 @@ registerVerb("jobs.picker.list", async (ctx) => {
 });
 
 registerVerb("jobs.picker.select", async (ctx) => {
-  const jobId = optionalJob(ctx);
-  const payload = await btJson(ctx, {
-    method: "POST",
-    path: "/api/jobpicker/SetJobPickerData",
-    json:
-      ctx.args.body ??
+  const jobIds = requirePickerJobIds(ctx.args);
+  const jobId = jobIds[0]!;
+  let jobRow: Record<string, unknown> | undefined;
+  try {
+    const existing = await btJson(ctx, { method: "GET", path: "/api/jobpicker/GetExistingJobList" });
+    jobRow = findExistingJobRow(existing, jobId);
+  } catch (err) {
+    if (err instanceof GatewayError && err.code !== "bt_error") throw err;
+  }
+
+  const objectBody = ctx.args.body ?? buildJobPickerSelectBody(jobIds, jobRow);
+  let selection = pickerSelectionFromPayload(undefined, jobIds, ctx.args.body ? "custom" : "object");
+  try {
+    const objectPayload = await setJobPickerData(ctx, objectBody);
+    selection = pickerSelectionFromPayload(objectPayload, jobIds, ctx.args.body ? "custom" : "object");
+  } catch (err) {
+    if (!isPickerUnselectedError(err)) throw err;
+  }
+
+  if (!selection.selected) {
+    try {
+      const arrayPayload = await setJobPickerData(ctx, jobIds);
+      selection = pickerSelectionFromPayload(arrayPayload, jobIds, "array");
+    } catch (err) {
+      if (!isPickerUnselectedError(err)) throw err;
+    }
+  }
+
+  if (!selection.selected) {
+    try {
+      const globalInfo = await btJson(ctx, { method: "GET", path: "/api/AccountInfo/GlobalInfo" });
+      selection = pickerSelectionFromPayload(globalInfo, jobIds, selection.requestShape, {
+        envelopeOnly: true,
+      });
+    } catch (err) {
+      if (err instanceof GatewayError && err.code !== "bt_error") throw err;
+    }
+  }
+
+  if (!selection.selected) {
+    throw new GatewayError(
+      "bt_error",
+      "Job picker did not accept the selection (Buildertrend stayed on 'Please select a job').",
       {
-        jobIds: jobIdsFrom(ctx.args).length ? jobIdsFrom(ctx.args) : jobId ? [jobId] : [],
-        selectedJobId: jobId,
+        jobIds,
+        requestShape: selection.requestShape,
+        hint: "SetJobPickerData was posted as a job-id object (including jobID) then retried as [jobId]. Confirm the captured body if this persists.",
       },
-  });
-  return unwrapData(payload);
+    );
+  }
+
+  return {
+    selected: true,
+    jobId: selection.jobId,
+    jobName: selection.jobName,
+    jobNumber: selection.jobNumber,
+    jobIds: selection.jobIds,
+    requestShape: selection.requestShape,
+  };
 });
 
 registerVerb("jobs.picker.existing", async (ctx) => {
