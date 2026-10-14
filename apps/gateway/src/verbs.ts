@@ -43,6 +43,7 @@ import {
   requireNumber,
   type VerbContext,
 } from "./invoke.js";
+import { sanitizeReadOutput } from "./secret-scan.js";
 import {
   assertSessionStatusSafe,
   projectSessionStatus,
@@ -54,6 +55,14 @@ import {
   pickerSelectionFromPayload,
   requirePickerJobIds,
 } from "./job-picker.js";
+
+/** List/get `{ raw, rows }` — redact token-shaped / secret-named fields, keep the rest. */
+function listPayload(payload: unknown): { raw: unknown; rows: unknown } {
+  return sanitizeReadOutput({
+    raw: unwrapData(payload),
+    rows: extractGridRows(payload),
+  });
+}
 
 function dataOf(payload: unknown): Record<string, unknown> {
   const unwrapped = unwrapData(payload);
@@ -179,7 +188,7 @@ registerVerb("jobs.picker.list", async (ctx) => {
       includeClosedJobs: Boolean(ctx.args.includeClosed),
     },
   });
-  return { raw: unwrapData(payload), rows: extractGridRows(payload) };
+  return listPayload(payload);
 });
 
 registerVerb("jobs.picker.select", async (ctx) => {
@@ -249,7 +258,7 @@ registerVerb("jobs.picker.existing", async (ctx) => {
   const data = dataOf(payload);
   const jobs = Array.isArray(data.jobs) ? data.jobs : extractGridRows(payload);
   await upsertRows(ctx, "job", jobs);
-  return { raw: data, jobs };
+  return sanitizeReadOutput({ raw: data, jobs });
 });
 
 registerVerb("jobs.list", async (ctx) => {
@@ -261,7 +270,7 @@ registerVerb("jobs.list", async (ctx) => {
   });
   const rows = extractGridRows(payload);
   await upsertRows(ctx, "job", rows);
-  return { raw: unwrapData(payload), rows };
+  return listPayload(payload);
 });
 
 registerVerb("jobs.get", async (ctx) => {
@@ -269,7 +278,7 @@ registerVerb("jobs.get", async (ctx) => {
   const payload = await btJson(ctx, { method: "GET", path: `/api/jobsites/${jobId}` });
   const data = unwrapData(payload);
   await upsertRows(ctx, "job", [asRecord(data)]);
-  return data;
+  return sanitizeReadOutput(data);
 });
 
 registerVerb("jobs.accountingLink", async (ctx) => {
@@ -287,7 +296,7 @@ registerVerb("leads.list", async (ctx) => {
   });
   const rows = extractGridRows(payload);
   await upsertRows(ctx, "lead", rows);
-  return { raw: unwrapData(payload), rows };
+  return listPayload(payload);
 });
 
 registerVerb("leads.get", async (ctx) => {
@@ -295,11 +304,13 @@ registerVerb("leads.get", async (ctx) => {
   const payload = await btJson(ctx, { method: "GET", path: `/api/Leads/${id}` });
   const data = unwrapData(payload);
   await upsertRows(ctx, "lead", [asRecord(data)]);
-  return data;
+  return sanitizeReadOutput(data);
 });
 
 registerVerb("leads.defaults", async (ctx) => {
-  return unwrapData(await btJson(ctx, { method: "GET", path: "/api/Leads/Defaults" }));
+  return sanitizeReadOutput(
+    unwrapData(await btJson(ctx, { method: "GET", path: "/api/Leads/Defaults" })),
+  );
 });
 
 registerVerb("contacts.list", async (ctx) => {
@@ -310,13 +321,13 @@ registerVerb("contacts.list", async (ctx) => {
   });
   const rows = extractGridRows(payload);
   await upsertRows(ctx, "contact", rows);
-  return { raw: unwrapData(payload), rows };
+  return listPayload(payload);
 });
 
 registerVerb("contacts.get", async (ctx) => {
   const id = requireNumber(ctx.args, "contactId");
   const payload = await btJson(ctx, { method: "GET", path: `/api/Contacts/${id}/Details` });
-  return unwrapData(payload);
+  return sanitizeReadOutput(unwrapData(payload));
 });
 
 registerVerb("invoices.list", async (ctx) => {
@@ -329,7 +340,7 @@ registerVerb("invoices.list", async (ctx) => {
   });
   const rows = extractGridRows(payload);
   await upsertRows(ctx, "invoice", rows);
-  return { raw: unwrapData(payload), rows };
+  return listPayload(payload);
 });
 
 registerVerb("invoices.get", async (ctx) => {
@@ -346,7 +357,7 @@ registerVerb("invoices.get", async (ctx) => {
     throw new GatewayError("duplicate_invoice_id", message);
   }
   await upsertRows(ctx, "invoice", [asRecord(data)]);
-  return data;
+  return sanitizeReadOutput(data);
 });
 
 registerVerb("invoices.accountingStatus", async (ctx) => {
@@ -384,7 +395,7 @@ registerVerb("variations.list", async (ctx) => {
   });
   const rows = extractGridRows(payload);
   await upsertRows(ctx, "variation", rows);
-  return { raw: unwrapData(payload), rows };
+  return listPayload(payload);
 });
 
 registerVerb("variations.get", async (ctx) => {
@@ -396,7 +407,7 @@ registerVerb("variations.get", async (ctx) => {
   });
   const data = unwrapData(payload);
   await upsertRows(ctx, "variation", [asRecord(data)]);
-  return data;
+  return sanitizeReadOutput(data);
 });
 
 registerVerb("variations.saveDraftHeader", saveDraftHeader);
@@ -511,7 +522,7 @@ registerVerb("bills.list", async (ctx) => {
   });
   const rows = extractGridRows(payload);
   await upsertRows(ctx, "bill", rows);
-  return { raw: unwrapData(payload), rows };
+  return listPayload(payload);
 });
 
 registerVerb("bills.tabCounts", async (ctx) => {
@@ -532,7 +543,7 @@ registerVerb("bills.get", async (ctx) => {
   const payload = await btJson(ctx, { method: "GET", path: `/api/v1/bills/${id}` });
   const data = unwrapData(payload);
   await upsertRows(ctx, "bill", [asRecord(data)]);
-  return data;
+  return sanitizeReadOutput(data);
 });
 
 registerVerb("bills.file", async (ctx) => {
@@ -552,12 +563,14 @@ registerVerb("bills.file", async (ctx) => {
 
 registerVerb("bills.defaults", async (ctx) => {
   const jobId = requireNumber(ctx.args, "jobId");
-  return unwrapData(
-    await btJson(ctx, {
-      method: "GET",
-      path: "/api/v1/bills/defaultinfo",
-      query: { jobId, isBillRemainingAction: false },
-    }),
+  return sanitizeReadOutput(
+    unwrapData(
+      await btJson(ctx, {
+        method: "GET",
+        path: "/api/v1/bills/defaultinfo",
+        query: { jobId, isBillRemainingAction: false },
+      }),
+    ),
   );
 });
 
@@ -682,7 +695,7 @@ registerVerb("pos.list", async (ctx) => {
   });
   const rows = extractGridRows(payload);
   await upsertRows(ctx, "po", rows);
-  return { raw: unwrapData(payload), rows };
+  return listPayload(payload);
 });
 
 registerVerb("pos.get", async (ctx) => {
@@ -690,7 +703,7 @@ registerVerb("pos.get", async (ctx) => {
   const payload = await btJson(ctx, { method: "GET", path: `/api/PurchaseOrders/${id}` });
   const data = unwrapData(payload);
   await upsertRows(ctx, "po", [asRecord(data)]);
-  return data;
+  return sanitizeReadOutput(data);
 });
 
 registerVerb("pos.linkedBills", async (ctx) => {
