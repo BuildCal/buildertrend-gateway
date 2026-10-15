@@ -117,6 +117,34 @@ def test_multipart_tempfile_does_not_send_json_body(mock_settings):
         assert "ocr-upload" not in path
 
 
+def test_get_bill_mapping_builds_captured_url(mock_settings):
+    with patch("app.clients.bt_client.cffi_requests.Session") as session_cls:
+        resp = MagicMock()
+        resp.status_code = 200
+        resp.headers = {"content-type": "application/json"}
+        resp.json.return_value = {
+            "success": True,
+            "data": {
+                "purchaseOrderId": 76574248,
+                "jobId": 41648716,
+                "lineItems": {"value": []},
+            },
+        }
+        session_mock = _session(resp)
+        session_cls.return_value = session_mock
+
+        client = BTClient(cookies={})
+        client.get_bill_mapping(76574248, 41648716)
+        args, kwargs = session_mock.request.call_args
+        assert args[0] == "GET"
+        assert args[1].endswith("/api/v1/Bills/GetBillMapping")
+        assert kwargs["params"] == {
+            "purchaseOrderId": 76574248,
+            "jobId": 41648716,
+            "billId": 0,
+        }
+
+
 def test_needs_to_relogin_is_auth_error(mock_settings):
     with patch("app.clients.bt_client.cffi_requests.Session") as session_cls:
         resp = MagicMock()
