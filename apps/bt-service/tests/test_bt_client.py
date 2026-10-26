@@ -125,8 +125,8 @@ def test_get_bill_mapping_builds_captured_url(mock_settings):
         resp.json.return_value = {
             "success": True,
             "data": {
-                "purchaseOrderId": 76574248,
-                "jobId": 41648716,
+                "purchaseOrderId": 100001,
+                "jobId": 200001,
                 "lineItems": {"value": []},
             },
         }
@@ -134,13 +134,13 @@ def test_get_bill_mapping_builds_captured_url(mock_settings):
         session_cls.return_value = session_mock
 
         client = BTClient(cookies={})
-        client.get_bill_mapping(76574248, 41648716)
+        client.get_bill_mapping(100001, 200001)
         args, kwargs = session_mock.request.call_args
         assert args[0] == "GET"
         assert args[1].endswith("/api/v1/Bills/GetBillMapping")
         assert kwargs["params"] == {
-            "purchaseOrderId": 76574248,
-            "jobId": 41648716,
+            "purchaseOrderId": 100001,
+            "jobId": 200001,
             "billId": 0,
         }
 

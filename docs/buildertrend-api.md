@@ -72,18 +72,18 @@ No anti-CSRF header is required despite the cookie existing.
 - `GET /apix/v2/Bills/get-available-purchase-orders/{vendorId}/{vendorType}/{jobId}`
   - Open POs for vendor on job. `vendorType=2` for subs/vendors.
 - `GET /api/v1/Bills/GetBillMapping?purchaseOrderId={poId}&jobId={jobId}&billId=0`
-  - **Captured** 11 Sep 2026 on Cubbaroo draft
-    (`purchaseOrderId=76574248`, `jobId=41648716`, `billId=0`).
+  - **Captured** 11 Sep 2026 on example-job draft
+    (`purchaseOrderId=100001`, `jobId=200001`, `billId=0`).
     Verb returns `unwrapData` of the 200 envelope. Captured `data`:
     `purchaseOrderId`, `builderId`, `jobId`, `jobName`, `canViewPrice`,
     `lineItems: { validators, value: [...] }`, `lineItemPercentages: {}`.
-    First `lineItems.value` row: `title` `[SURV040] House setout`,
-    `description` `Setout Survey and Report`, `amountBilled` 0,
-    `costCodeTitle` `1090 House Peg Survey`, `costCode` 17072328,
+    First `lineItems.value` row: `title` `[ITEM001] Sample line`,
+    `description` `Sample line description`, `amountBilled` 0,
+    `costCodeTitle` `1000 Sample Cost Code`, `costCode` 600001,
     `unitCost` 1500, `quantity` 2, `unitType` `EA`, `builderCost` 3000,
     `costTypes` `[7]`, `lineItemType` 17, `id` / `purchaseOrderLineItemId`
-    132371670, `purchaseOrderId` 76574248, `catalogItemId` /
-    `costCodeItemId` 11207960, `taxGroupId` null. Do not invent fields.
+    500001, `purchaseOrderId` 100001, `catalogItemId` /
+    `costCodeItemId` 700001, `taxGroupId` null. Do not invent fields.
     Never Ready-for-Payment / pay / send / `isCreateNewFromPO: true`.
 - `POST /api/v1/bills?jobId={jobId}` — create bill as Draft (`status` 9).
   Amounts stay 0 on this POST. Payload builder:

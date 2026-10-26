@@ -32,8 +32,8 @@ and this project does not yet follow SemVer releases (pre-alpha).
 
 ### Added
 
-- Captured `bills.linkPurchaseOrder` from the 11 Sep 2026 Cubbaroo
-  GetBillMapping: `GET /api/v1/Bills/GetBillMapping?purchaseOrderId=76574248&jobId=41648716&billId=0`.
+- Captured `bills.linkPurchaseOrder` from the 11 Sep 2026 example-job
+  GetBillMapping: `GET /api/v1/Bills/GetBillMapping?purchaseOrderId=100001&jobId=200001&billId=0`.
   Returns `unwrapData` of the envelope (`lineItems.validators` /
   `lineItems.value`, `lineItemPercentages: {}`). Do not invent fields.
   `bills.update` may persist a real `purchaseOrderId` + mapped lines.
