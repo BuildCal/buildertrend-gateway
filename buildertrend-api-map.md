@@ -35,11 +35,11 @@ All other writes below are **not_captured**. Do not invent them. Do not use `ocr
 
 | Verb | Method | Path | Notes |
 | --- | --- | --- | --- |
-| `session.status` | GET | `/apix/v2/context/init` | Builder context |
-| `session.status` | GET | `/api/AccountInfo/GlobalInfo` | `needsToRelogin` → stop writes |
-| `jobs.picker.list` | POST | `/api/jobpicker/GetJobPickerData` | **Fired** |
-| `jobs.picker.select` | POST | `/api/jobpicker/SetJobPickerData` | **Fired.** Required before most job-scoped grids |
-| `jobs.picker.existing` | GET | `/api/jobpicker/GetExistingJobList` | |
+| `session.status` | GET | `/apix/v2/context/init` | Read only allowlisted user/org/job/expiry paths. Never return raw init/settings |
+| `session.status` | GET | `/api/AccountInfo/GlobalInfo` | `needsToRelogin` → stop writes. Allowlist identifiers + `sessionJobInfo` |
+| `jobs.picker.list` | POST | `/api/jobpicker/GetJobPickerData` | **Fired**. Secret-shaped fields in `{ raw, rows }` are redacted |
+| `jobs.picker.select` | POST | `/api/jobpicker/SetJobPickerData` | **Fired.** Body includes `jobID` (existing-job field) + camelCase ids; retry `[jobId]` if the picker stays on `Please select a job`. Read `sessionJobInfo`, not raw `data` |
+| `jobs.picker.existing` | GET | `/api/jobpicker/GetExistingJobList` | Secret-shaped fields in `{ raw, jobs }` are redacted |
 
 Dedicated **gateway** Chrome profile / cookie jar only. Never dual-drive the human daily tab.
 
@@ -49,8 +49,8 @@ Dedicated **gateway** Chrome profile / cookie jar only. Never dual-drive the hum
 
 | Verb | Method | Path | Status |
 | --- | --- | --- | --- |
-| `jobs.list` | POST | `/api/Jobsites/Grid` | Captured. Filters `GET /api/Filters/33` |
-| `jobs.get` | GET | `/api/jobsites/{jobId}` | Captured |
+| `jobs.list` | POST | `/api/Jobsites/Grid` | Captured. Filters `GET /api/Filters/33`. Secret-shaped fields in `{ raw, rows }` are redacted |
+| `jobs.get` | GET | `/api/jobsites/{jobId}` | Captured. Secret-shaped fields are redacted |
 | `jobs.accountingLink` | GET | `/api/Accounting/{jobId}/LinkedEntityInfo` | Captured (Accounting) |
 | Risk / insurance | | Job page companion on overnight pass | Read with `jobs.get` / Accounting. Do not invent a second URL |
 | `jobs.create` | | JS backlog `/api/jobsites/Add`, `/api/jobsites/DefaultInfo`. UI `/app/JobPage/0/1?openCondensed=true` | **not_captured** |
@@ -64,9 +64,9 @@ Only Sales surface we use. Related URLs (`/app/leads/activities`, map, calendar,
 
 | Verb | Method | Path | Status |
 | --- | --- | --- | --- |
-| `leads.list` | POST | `/api/Leads/Grid` | Captured |
+| `leads.list` | POST | `/api/Leads/Grid` | Captured. Secret-shaped fields in `{ raw, rows }` are redacted |
 | `leads.get` | GET | `/api/Leads/{id}` | Captured. `canConvertToJob` may be present |
-| `leads.defaults` | GET | `/api/Leads/Defaults` | Captured |
+| `leads.defaults` | GET | `/api/Leads/Defaults` | Captured. Secret-shaped fields are redacted |
 | `leads.create` / `leads.update` | | Likely `POST`/`PUT /api/Leads` | **not_captured**. Do not submit leftover `/Lead/0` from 2026-09-02 |
 | `leads.convertToJob` | | Creates a real job | **send_disabled** |
 
@@ -76,7 +76,7 @@ Only Sales surface we use. Related URLs (`/app/leads/activities`, map, calendar,
 
 | Verb | Method | Path | Status |
 | --- | --- | --- | --- |
-| `contacts.list` | POST | `/api/Contacts/Grid` | Captured |
+| `contacts.list` | POST | `/api/Contacts/Grid` | Captured. Secret-shaped fields in `{ raw, rows }` are redacted |
 | `contacts.get` | GET | `/api/Contacts/{id}/Details` | Captured. `id=0` = add form |
 | `contacts.create` / `update` | | | **not_captured**. Capture a sandbox contact Save |
 
@@ -146,7 +146,7 @@ Xero remains the pay path. Never pay from the gateway.
 | `bills.tabCounts` | POST | `/apix/v2/Bills/tab-counts` | Captured |
 | `bills.get` | GET | `/api/v1/bills/{id}` | Captured |
 | `bills.file` | GET | `/api/files/{id}` / `preview` | Captured |
-| `bills.defaults` | GET | `/api/v1/bills/defaultinfo?jobId={jobId}&isBillRemainingAction=false` | Captured (2 Sep 2026). Create seed — copy `customFields` at runtime |
+| `bills.defaults` | GET | `/api/v1/bills/defaultinfo?jobId={jobId}&isBillRemainingAction=false` | Captured (2 Sep 2026). Create seed — copy `customFields` at runtime. Secret-shaped fields are redacted |
 | `bills.availablePurchaseOrders` | GET | `/apix/v2/Bills/get-available-purchase-orders/{vendorId}/2/{jobId}` | Captured read. Sandbox vendor returned only `{id: -1, name: "-- None Selected --"}` |
 | `bills.create` | GET + POST + PUT | defaultinfo → `POST /api/v1/bills?jobId=` → `PUT /api/v1/bills/{id}` | **Captured** (2 Sep 2026). Draft status **9**. Amounts on PUT. PDF is **not** on this POST/PUT |
 | `bills.update` | PUT | `/api/v1/bills/{id}` | **Captured** Save draft (`saveAsDraft: true`, status 9) |
