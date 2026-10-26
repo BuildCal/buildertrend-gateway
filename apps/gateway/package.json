@@ -20,7 +20,7 @@
     "capture": "tsx src/cli.ts capture"
   },
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=22.23.4"
   },
   "dependencies": {
     "@hono/node-server": "^1.13.8",

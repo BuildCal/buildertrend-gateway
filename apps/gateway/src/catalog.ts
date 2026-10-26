@@ -28,7 +28,8 @@ export const VERBS: VerbSpec[] = [
     httpMethod: "GET",
     kind: "read",
     captured: true,
-    description: "Session + builder context (init + GlobalInfo).",
+    description:
+      "Session status only: authenticated, builder/user identifiers, current job, expiry/age. Never raw client settings.",
   },
   {
     verb: "jobs.picker.list",
@@ -37,7 +38,7 @@ export const VERBS: VerbSpec[] = [
     httpMethod: "POST",
     kind: "read",
     captured: true,
-    description: "Job picker rows.",
+    description: "Job picker rows. Token-shaped and secret-named fields in raw/rows are redacted.",
   },
   {
     verb: "jobs.picker.select",
@@ -46,7 +47,8 @@ export const VERBS: VerbSpec[] = [
     httpMethod: "POST",
     kind: "session",
     captured: true,
-    description: "Set the session job scope. Required before most job-scoped grids.",
+    description:
+      "Set the session job scope (jobId / jobID). Returns selected job fields, never the 'Please select a job' placeholder.",
   },
   {
     verb: "jobs.picker.existing",
@@ -55,7 +57,7 @@ export const VERBS: VerbSpec[] = [
     httpMethod: "GET",
     kind: "read",
     captured: true,
-    description: "Existing job list for the signed-in user.",
+    description: "Existing job list for the signed-in user. Token-shaped and secret-named fields in raw/jobs are redacted.",
   },
   {
     verb: "jobs.list",
@@ -64,7 +66,7 @@ export const VERBS: VerbSpec[] = [
     httpMethod: "POST",
     kind: "read",
     captured: true,
-    description: "Jobsites grid (filters id 33).",
+    description: "Jobsites grid (filters id 33). Token-shaped and secret-named fields in raw/rows are redacted.",
   },
   {
     verb: "jobs.get",
@@ -73,7 +75,7 @@ export const VERBS: VerbSpec[] = [
     httpMethod: "GET",
     kind: "read",
     captured: true,
-    description: "Single jobsite.",
+    description: "Single jobsite. Token-shaped and secret-named fields are redacted.",
   },
   {
     verb: "jobs.accountingLink",
@@ -123,7 +125,7 @@ export const VERBS: VerbSpec[] = [
     httpMethod: "POST",
     kind: "read",
     captured: true,
-    description: "Lead Opportunities grid.",
+    description: "Lead Opportunities grid. Token-shaped and secret-named fields in raw/rows are redacted.",
   },
   {
     verb: "leads.get",
@@ -132,7 +134,7 @@ export const VERBS: VerbSpec[] = [
     httpMethod: "GET",
     kind: "read",
     captured: true,
-    description: "Single lead.",
+    description: "Single lead. Token-shaped and secret-named fields are redacted.",
   },
   {
     verb: "leads.defaults",
@@ -141,7 +143,7 @@ export const VERBS: VerbSpec[] = [
     httpMethod: "GET",
     kind: "read",
     captured: true,
-    description: "Lead create-form defaults.",
+    description: "Lead create-form defaults. Token-shaped and secret-named fields are redacted.",
   },
   {
     verb: "leads.create",
@@ -198,7 +200,7 @@ export const VERBS: VerbSpec[] = [
     httpMethod: "POST",
     kind: "read",
     captured: true,
-    description: "Contacts grid.",
+    description: "Contacts grid. Token-shaped and secret-named fields in raw/rows are redacted.",
   },
   {
     verb: "contacts.get",
@@ -207,7 +209,7 @@ export const VERBS: VerbSpec[] = [
     httpMethod: "GET",
     kind: "read",
     captured: true,
-    description: "Contact details. id 0 is the add form.",
+    description: "Contact details. id 0 is the add form. Token-shaped and secret-named fields are redacted.",
   },
   {
     verb: "contacts.create",
@@ -248,7 +250,7 @@ export const VERBS: VerbSpec[] = [
     httpMethod: "POST",
     kind: "read",
     captured: true,
-    description: "Owner invoices grid (filters id 39).",
+    description: "Owner invoices grid (filters id 39). Token-shaped and secret-named fields in raw/rows are redacted.",
   },
   {
     verb: "invoices.get",
@@ -257,7 +259,7 @@ export const VERBS: VerbSpec[] = [
     httpMethod: "GET",
     kind: "read",
     captured: true,
-    description: "Owner invoice (progress claim).",
+    description: "Owner invoice (progress claim). Token-shaped and secret-named fields are redacted.",
   },
   {
     verb: "invoices.accountingStatus",
@@ -330,7 +332,7 @@ export const VERBS: VerbSpec[] = [
     httpMethod: "POST",
     kind: "read",
     captured: true,
-    description: "Change orders grid.",
+    description: "Change orders grid. Token-shaped and secret-named fields in raw/rows are redacted.",
   },
   {
     verb: "variations.get",
@@ -339,7 +341,7 @@ export const VERBS: VerbSpec[] = [
     httpMethod: "GET",
     kind: "read",
     captured: true,
-    description: "Change order detail.",
+    description: "Change order detail. Token-shaped and secret-named fields are redacted.",
   },
   {
     verb: "variations.saveDraftHeader",
@@ -435,7 +437,7 @@ export const VERBS: VerbSpec[] = [
     httpMethod: "POST",
     kind: "read",
     captured: true,
-    description: "Project AP bills grid.",
+    description: "Project AP bills grid. Token-shaped and secret-named fields in raw/rows are redacted.",
   },
   {
     verb: "bills.tabCounts",
@@ -453,7 +455,7 @@ export const VERBS: VerbSpec[] = [
     httpMethod: "GET",
     kind: "read",
     captured: true,
-    description: "Single bill.",
+    description: "Single bill. Token-shaped and secret-named fields are redacted.",
   },
   {
     verb: "bills.file",
@@ -472,7 +474,7 @@ export const VERBS: VerbSpec[] = [
     kind: "read",
     captured: true,
     description:
-      "Bill create seed (GET /api/v1/bills/defaultinfo). Cost codes, customFields, lienWaiverFormId — copy at runtime, never hard-code.",
+      "Bill create seed (GET /api/v1/bills/defaultinfo). Cost codes, customFields, lienWaiverFormId — copy at runtime, never hard-code. Token-shaped and secret-named fields are redacted.",
   },
   {
     verb: "bills.availablePurchaseOrders",
@@ -557,7 +559,7 @@ export const VERBS: VerbSpec[] = [
     httpMethod: "POST",
     kind: "read",
     captured: true,
-    description: "Purchase orders grid.",
+    description: "Purchase orders grid. Token-shaped and secret-named fields in raw/rows are redacted.",
   },
   {
     verb: "pos.get",
@@ -566,7 +568,7 @@ export const VERBS: VerbSpec[] = [
     httpMethod: "GET",
     kind: "read",
     captured: true,
-    description: "Single purchase order.",
+    description: "Single purchase order. Token-shaped and secret-named fields are redacted.",
   },
   {
     verb: "pos.linkedBills",

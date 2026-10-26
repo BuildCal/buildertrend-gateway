@@ -26,6 +26,15 @@ Realistic threats:
 ### NEVER
 
 - Log cookie values, the internal token, or the webhook secret.
+- Return raw `/apix/v2/context/init` or GlobalInfo from `session.status`.
+  That payload includes client settings (API tokens, licence keys). The
+  verb is allowlisted to session-status fields only.
+- Return token-shaped strings (PEM, `AIza…`, JWT, long hex/base64) or
+  secret-named fields (`*key*`, `*token*`, `*secret*`, `*password*`,
+  `*license*` / `*licence*`, `*private*`) from list/get `{ raw, rows }`
+  or form-defaults (`leads.defaults`, `bills.defaults`). Those fields
+  are redacted; the rest of the record is kept. `session.status` fails
+  closed instead of redacting.
 - Store cookies unencrypted in the database. `bt-service` encrypts at rest
   with `SESSION_ENCRYPTION_KEY`.
 - Expose `bt-service` publicly. Put it behind a VM firewall, a Fly private
