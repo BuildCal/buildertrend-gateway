@@ -363,6 +363,27 @@ class BTClient:
             f"/apix/v2/Bills/get-available-purchase-orders/{vendor_id}/{vendor_type}/{job_id}",
         )
 
+    def get_bill_mapping(
+        self,
+        purchase_order_id: int,
+        job_id: int,
+        bill_id: int = 0,
+    ) -> dict:
+        """GET /api/v1/Bills/GetBillMapping — captured 11 Sep 2026.
+
+        billId is 0 even when linking onto an existing draft. Response
+        pre-fills PO line items. Do not invent isCreateNewFromPO: true.
+        """
+        return self._request(
+            "GET",
+            "/api/v1/Bills/GetBillMapping",
+            params={
+                "purchaseOrderId": purchase_order_id,
+                "jobId": job_id,
+                "billId": bill_id,
+            },
+        )
+
     # ------------------------------------------------------------------
     # Write endpoints
     # ------------------------------------------------------------------
@@ -400,4 +421,4 @@ class BTClient:
         """POST /api/Documents/EntityDocs — captured bill PDF attach (documentType 58)."""
         return self._request("POST", "/api/Documents/EntityDocs", json_body=payload)
 
-    # Not yet captured: delete_bill(), GetBillMapping / real PO link.
+    # Not yet captured: delete_bill().
