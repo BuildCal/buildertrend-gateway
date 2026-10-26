@@ -7,6 +7,29 @@ and this project does not yet follow SemVer releases (pre-alpha).
 
 ## [Unreleased]
 
+### Security
+
+- `session.status` / `bt_session_status` now returns an explicit allowlist
+  (authenticated, needsToRelogin, builder/user identifiers, current job,
+  expiry/age). It no longer passes through raw `/apix/v2/context/init` or
+  GlobalInfo objects (those included client settings such as API tokens).
+  A regression test fails if PEM / Google-key / JWT / token-shaped values
+  or secret-named fields appear in the output.
+- List/get `{ raw, rows }` (and `{ raw, jobs }`) plus `leads.defaults` /
+  `bills.defaults` run the same secret scan. Offending fields are
+  **redacted** (`[redacted]`) so the rest of the business record is kept;
+  the call fails closed only if a token-shaped string is still present
+  after redaction. `session.status` still fails closed (allowlist). Tests
+  use invented PEM / `AIza…` / JWT / hex / base64 values only.
+
+### Fixed
+
+- `jobs.picker.select` no longer returns Buildertrend's unselected
+  placeholder (`Please select a job`). It requires a job id (including
+  `jobID` / `id` / `jobsiteId` aliases), posts `jobID` on the object
+  body, retries as `[jobId]` if the object bind fails, and reads
+  `sessionJobInfo` from the envelope instead of raw `data`.
+
 ### Added
 
 - Captured `pos.update` from the 7 Sep 2026 draft-PO save: GET
