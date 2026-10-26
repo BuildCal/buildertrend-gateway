@@ -9,8 +9,8 @@ import {
 } from "../src/pos-payload.js";
 import { createHarness } from "./helpers.js";
 
-const PO_ID = 76899300;
-const JOB_ID = 43320680;
+const PO_ID = 100001;
+const JOB_ID = 200001;
 
 function existingPo(overrides: Record<string, unknown> = {}) {
   return {
@@ -19,8 +19,8 @@ function existingPo(overrides: Record<string, unknown> = {}) {
       id: PO_ID,
       purchaseOrderId: PO_ID,
       jobId: JOB_ID,
-      title: "NMC0008-0001",
-      purchaseOrderName: "NMC0008-0001",
+      title: "SAMPLE-PO-0001",
+      purchaseOrderName: "SAMPLE-PO-0001",
       status: "Draft",
       statusText: "Draft",
       saveAndRelease: false,
@@ -78,7 +78,7 @@ describe("PO payload builder (captured 7 Sep 2026)", () => {
     const body = poSaveDraftPayload(
       {
         purchaseOrderId: PO_ID,
-        title: "NMC0008-0001 draft",
+        title: "SAMPLE-PO-0001 draft",
         internalNotes: "sandbox note",
         lineItems: [{ id: 11, title: "Project material", unitCost: 14, builderCost: 14, quantity: 1 }],
       },
@@ -87,9 +87,9 @@ describe("PO payload builder (captured 7 Sep 2026)", () => {
     );
     expect(body.id).toBe(PO_ID);
     expect(body.purchaseOrderId).toBe(PO_ID);
-    expect(body.title).toBe("NMC0008-0001 draft");
+    expect(body.title).toBe("SAMPLE-PO-0001 draft");
     expect(body.internalNotes).toBe("sandbox note");
-    expect(body.purchaseOrderName).toBe("NMC0008-0001");
+    expect(body.purchaseOrderName).toBe("SAMPLE-PO-0001");
     expect(body.performingUserId).toBe(1);
     expect(body.priceType).toBe(2);
     expect((body.lineItems as { unitCost: number }[])[0]!.unitCost).toBe(14);
@@ -150,7 +150,7 @@ describe("PO payload builder (captured 7 Sep 2026)", () => {
   it("unwraps GET envelopes the same way bills do", () => {
     const seed = seedFromPoGet(existingPo());
     expect(seed.id).toBe(PO_ID);
-    expect(seed.purchaseOrderName).toBe("NMC0008-0001");
+    expect(seed.purchaseOrderName).toBe("SAMPLE-PO-0001");
   });
 });
 
@@ -181,7 +181,7 @@ describe("pos.update verb (scripted adapter, no live network)", () => {
         return {
           status: 200,
           contentType: CONTENT_JSON,
-          json: existingPo({ title: "NMC0008-0001 $14", lineItems: [{ id: 11, unitCost: 14 }] }),
+          json: existingPo({ title: "SAMPLE-PO-0001 $14", lineItems: [{ id: 11, unitCost: 14 }] }),
         };
       }
       return { status: 200, contentType: CONTENT_JSON, json: { success: true, data: {} } };
@@ -189,7 +189,7 @@ describe("pos.update verb (scripted adapter, no live network)", () => {
 
     const result = await invoke("pos.update", {
       purchaseOrderId: PO_ID,
-      title: "NMC0008-0001 $14",
+      title: "SAMPLE-PO-0001 $14",
       dry_run: false,
       lineItems: [{ id: 11, title: "Project material", unitCost: 14, builderCost: 14, quantity: 1 }],
     });
@@ -204,7 +204,7 @@ describe("pos.update verb (scripted adapter, no live network)", () => {
     const body = put?.json as Record<string, unknown>;
     expect(body.saveAndRelease).toBe(false);
     expect(body.status).toBe("Draft");
-    expect(body.title).toBe("NMC0008-0001 $14");
+    expect(body.title).toBe("SAMPLE-PO-0001 $14");
     expect((body.lineItems as { unitCost: number }[])[0]!.unitCost).toBe(14);
     expect(body.performingUserId).toBe(1);
     expect(calls.some((c) => c.path.toLowerCase().includes("markreadyforpayment"))).toBe(false);

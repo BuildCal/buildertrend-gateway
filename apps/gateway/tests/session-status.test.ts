@@ -68,7 +68,7 @@ describe("session.status allowlist", () => {
     expect(data.loginName).toBe("pat.builder");
     expect(data.email).toBe("pat@example.test");
     expect(data.currentJob).toEqual({
-      jobId: 43320680,
+      jobId: 200001,
       jobName: "Sandbox Job",
       jobNumber: "SB-1",
     });

@@ -4,7 +4,7 @@ import { GatewayError } from "../src/errors.js";
 import { buildJobPickerSelectBody, pickerSelectionFromPayload } from "../src/job-picker.js";
 import { createHarness } from "./helpers.js";
 
-const JOB_ID = 43320680;
+const JOB_ID = 200001;
 
 describe("jobs.picker.select", () => {
   it("does not return the unselected placeholder when sessionJobInfo has the job", async () => {

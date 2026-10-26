@@ -184,7 +184,7 @@ Captured write flags (do not “fix” these):
 
 - PUT save-draft: `application/json` on `/api/PurchaseOrders/{id}`. Observed keys: `isVariance`, `isEntirePoVariance`, `varianceCode`, `relatedPOs`, `relatedCO`, `hasLineItemCustomerVariance`, `relatedCOsToRemove`, `skipVarianceValidation`, `attachedFiles`, `attachedFilesPostApproval`, `customFields`, `internalNotes`, `materialsOnly`, `performingUserId`, `performingUserName`, `performingUserType`, `purchaseOrderName`, `statusChangeComments`, `title`, `containerIsValid`, `varianceCount`, `lineItems`, `purchaseOrderLineItems`, `priceType`, `unifiedDeadlineRequest`, `unlinkedBids`, `scopeOfWork`, `disclaimer`, `linkedBids`, `availableBids`, `saveAndRelease`
 - Force `saveAndRelease` **false**. Do not approve. Draft only.
-- Two sandbox saves on draft PO **76899300** (NMC0008-0001, job 43320680): $13 then $14. Status stayed Draft.
+- Two sandbox saves on draft PO **100001** (SAMPLE-PO-0001, job 200001): $13 then $14. Status stayed Draft.
 
 ---
 
@@ -247,7 +247,7 @@ New captures from `pnpm --filter gateway capture` are appended below. Cookies ar
 
 ## Capture 2026-09-07
 
-PO draft save (`pos.update`) on draft PO id 76899300 (NMC0008-0001, job 43320680). Two saves ($13 then $14). Status stayed Draft. No cookies.
+PO draft save (`pos.update`) on draft PO id 100001 (SAMPLE-PO-0001, job 200001). Two saves ($13 then $14). Status stayed Draft. No cookies.
 
 - `PUT /api/PurchaseOrders/{id}` `application/json` keys: isVariance, isEntirePoVariance, varianceCode, relatedPOs, relatedCO, hasLineItemCustomerVariance, relatedCOsToRemove, skipVarianceValidation, attachedFiles, attachedFilesPostApproval, customFields, internalNotes, materialsOnly, performingUserId, performingUserName, performingUserType, purchaseOrderName, statusChangeComments, title, containerIsValid, varianceCount, lineItems, purchaseOrderLineItems, priceType, unifiedDeadlineRequest, unlinkedBids, scopeOfWork, disclaimer, linkedBids, availableBids, saveAndRelease
 

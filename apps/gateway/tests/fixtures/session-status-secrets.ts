@@ -26,7 +26,7 @@ export const FAKE_INIT_WITH_SECRETS = {
     name: "Example Homes",
   },
   currentJob: {
-    jobId: 43320680,
+    jobId: 200001,
     jobName: "Sandbox Job",
     jobNumber: "SB-1",
   },
@@ -56,7 +56,7 @@ export const FAKE_GLOBAL_INFO_WITH_SECRETS = {
   message: "",
   needsToRelogin: false,
   sessionJobInfo: {
-    jobId: 43320680,
+    jobId: 200001,
     jobName: "Sandbox Job",
     jobNumber: "SB-1",
   },

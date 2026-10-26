@@ -14,7 +14,7 @@
 import { GatewayError } from "./errors.js";
 import { asRecord, asRows, numberish } from "./grids.js";
 
-/** Observed top-level keys on the 7 Sep 2026 draft-PO PUT (id 76899300). */
+/** Observed top-level keys on the 7 Sep 2026 draft-PO PUT (id 100001). */
 export const PO_CAPTURED_PUT_KEYS = [
   "isVariance",
   "isEntirePoVariance",
