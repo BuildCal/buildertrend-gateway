@@ -92,7 +92,7 @@ No anti-CSRF header is required despite the cookie existing.
 ### Purchase order draft save
 - `GET /api/PurchaseOrders/{id}` — existing draft PO.
 - `PUT /api/PurchaseOrders/{id}` — Save draft (`application/json`).
-  Captured 7 Sep 2026 on draft PO 76899300 (status stayed Draft).
+  Captured 7 Sep 2026 on draft PO 100001 (status stayed Draft).
   Gateway forces `saveAndRelease: false` and refuses approve / send /
   ready-for-payment. Project expense only.
 - `pos.create` is **not captured**. Do not guess `POST /api/PurchaseOrders`.

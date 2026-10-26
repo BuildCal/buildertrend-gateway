@@ -22,7 +22,7 @@ describe("dry_run", () => {
   it("does not hit the network for pos.update when dry_run is true", async () => {
     const { calls, invoke } = createHarness();
     const result = await invoke("pos.update", {
-      purchaseOrderId: 76899300,
+      purchaseOrderId: 100001,
       title: "Should not send",
       dry_run: true,
     });

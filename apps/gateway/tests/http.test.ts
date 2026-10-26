@@ -50,7 +50,7 @@ describe("HTTP /v1", () => {
     const res = await app.request("/v1/pos/create", {
       method: "POST",
       headers: { "content-type": CONTENT_JSON, "x-bt-gateway-token": "secret" },
-      body: JSON.stringify({ jobId: 43320680, dry_run: false }),
+      body: JSON.stringify({ jobId: 200001, dry_run: false }),
     });
     expect(res.status).toBe(501);
     const body = (await res.json()) as { error: string };
