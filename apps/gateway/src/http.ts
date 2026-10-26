@@ -55,8 +55,7 @@ export function createHttpApp(
     const body = (await c.req.json().catch(() => ({}))) as Record<string, unknown>;
     const verb = String(body.verb ?? "");
     const rawArgs = (body.args as Record<string, unknown> | undefined) ?? {};
-    const args = verb ? parseVerbArgs(verb, rawArgs) : rawArgs;
-    return run(c, verb, args);
+    return run(c, verb, rawArgs, Boolean(verb));
   });
 
   for (const spec of VERBS) {
@@ -67,8 +66,7 @@ export function createHttpApp(
         const parsed = await c.req.json().catch(() => ({}));
         body = parsed && typeof parsed === "object" ? (parsed as Record<string, unknown>) : {};
       }
-      const args = parseVerbArgs(spec.verb, { ...query, ...body });
-      return run(c as never, spec.verb, args);
+      return run(c as never, spec.verb, { ...query, ...body });
     };
     if (spec.httpMethod === "GET") app.get(spec.httpPath, handler);
     else app.post(spec.httpPath, handler);
@@ -83,9 +81,11 @@ export function createHttpApp(
   async function run(
     c: { json: (body: unknown, status?: number) => Response },
     verb: string,
-    args: Record<string, unknown>,
+    rawArgs: Record<string, unknown>,
+    parseArgs = true,
   ): Promise<Response> {
     try {
+      const args = parseArgs ? parseVerbArgs(verb, rawArgs) : rawArgs;
       if (!VERB_BY_NAME.has(verb)) {
         throw new GatewayError("not_found", `Unknown verb ${verb}`);
       }
