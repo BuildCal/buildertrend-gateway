@@ -51,6 +51,10 @@ export const VERB_SCHEMAS = {
   "jobs.picker.select": z.object({
     jobId: z.coerce.number().int().positive().optional(),
     jobIds: z.array(z.coerce.number().int().positive()).optional(),
+    selectedJobId: z.coerce.number().int().positive().optional(),
+    id: z.coerce.number().int().positive().optional(),
+    jobsiteId: z.coerce.number().int().positive().optional(),
+    jobID: z.coerce.number().int().positive().optional(),
     body: z.record(z.unknown()).optional(),
   }),
   "jobs.picker.existing": z.object({}),

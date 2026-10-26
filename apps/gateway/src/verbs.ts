@@ -43,6 +43,26 @@ import {
   requireNumber,
   type VerbContext,
 } from "./invoke.js";
+import { sanitizeReadOutput } from "./secret-scan.js";
+import {
+  assertSessionStatusSafe,
+  projectSessionStatus,
+} from "./session-status.js";
+import {
+  buildJobPickerSelectBody,
+  findExistingJobRow,
+  isPickerUnselectedError,
+  pickerSelectionFromPayload,
+  requirePickerJobIds,
+} from "./job-picker.js";
+
+/** List/get `{ raw, rows }` — redact token-shaped / secret-named fields, keep the rest. */
+function listPayload(payload: unknown): { raw: unknown; rows: unknown } {
+  return sanitizeReadOutput({
+    raw: unwrapData(payload),
+    rows: extractGridRows(payload),
+  });
+}
 
 function dataOf(payload: unknown): Record<string, unknown> {
   const unwrapped = unwrapData(payload);
@@ -71,16 +91,18 @@ function stripForbiddenGstFields(line: Record<string, unknown>): Record<string, 
   return out;
 }
 
-async function maybeSelectJob(ctx: VerbContext, jobId?: number): Promise<void> {
-  if (!jobId) return;
-  await btJson(ctx, {
+async function setJobPickerData(ctx: VerbContext, json: unknown): Promise<unknown> {
+  return btJson(ctx, {
     method: "POST",
     path: "/api/jobpicker/SetJobPickerData",
-    json: ctx.args.pickerBody ?? {
-      jobIds: [jobId],
-      selectedJobId: jobId,
-    },
+    json,
   });
+}
+
+async function maybeSelectJob(ctx: VerbContext, jobId?: number): Promise<void> {
+  if (!jobId) return;
+  const body = ctx.args.pickerBody ?? buildJobPickerSelectBody([jobId]);
+  await setJobPickerData(ctx, body);
 }
 
 async function filters(ctx: VerbContext, id: number): Promise<unknown> {
@@ -151,15 +173,10 @@ async function upsertRows(
 registerVerb("session.status", async (ctx) => {
   const init = await btJson(ctx, { method: "GET", path: "/apix/v2/context/init" });
   const globalInfo = await btJson(ctx, { method: "GET", path: "/api/AccountInfo/GlobalInfo" });
-  const info = dataOf(globalInfo);
-  const builderId = numberish(info.builderId ?? info.BuilderId) ?? ctx.config.builderId;
-  if (builderId) ctx.config.builderId = builderId;
-  return {
-    authenticated: true,
-    builderId,
-    init: unwrapData(init),
-    globalInfo: info,
-  };
+  const status = assertSessionStatusSafe(projectSessionStatus(init, globalInfo));
+  if (status.builderId) ctx.config.builderId = status.builderId;
+  else if (ctx.config.builderId > 0) status.builderId = ctx.config.builderId;
+  return status;
 });
 
 registerVerb("jobs.picker.list", async (ctx) => {
@@ -171,22 +188,69 @@ registerVerb("jobs.picker.list", async (ctx) => {
       includeClosedJobs: Boolean(ctx.args.includeClosed),
     },
   });
-  return { raw: unwrapData(payload), rows: extractGridRows(payload) };
+  return listPayload(payload);
 });
 
 registerVerb("jobs.picker.select", async (ctx) => {
-  const jobId = optionalJob(ctx);
-  const payload = await btJson(ctx, {
-    method: "POST",
-    path: "/api/jobpicker/SetJobPickerData",
-    json:
-      ctx.args.body ??
+  const jobIds = requirePickerJobIds(ctx.args);
+  const jobId = jobIds[0]!;
+  let jobRow: Record<string, unknown> | undefined;
+  try {
+    const existing = await btJson(ctx, { method: "GET", path: "/api/jobpicker/GetExistingJobList" });
+    jobRow = findExistingJobRow(existing, jobId);
+  } catch (err) {
+    if (err instanceof GatewayError && err.code !== "bt_error") throw err;
+  }
+
+  const objectBody = ctx.args.body ?? buildJobPickerSelectBody(jobIds, jobRow);
+  let selection = pickerSelectionFromPayload(undefined, jobIds, ctx.args.body ? "custom" : "object");
+  try {
+    const objectPayload = await setJobPickerData(ctx, objectBody);
+    selection = pickerSelectionFromPayload(objectPayload, jobIds, ctx.args.body ? "custom" : "object");
+  } catch (err) {
+    if (!isPickerUnselectedError(err)) throw err;
+  }
+
+  if (!selection.selected) {
+    try {
+      const arrayPayload = await setJobPickerData(ctx, jobIds);
+      selection = pickerSelectionFromPayload(arrayPayload, jobIds, "array");
+    } catch (err) {
+      if (!isPickerUnselectedError(err)) throw err;
+    }
+  }
+
+  if (!selection.selected) {
+    try {
+      const globalInfo = await btJson(ctx, { method: "GET", path: "/api/AccountInfo/GlobalInfo" });
+      selection = pickerSelectionFromPayload(globalInfo, jobIds, selection.requestShape, {
+        envelopeOnly: true,
+      });
+    } catch (err) {
+      if (err instanceof GatewayError && err.code !== "bt_error") throw err;
+    }
+  }
+
+  if (!selection.selected) {
+    throw new GatewayError(
+      "bt_error",
+      "Job picker did not accept the selection (Buildertrend stayed on 'Please select a job').",
       {
-        jobIds: jobIdsFrom(ctx.args).length ? jobIdsFrom(ctx.args) : jobId ? [jobId] : [],
-        selectedJobId: jobId,
+        jobIds,
+        requestShape: selection.requestShape,
+        hint: "SetJobPickerData was posted as a job-id object (including jobID) then retried as [jobId]. Confirm the captured body if this persists.",
       },
-  });
-  return unwrapData(payload);
+    );
+  }
+
+  return {
+    selected: true,
+    jobId: selection.jobId,
+    jobName: selection.jobName,
+    jobNumber: selection.jobNumber,
+    jobIds: selection.jobIds,
+    requestShape: selection.requestShape,
+  };
 });
 
 registerVerb("jobs.picker.existing", async (ctx) => {
@@ -194,7 +258,7 @@ registerVerb("jobs.picker.existing", async (ctx) => {
   const data = dataOf(payload);
   const jobs = Array.isArray(data.jobs) ? data.jobs : extractGridRows(payload);
   await upsertRows(ctx, "job", jobs);
-  return { raw: data, jobs };
+  return sanitizeReadOutput({ raw: data, jobs });
 });
 
 registerVerb("jobs.list", async (ctx) => {
@@ -206,7 +270,7 @@ registerVerb("jobs.list", async (ctx) => {
   });
   const rows = extractGridRows(payload);
   await upsertRows(ctx, "job", rows);
-  return { raw: unwrapData(payload), rows };
+  return listPayload(payload);
 });
 
 registerVerb("jobs.get", async (ctx) => {
@@ -214,7 +278,7 @@ registerVerb("jobs.get", async (ctx) => {
   const payload = await btJson(ctx, { method: "GET", path: `/api/jobsites/${jobId}` });
   const data = unwrapData(payload);
   await upsertRows(ctx, "job", [asRecord(data)]);
-  return data;
+  return sanitizeReadOutput(data);
 });
 
 registerVerb("jobs.accountingLink", async (ctx) => {
@@ -232,7 +296,7 @@ registerVerb("leads.list", async (ctx) => {
   });
   const rows = extractGridRows(payload);
   await upsertRows(ctx, "lead", rows);
-  return { raw: unwrapData(payload), rows };
+  return listPayload(payload);
 });
 
 registerVerb("leads.get", async (ctx) => {
@@ -240,11 +304,13 @@ registerVerb("leads.get", async (ctx) => {
   const payload = await btJson(ctx, { method: "GET", path: `/api/Leads/${id}` });
   const data = unwrapData(payload);
   await upsertRows(ctx, "lead", [asRecord(data)]);
-  return data;
+  return sanitizeReadOutput(data);
 });
 
 registerVerb("leads.defaults", async (ctx) => {
-  return unwrapData(await btJson(ctx, { method: "GET", path: "/api/Leads/Defaults" }));
+  return sanitizeReadOutput(
+    unwrapData(await btJson(ctx, { method: "GET", path: "/api/Leads/Defaults" })),
+  );
 });
 
 registerVerb("contacts.list", async (ctx) => {
@@ -255,13 +321,13 @@ registerVerb("contacts.list", async (ctx) => {
   });
   const rows = extractGridRows(payload);
   await upsertRows(ctx, "contact", rows);
-  return { raw: unwrapData(payload), rows };
+  return listPayload(payload);
 });
 
 registerVerb("contacts.get", async (ctx) => {
   const id = requireNumber(ctx.args, "contactId");
   const payload = await btJson(ctx, { method: "GET", path: `/api/Contacts/${id}/Details` });
-  return unwrapData(payload);
+  return sanitizeReadOutput(unwrapData(payload));
 });
 
 registerVerb("invoices.list", async (ctx) => {
@@ -274,7 +340,7 @@ registerVerb("invoices.list", async (ctx) => {
   });
   const rows = extractGridRows(payload);
   await upsertRows(ctx, "invoice", rows);
-  return { raw: unwrapData(payload), rows };
+  return listPayload(payload);
 });
 
 registerVerb("invoices.get", async (ctx) => {
@@ -291,7 +357,7 @@ registerVerb("invoices.get", async (ctx) => {
     throw new GatewayError("duplicate_invoice_id", message);
   }
   await upsertRows(ctx, "invoice", [asRecord(data)]);
-  return data;
+  return sanitizeReadOutput(data);
 });
 
 registerVerb("invoices.accountingStatus", async (ctx) => {
@@ -329,7 +395,7 @@ registerVerb("variations.list", async (ctx) => {
   });
   const rows = extractGridRows(payload);
   await upsertRows(ctx, "variation", rows);
-  return { raw: unwrapData(payload), rows };
+  return listPayload(payload);
 });
 
 registerVerb("variations.get", async (ctx) => {
@@ -341,7 +407,7 @@ registerVerb("variations.get", async (ctx) => {
   });
   const data = unwrapData(payload);
   await upsertRows(ctx, "variation", [asRecord(data)]);
-  return data;
+  return sanitizeReadOutput(data);
 });
 
 registerVerb("variations.saveDraftHeader", saveDraftHeader);
@@ -456,7 +522,7 @@ registerVerb("bills.list", async (ctx) => {
   });
   const rows = extractGridRows(payload);
   await upsertRows(ctx, "bill", rows);
-  return { raw: unwrapData(payload), rows };
+  return listPayload(payload);
 });
 
 registerVerb("bills.tabCounts", async (ctx) => {
@@ -477,7 +543,7 @@ registerVerb("bills.get", async (ctx) => {
   const payload = await btJson(ctx, { method: "GET", path: `/api/v1/bills/${id}` });
   const data = unwrapData(payload);
   await upsertRows(ctx, "bill", [asRecord(data)]);
-  return data;
+  return sanitizeReadOutput(data);
 });
 
 registerVerb("bills.file", async (ctx) => {
@@ -497,12 +563,14 @@ registerVerb("bills.file", async (ctx) => {
 
 registerVerb("bills.defaults", async (ctx) => {
   const jobId = requireNumber(ctx.args, "jobId");
-  return unwrapData(
-    await btJson(ctx, {
-      method: "GET",
-      path: "/api/v1/bills/defaultinfo",
-      query: { jobId, isBillRemainingAction: false },
-    }),
+  return sanitizeReadOutput(
+    unwrapData(
+      await btJson(ctx, {
+        method: "GET",
+        path: "/api/v1/bills/defaultinfo",
+        query: { jobId, isBillRemainingAction: false },
+      }),
+    ),
   );
 });
 
@@ -627,7 +695,7 @@ registerVerb("pos.list", async (ctx) => {
   });
   const rows = extractGridRows(payload);
   await upsertRows(ctx, "po", rows);
-  return { raw: unwrapData(payload), rows };
+  return listPayload(payload);
 });
 
 registerVerb("pos.get", async (ctx) => {
@@ -635,7 +703,7 @@ registerVerb("pos.get", async (ctx) => {
   const payload = await btJson(ctx, { method: "GET", path: `/api/PurchaseOrders/${id}` });
   const data = unwrapData(payload);
   await upsertRows(ctx, "po", [asRecord(data)]);
-  return data;
+  return sanitizeReadOutput(data);
 });
 
 registerVerb("pos.linkedBills", async (ctx) => {
