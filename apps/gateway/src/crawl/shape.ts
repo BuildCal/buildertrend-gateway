@@ -25,12 +25,18 @@ const MAX_ENUM_LABELS = 40;
 const PERSONAL_FIELD =
   /(pay|purchase|order|invoice|bill|bid|selection|schedule|phase|project|site|approv|person|people|user|member|employee|staff|assign|owner|vendor|sub(contractor)?s?\b|subs?[A-Z]|contact|customer|client|lead|job|builder|account|email|phone|mobile|address|street|suburb|city|postcode|zip|manager|creat|modif|approver|signer|recipient|viewer|watcher|crew|worker|sales|estimator|bank|card|name|company|supplier|payee|tag|folder|file|template|costcode|cost_code|costitem|catalog|item|location|lot)/i;
 
+/** People / organisations / jobs: disqualifies an enum anywhere in its path. */
+const PERSON_WORD =
+  /(user|person|people|member|employee|staff|assign|owner|vendor|subs?(contractor)?s?\b|contact|customer|client|lead|builder|email|phone|address|manager|approver|recipient|viewer|watcher|crew|worker|sales|estimator|job|company|supplier|payee|signer)/i;
+
 const OPTION_ID = ["id", "value", "key", "code", "enumValue"];
 const OPTION_LABEL = ["name", "text", "label", "title", "displayName", "description"];
 
 /** Template an object key that is itself data (ids, emails, free text). */
 export function templateKey(key: string): string {
   if (/^-?\d+$/.test(key)) return "{id}";
+  // Keys that are not plain identifiers carry data ("['9',477399,3]", names).
+  if (!/^[A-Za-z_$][\w$-]*$/.test(key)) return "{key}";
   if (/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(key)) return "{guid}";
   if (key.includes("@")) return "{email}";
   if (/\s/.test(key) || key.length > 60) return "{text}";
@@ -73,8 +79,15 @@ const ENUM_FIELD =
  * and is not about people / jobs / vendors. Anything else keeps a count only.
  */
 export function isSystemEnumField(path: string): boolean {
-  const last = path.split(".").pop() ?? path;
-  const bare = last.replace(/\[\]$/, "");
+  const segments = path.split(".").map((p) => p.replace(/\[\]$/, ""));
+  // Any person / vendor / job word anywhere in the path disqualifies it
+  // (data.discussions.notificationUsers.options[].options).
+  if (segments.length > 1 && segments.slice(0, -1).some((seg) => PERSON_WORD.test(seg))) {
+    return false;
+  }
+  // Generic tails ("options", "value", "items") take the meaningful parent name.
+  const meaningful = [...segments].reverse().find((seg) => !/^(data|value|values|options?|items?|list|enum)$/i.test(seg));
+  const bare = meaningful ?? segments[segments.length - 1] ?? path;
   // "Bill type", "PO status": the suffix makes it an enum of the entity.
   if (/(status|type)(es|s)?$/i.test(bare.trim())) return !/(user|contact|email|phone|address|name)/i.test(bare);
   return ENUM_FIELD.test(bare) && !PERSONAL_FIELD.test(bare);

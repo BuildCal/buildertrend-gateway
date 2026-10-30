@@ -19,6 +19,7 @@ describe("crawl payload shapes", () => {
     expect(shape.keys).toContain("data.title");
     expect(shape.keys).toContain("data.lineItems[].unitCost");
     expect(shape.keys).toContain("data.{id}.x");
+    expect(shapeOf({ filters: { "['9',477399,3]": 1 } }).keys).toEqual(["filters", "filters.{key}"]);
     expect(shape.keys).toContain("data.apiKey");
     expect(shape.keys).not.toContain("data.apiKey.nested");
     const text = JSON.stringify(shape);
@@ -50,6 +51,9 @@ describe("crawl payload shapes", () => {
     for (const ok of ["Status", "Type", "Bill type", "PO Status", "Columns", "Cost type", "Priority", "Unit"]) {
       expect(isSystemEnumField(ok), ok).toBe(true);
     }
+    expect(isSystemEnumField("data.discussions.comments.notificationUsers.options[].options")).toBe(false);
+    expect(isSystemEnumField("data.lineItems.defaults.costTypes.options[].options")).toBe(true);
+    expect(isSystemEnumField("data.statusOptions")).toBe(true);
     for (const bad of ["Pay to", "Purchase Order", "Job", "Assigned to", "Client", "select#6", "", "Vendor", "Required Approvers", "Contact type name"]) {
       expect(isSystemEnumField(bad), bad).toBe(false);
     }

@@ -7,6 +7,8 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { VERBS } from "../catalog.js";
 import { pathKey, type Inventory } from "./inventory.js";
+import { classifyRequest } from "./policy.js";
+import { isSafeEnumLabel, isSystemEnumField } from "./shape.js";
 import type { EndpointRecord, ScreenRecord, WriteCandidate } from "./state.js";
 
 export interface ModuleDef {
@@ -104,7 +106,12 @@ export function renderModuleSections(run: RunData): string {
     const writes = run.writes.filter((w) => moduleForApi(w.template) === mod);
     const inv = invApis.filter((a) => moduleForApi(a.path) === mod);
     const invMissed = inv.filter((a) => !seenKeys.has(pathKey(a.path)));
-    const invWrites = inv.filter((a) => a.methods.some((m) => m !== "GET"));
+    // Bundle writes = non-GET methods the read policy would not allow.
+    const invWrites = inv.filter((a) =>
+      a.methods.some(
+        (m) => m !== "GET" && classifyRequest({ method: m, url: `https://buildertrend.net${a.path.replace(/\{p\}/g, "1")}` }).action !== "allow",
+      ),
+    );
     const verbs = VERBS.filter((v) => mod.verbs.some((p) => v.verb.startsWith(p)));
     if (!screens.length && !reads.length && !writes.length && !inv.length) continue;
 
@@ -138,7 +145,14 @@ export function renderModuleSections(run: RunData): string {
           if (x.options?.length) enums.set(x.label, `${x.label}: ${x.options.join(" / ")}`);
         }
       }
-      for (const e of reads) for (const x of e.enums) if (x.labels?.length) enums.set(x.path, `${x.path}: ${x.labels.join(" / ")}`);
+      // Re-apply the privacy filter at render time (older runs recorded more).
+      for (const e of reads) {
+        for (const x of e.enums) {
+          if (x.labels?.length && isSystemEnumField(x.path) && x.labels.every(isSafeEnumLabel)) {
+            enums.set(x.path, `${x.path}: ${x.labels.join(" / ")}`);
+          }
+        }
+      }
       if (enums.size) out.push("### Enums and dropdown options", "", ...[...enums.values()].sort().map((e) => `- ${esc(e)}`), "");
     }
 
@@ -167,7 +181,7 @@ export function renderModuleSections(run: RunData): string {
       out.push("");
     }
 
-    const missedReads = invMissed.filter((a) => !a.methods.some((m) => m !== "GET"));
+    const missedReads = invMissed.filter((a) => !invWrites.includes(a));
     if (missedReads.length) {
       out.push(
         "### Bundle read APIs not reached",
