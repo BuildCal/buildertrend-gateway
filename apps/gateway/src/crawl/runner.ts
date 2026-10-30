@@ -98,21 +98,50 @@ export async function openGatewayProfile(profileDir: string, headless: boolean):
   });
 }
 
+/** In-page GETs for session.status. portaltype: 1 = builder portal, as the adapter sends. */
+export const SESSION_PROBE_JS = `(async () => {
+  const get = async (path) => {
+    const res = await fetch(path, { credentials: "include", headers: { accept: "application/json", portaltype: "1" } });
+    const text = await res.text();
+    try { return JSON.parse(text); } catch { return { needsToRelogin: true, httpStatus: res.status }; }
+  };
+  return [await get("/apix/v2/context/init"), await get("/api/AccountInfo/GlobalInfo")];
+})()`;
+
+const LINKS_JS = `[...document.querySelectorAll("a[href]")].map((a) => a.href)`;
+
 /** `session.status` projection, fetched from inside the signed-in page. */
 export async function sessionStatusFromPage(page: Page): Promise<SessionStatus> {
-  const [init, globalInfo] = await page.evaluate(async () => {
-    const get = async (path: string) => {
-      const res = await fetch(path, { credentials: "include", headers: { accept: "application/json" } });
-      const text = await res.text();
-      try {
-        return JSON.parse(text) as unknown;
-      } catch {
-        return { needsToRelogin: true };
-      }
-    };
-    return [await get("/apix/v2/context/init"), await get("/api/AccountInfo/GlobalInfo")];
-  });
+  // A string, not a function: tsx/esbuild wraps compiled functions with a
+  // `__name` helper that does not exist inside the page.
+  const [init, globalInfo] = (await page.evaluate(SESSION_PROBE_JS)) as [unknown, unknown];
   return assertSessionStatusSafe(projectSessionStatus(init, globalInfo));
+}
+
+/**
+ * Poll until the human in this window has signed in. Returns false on timeout.
+ * Never reads or types credentials.
+ */
+export async function waitForSignIn(page: Page, timeoutMs: number): Promise<SessionStatus | null> {
+  const started = Date.now();
+  let announced = false;
+  while (Date.now() - started < timeoutMs) {
+    if (page.url().startsWith(BT_ORIGIN) && !looksLikeLoginUrl(page.url())) {
+      const status = await sessionStatusFromPage(page).catch((err: Error) => {
+        console.error(`LOGIN_PROBE error ${err.message.slice(0, 120)}`);
+        return null;
+      });
+      // builderId is not always on GlobalInfo (the gateway falls back to config).
+      if (status?.authenticated) return status;
+      if (status) console.error(`LOGIN_PROBE ${statusLine(status)}`);
+    }
+    if (!announced) {
+      console.error("LOGIN_OPEN Sign in to buildertrend.net in the gateway window.");
+      announced = true;
+    }
+    await sleep(5000);
+  }
+  return null;
 }
 
 /** Log-safe subset: no names or emails. */
@@ -134,20 +163,11 @@ export async function runLogin(profileDir: string, timeoutMs = 30 * 60_000): Pro
   const context = await openGatewayProfile(profileDir, false);
   const page = context.pages()[0] ?? (await context.newPage());
   await page.goto(`${BT_ORIGIN}/app/Landing`, { waitUntil: "domcontentloaded" }).catch(() => undefined);
-  console.error("LOGIN_OPEN Sign in to buildertrend.net in the window that just opened.");
-  const started = Date.now();
   try {
-    while (Date.now() - started < timeoutMs) {
-      await sleep(5000);
-      if (looksLikeLoginUrl(page.url()) || !page.url().startsWith(BT_ORIGIN)) continue;
-      const status = await sessionStatusFromPage(page).catch(() => null);
-      if (status?.authenticated && status.builderId) {
-        console.error(`SIGNED_IN ${statusLine(status)}`);
-        await sleep(15_000); // let "remember this device" cookies settle
-        return status;
-      }
-    }
-    throw new Error("TIMED_OUT waiting for sign-in");
+    const status = await waitForSignIn(page, timeoutMs);
+    if (!status) throw new Error("TIMED_OUT waiting for sign-in");
+    console.error(`SIGNED_IN ${statusLine(status)}`);
+    return status;
   } finally {
     await context.close();
   }
@@ -156,9 +176,19 @@ export async function runLogin(profileDir: string, timeoutMs = 30 * 60_000): Pro
 type BlockSink = (req: Request, reason: string) => void;
 
 /** Route every request through the policy. Exported for the integration test. */
-export async function installWriteBlocker(context: BrowserContext, onBlock: BlockSink, onDrop?: () => void): Promise<void> {
+export async function installWriteBlocker(
+  context: BrowserContext,
+  onBlock: BlockSink,
+  onDrop?: () => void,
+  /** While true a human is signing in: pass everything, record nothing. */
+  loginPhase: () => boolean = () => false,
+): Promise<void> {
   await context.route("**/*", async (route: Route) => {
     const req = route.request();
+    if (loginPhase()) {
+      await route.continue();
+      return;
+    }
     const decision = classifyRequest({ method: req.method(), url: req.url(), resourceType: req.resourceType() });
     if (decision.action === "allow") {
       await route.continue();
@@ -208,6 +238,7 @@ export async function runCrawl(opts: CrawlOptions): Promise<CrawlRecorder> {
   let currentScreen = "(startup)";
   let lastTrigger: string | undefined;
   let relogin = false;
+  let signingIn = false;
 
   await installWriteBlocker(
     context,
@@ -230,6 +261,7 @@ export async function runCrawl(opts: CrawlOptions): Promise<CrawlRecorder> {
     () => {
       cp.droppedCount += 1;
     },
+    () => signingIn,
   );
 
   context.on("page", (p) => {
@@ -280,9 +312,7 @@ export async function runCrawl(opts: CrawlOptions): Promise<CrawlRecorder> {
   };
 
   const collectLinks = async () => {
-    const hrefs = await page
-      .$$eval("a[href]", (as) => as.map((a) => (a as HTMLAnchorElement).href))
-      .catch(() => [] as string[]);
+    const hrefs = ((await page.evaluate(LINKS_JS).catch(() => [])) ?? []) as string[];
     for (const h of hrefs) enqueue(h);
   };
 
@@ -368,9 +398,18 @@ export async function runCrawl(opts: CrawlOptions): Promise<CrawlRecorder> {
     // session.status before touching anything.
     await page.goto(`${BT_ORIGIN}/app/Landing`, { waitUntil: "domcontentloaded" });
     await page.waitForLoadState("networkidle", { timeout: 20_000 }).catch(() => undefined);
-    const status = await sessionStatusFromPage(page);
+    let status = await sessionStatusFromPage(page).catch(() => null);
+    if (!status?.authenticated) {
+      if (opts.headless) throw new StopCrawl("needsToRelogin");
+      // Sign-in happens in this same window (the auth cookie is session-only).
+      signingIn = true;
+      status = await waitForSignIn(page, 30 * 60_000);
+      signingIn = false;
+      if (!status) throw new StopCrawl("needsToRelogin");
+      relogin = false;
+      await sleep(10_000);
+    }
     console.error(`SESSION ${statusLine(status)}`);
-    if (!status.authenticated) throw new StopCrawl("needsToRelogin");
     await hoverNav();
 
     while (cp.queue.length) {

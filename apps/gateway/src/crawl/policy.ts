@@ -18,7 +18,7 @@ const TELEMETRY_HOST =
 
 /** First-party paths that are telemetry / push registration / realtime noise. */
 const TELEMETRY_PATH =
-  /\/(signalr|notificationhub|push(registration|subscription)?s?|devicetokens?|telemetry|beacon|rum|clientlogs?|heartbeat|keepalive)(\/|$|\?)/i;
+  /\/(signalr|mp-proxy|notificationhub|push(registration|subscription)?s?|devicetokens?|telemetry|beacon|rum|clientlogs?|heartbeat|keepalive)(\/|$|\?)/i;
 
 /**
  * Known read-only POSTs. Buildertrend uses POST for grid/list queries and a
@@ -29,6 +29,7 @@ export const READ_ONLY_POSTS: { pattern: RegExp; why: string }[] = [
   { pattern: /^\/api(x)?\/(v\d\/)?[A-Za-z]+\/grid$/i, why: "list grid" },
   { pattern: /^\/api(x)?\/(v\d\/)?[A-Za-z]+\/[A-Za-z]+\/grid$/i, why: "nested list grid" },
   { pattern: /^\/apix\/v\d\/[A-Za-z]+\/tab-counts$/i, why: "grid tab counts" },
+  { pattern: /^\/apix\/v\d\/Landing$/i, why: "landing dashboard read" },
   { pattern: /^\/api\/jobpicker\/GetJobPickerData$/i, why: "job picker rows" },
   // Session scope only (which job the picker shows). The gateway already fires it.
   { pattern: /^\/api\/jobpicker\/SetJobPickerData$/i, why: "job picker scope (session only)" },

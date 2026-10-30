@@ -9,7 +9,7 @@ import {
   screenKey,
   templateUrl,
 } from "../src/crawl/policy.js";
-import { installWriteBlocker } from "../src/crawl/runner.js";
+import { installWriteBlocker, SESSION_PROBE_JS } from "../src/crawl/runner.js";
 
 const BT = "https://buildertrend.net";
 const decide = (method: string, path: string, resourceType = "xhr") =>
@@ -41,6 +41,7 @@ describe("crawl write-blocker policy", () => {
       "/api/ChangeOrders/Grid",
       "/api/v1/bills/grid",
       "/apix/v2/Bills/tab-counts",
+      "/apix/v2/Landing",
       "/api/jobpicker/GetJobPickerData",
       "/api/jobpicker/SetJobPickerData",
       "/api/Search?limit=10",
@@ -101,6 +102,7 @@ describe("crawl write-blocker policy", () => {
     expect(decide("POST", "https://browser-intake-datadoghq.com/api/v2/rum")).toBe("drop");
     expect(decide("POST", `${BT}/signalr/negotiate`)).toBe("drop");
     expect(decide("POST", `${BT}/api/PushRegistration`)).toBe("drop");
+    expect(decide("POST", `${BT}/analytics/mp-proxy/track?_=1`)).toBe("drop");
     expect(decide("GET", "wss://buildertrend.net/hub", "websocket")).toBe("drop");
     expect(decide("POST", `${BT}/api/x`, "ping")).toBe("drop");
   });
@@ -188,5 +190,14 @@ describe("installWriteBlocker (network layer)", () => {
     expect(await fire("POST", "https://o1.ingest.sentry.io/api/1/envelope/")).toBe("abort");
     expect(blocked).toEqual(["PUT write PUT", "POST write POST", "DELETE write DELETE"]);
     expect(dropped).toBe(1);
+  });
+});
+
+describe("in-page probe", () => {
+  it("is plain JS with no bundler helpers (tsx __name breaks page.evaluate)", () => {
+    expect(typeof SESSION_PROBE_JS).toBe("string");
+    expect(SESSION_PROBE_JS).not.toMatch(/__name/);
+    expect(SESSION_PROBE_JS).toContain("portaltype");
+    expect(() => new Function(`return ${SESSION_PROBE_JS}`)).not.toThrow();
   });
 });
