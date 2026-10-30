@@ -18,6 +18,7 @@ import {
   isSafeTabLabel,
   looksLikeLoginUrl,
   templateActionLabel,
+  templateFieldLabel,
   payloadNeedsRelogin,
   screenKey,
   templateUrl,
@@ -385,7 +386,8 @@ export async function runCrawl(opts: CrawlOptions): Promise<CrawlRecorder> {
   const recordFields = async (scope: string | null) => {
     const fields = ((await page.evaluate(fieldsJs(scope)).catch(() => [])) ?? []) as FieldInfo[];
     const screen = rec.screen(currentScreen);
-    for (const f of fields) {
+    for (const raw of fields) {
+      const f = { ...raw, label: templateFieldLabel(raw.label) };
       if (!screen.fields.some((x) => x.label === f.label && x.type === f.type)) screen.fields.push(f);
     }
   };

@@ -6,7 +6,7 @@ import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { VERBS } from "../catalog.js";
 import type { EndpointRecord, ScreenRecord, WriteCandidate } from "./state.js";
-import { pathKey, type Inventory } from "./inventory.js";
+import { pathKey, routeSeeds, type Inventory } from "./inventory.js";
 import { existsSync } from "node:fs";
 
 export interface CoverageScore {
@@ -30,7 +30,8 @@ export function scoreCoverage(
   const seenApi = new Set([...endpoints, ...writes].map((e) => pathKey(e.template)));
   const invApi = new Set(inv.apis.map((a) => pathKey(a.path)));
   const apisMissed = inv.apis.filter((a) => !seenApi.has(pathKey(a.path))).map((a) => ({ path: a.path, methods: a.methods }));
-  const appRoutes = inv.routes.filter((r) => r.startsWith("/app/"));
+  // Literal /app/ routes plus route constants (`/ChangeOrders/:id`), as the crawl visits them.
+  const appRoutes = routeSeeds(inv.routes);
   const seenScreens = new Set(screens.map((s) => pathKey(s.screen.split(" ⧉ ")[0]!)));
   const routesMissed = appRoutes.filter((r) => !seenScreens.has(pathKey(r)));
   return {

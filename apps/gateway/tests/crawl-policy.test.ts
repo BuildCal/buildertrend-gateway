@@ -262,3 +262,22 @@ describe("crawl print guard", () => {
     expect(win.print()).toBeUndefined();
   });
 });
+
+describe("crawl field labels", () => {
+  it("templates people named inside form labels", async () => {
+    const { templateFieldLabel } = await import("../src/crawl/policy.js");
+    expect(templateFieldLabel("Grant Jane automatic access to new jobs and templates")).toBe(
+      "Grant {person} automatic access to new jobs and templates",
+    );
+    expect(templateFieldLabel("Column with Header Selection")).toBe("Column with Header Selection");
+    expect(templateFieldLabel("First Name")).toBe("First Name");
+    const { templateActionLabel } = await import("../src/crawl/policy.js");
+    expect(templateActionLabel("3. Sales Add Jan 5, 2026, 4:12 PM Jan 6, 2026, 1:00 PM")).toBe("{row}");
+    expect(templateFieldLabel("GL Account")).toBe("GL Account");
+    expect(templateFieldLabel("Require location and track when Jane clocks in or out")).toBe(
+      "Require location and track when {person} clocks in or out",
+    );
+    expect(templateFieldLabel("Show in Buildertrend app")).toBe("Show in Buildertrend app");
+    expect(templateFieldLabel("Mark as a Variance PO")).toBe("Mark as a Variance PO");
+  });
+});

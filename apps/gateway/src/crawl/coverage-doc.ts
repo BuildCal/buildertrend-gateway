@@ -7,8 +7,9 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { VERBS } from "../catalog.js";
 import { pathKey, type Inventory } from "./inventory.js";
-import { classifyRequest } from "./policy.js";
-import { isSafeEnumLabel, isSystemEnumField } from "./shape.js";
+import { scoreCoverage } from "./report.js";
+import { classifyRequest, templateActionLabel, templateFieldLabel } from "./policy.js";
+import { isSafeEnumLabel, isSystemEnumField, templateKey } from "./shape.js";
 import type { EndpointRecord, ScreenRecord, WriteCandidate } from "./state.js";
 
 export interface ModuleDef {
@@ -84,6 +85,12 @@ export async function loadRun(dir: string): Promise<RunData> {
 }
 
 const esc = (s: string) => s.replace(/\|/g, "\\|");
+
+/** Re-template stored key paths (older runs kept filter ids inside keys). */
+export function scrubKeys(keys: string[]): string[] {
+  const seg = (s: string) => (s.endsWith("[]") ? `${templateKey(s.slice(0, -2))}[]` : templateKey(s));
+  return [...new Set(keys.map((k) => k.split(".").map(seg).join(".")))];
+}
 const code = (s: string) => "`" + s.replace(/`/g, "'") + "`";
 
 /** Top-level-ish response keys: up to depth 3, at most `n`. */
@@ -107,11 +114,7 @@ export function renderModuleSections(run: RunData): string {
     const inv = invApis.filter((a) => moduleForApi(a.path) === mod);
     const invMissed = inv.filter((a) => !seenKeys.has(pathKey(a.path)));
     // Bundle writes = non-GET methods the read policy would not allow.
-    const invWrites = inv.filter((a) =>
-      a.methods.some(
-        (m) => m !== "GET" && classifyRequest({ method: m, url: `https://buildertrend.net${a.path.replace(/\{p\}/g, "1")}` }).action !== "allow",
-      ),
-    );
+    const invWrites = inv.filter(isBundleWrite);
     const verbs = VERBS.filter((v) => mod.verbs.some((p) => v.verb.startsWith(p)));
     if (!screens.length && !reads.length && !writes.length && !inv.length) continue;
 
@@ -130,14 +133,19 @@ export function renderModuleSections(run: RunData): string {
     if (screens.length) {
       out.push("### Screens", "", "| Screen | Tabs | Fields | Write actions seen (not clicked) |", "| --- | --- | --- | --- |");
       for (const s of screens) {
-        const writeActions = (s.actions ?? []).filter((a) => WRITE_LABEL.test(a));
+        const writeActions = [...new Set((s.actions ?? []).map(templateActionLabel))].filter((a) => WRITE_LABEL.test(a));
         out.push(
           `| ${code(s.screen)} | ${esc(s.tabs.join(", ") || "—")} | ${s.fields?.length ?? 0} | ${esc(writeActions.slice(0, 25).join(", ") || "—")} |`,
         );
       }
       out.push("");
       const fields = new Map<string, string>();
-      for (const s of screens) for (const f of s.fields ?? []) fields.set(`${f.label}|${f.type}`, `${f.label} (${f.type})`);
+      for (const s of screens) {
+        for (const f of s.fields ?? []) {
+          const label = templateFieldLabel(f.label);
+          fields.set(`${label}|${f.type}`, `${label} (${f.type})`);
+        }
+      }
       if (fields.size) out.push("### Fields (UI)", "", [...fields.values()].sort().map(esc).join(" · "), "");
       const enums = new Map<string, string>();
       for (const s of screens) {
@@ -160,7 +168,7 @@ export function renderModuleSections(run: RunData): string {
       out.push("### Read endpoints (observed)", "", "| Method | Path | Request keys | Response keys |", "| --- | --- | --- | --- |");
       for (const e of reads) {
         out.push(
-          `| ${e.method} | ${code(e.template)} | ${esc(e.requestKeys.slice(0, 15).join(", ") || "—")} | ${esc(headlineKeys(e.responseKeys))} |`,
+          `| ${e.method} | ${code(e.template)} | ${esc(scrubKeys(e.requestKeys).slice(0, 15).join(", ") || "—")} | ${esc(headlineKeys(scrubKeys(e.responseKeys)))} |`,
         );
       }
       out.push("");
@@ -170,7 +178,7 @@ export function renderModuleSections(run: RunData): string {
       out.push("### Write endpoints", "", "| Method | Path | Source | Body keys / trigger |", "| --- | --- | --- | --- |");
       for (const w of writes) {
         out.push(
-          `| ${w.method} | ${code(w.template)} | blocked during crawl | ${esc(w.requestKeys.slice(0, 30).join(", ") || "—")}${w.triggers.length ? ` (via ${esc(w.triggers.slice(0, 2).join(", "))})` : ""} |`,
+          `| ${w.method} | ${code(w.template)} | blocked during crawl | ${esc(scrubKeys(w.requestKeys).slice(0, 30).join(", ") || "—")}${w.triggers.length ? ` (via ${esc(w.triggers.slice(0, 2).join(", "))})` : ""} |`,
         );
       }
       const blocked = new Set(writes.map((w) => pathKey(w.template)));
@@ -191,5 +199,69 @@ export function renderModuleSections(run: RunData): string {
       );
     }
   }
+  return out.join("\n");
+}
+
+/** A non-GET the read policy would not let through: a write, never fired. */
+function isBundleWrite(a: { path: string; methods: string[] }): boolean {
+  return a.methods.some(
+    (m) => m !== "GET" && classifyRequest({ method: m, url: `https://buildertrend.net${a.path.replace(/\{p\}/g, "1")}` }).action !== "allow",
+  );
+}
+
+/** Totals, bundle coverage and a per-module table: the "did we get it all" view. */
+export function renderCoverageSummary(run: RunData): string {
+  const screens = run.screens.filter((s) => s.screen !== "(startup)");
+  const fields = new Set(screens.flatMap((s) => (s.fields ?? []).map((f) => `${f.label}|${f.type}`)));
+  const selects = screens.reduce((n, s) => n + (s.selects?.length ?? 0), 0);
+  const out = ["## Coverage summary", ""];
+  out.push(
+    `- **Screens, rows and modals explored:** ${screens.filter((s) => s.explored).length}` +
+      ` (${screens.filter((s) => s.screen.includes(" ⧉ ")).length} of them modals, drawers or row details)`,
+    `- **Forbidden for this login** (bounced to sign-in or 401): ${screens.filter((s) => s.forbidden).length}`,
+    `- **Distinct UI fields and grid columns:** ${fields.size} · **dropdowns opened:** ${selects}`,
+    `- **Read endpoints observed:** ${run.endpoints.length} · **writes blocked:** ${run.writes.length}`,
+  );
+  const inv = run.inventory;
+  if (inv) {
+    const c = scoreCoverage(inv, run.endpoints, run.writes, run.screens);
+    const reads = inv.apis.filter((a) => !isBundleWrite(a));
+    const missed = new Set(c.apisMissed.map((a) => a.path));
+    out.push(
+      `- **App bundle:** ${inv.apis.length} API paths (${reads.length} reads, ${inv.apis.length - reads.length} writes) and ${c.routesTotal} routes`,
+      `- **Bundle reads reached:** ${reads.filter((a) => !missed.has(a.path)).length} / ${reads.length} · **routes reached:** ${c.routesReached} / ${c.routesTotal}`,
+      `- **Observed but not in the bundle** (paths built at run time): ${c.observedNotInInventory.length}`,
+      "",
+      "| Module | Screens | Fields | Reads seen | Writes blocked | Bundle reads reached | Bundle writes (never fired) |",
+      "| --- | --- | --- | --- | --- | --- | --- |",
+    );
+    for (const mod of MODULES) {
+      const ms = screens.filter((s) => moduleForScreen(s.screen.split(" ⧉ ")[0]!) === mod);
+      const mf = new Set(ms.flatMap((s) => (s.fields ?? []).map((f) => `${f.label}|${f.type}`)));
+      const mi = inv.apis.filter((a) => moduleForApi(a.path) === mod);
+      const mr = mi.filter((a) => !isBundleWrite(a));
+      const row = [
+        mod.name,
+        ms.length,
+        mf.size,
+        run.endpoints.filter((e) => moduleForApi(e.template) === mod).length,
+        run.writes.filter((w) => moduleForApi(w.template) === mod).length,
+        `${mr.filter((a) => !missed.has(a.path)).length} / ${mr.length}`,
+        mi.length - mr.length,
+      ];
+      if (row.slice(1, 5).some((n) => n) || mi.length) out.push(`| ${row.join(" | ")} |`);
+    }
+    if (c.routesMissed.length) {
+      out.push(
+        "",
+        "<details><summary>Routes defined by the app but not reached</summary>",
+        "",
+        c.routesMissed.map(code).join(" · "),
+        "",
+        "</details>",
+      );
+    }
+  }
+  out.push("");
   return out.join("\n");
 }

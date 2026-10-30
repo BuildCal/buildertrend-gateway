@@ -79,7 +79,7 @@ describe("coverage score", () => {
       { path: "/api/Leads", methods: ["POST"], chunks: [] },
       { path: "/api/Warranty/Grid", methods: ["POST"], chunks: [] },
     ];
-    inv.routes = ["/app/Leads/:id", "/app/Warranties"];
+    inv.routes = ["/app/Leads/:id", "/app/Warranties", "/Bids/:bidId", "/login"];
     const c = scoreCoverage(
       inv,
       [{ template: "/api/Leads/{id}" }, { template: "/api/Other/Thing" }],
@@ -88,7 +88,8 @@ describe("coverage score", () => {
     );
     expect(c.apisReached).toBe(2);
     expect(c.apisMissed.map((a) => a.path)).toEqual(["/api/Warranty/Grid"]);
-    expect(c.routesMissed).toEqual(["/app/Warranties"]);
+    expect(c.routesMissed).toEqual(["/app/Bids/0", "/app/Warranties"]);
+    expect(c.routesTotal).toBe(3);
     expect(c.observedNotInInventory).toEqual(["/api/other/thing"]);
   });
 });

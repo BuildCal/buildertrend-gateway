@@ -23,8 +23,9 @@ async function main(): Promise<void> {
   if (command === "crawl-doc") {
     const run = arg("run");
     if (!run) throw new Error("crawl-doc needs --run <crawl output dir>");
-    const { loadRun, renderModuleSections } = await import("./crawl/coverage-doc.js");
-    process.stdout.write(renderModuleSections(await loadRun(run)) + "\n");
+    const { loadRun, renderCoverageSummary, renderModuleSections } = await import("./crawl/coverage-doc.js");
+    const data = await loadRun(run);
+    process.stdout.write(renderCoverageSummary(data) + "\n" + renderModuleSections(data) + "\n");
     return;
   }
 
