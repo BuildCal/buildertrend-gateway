@@ -6,6 +6,9 @@ import { createHttpApp } from "./http.js";
 import { startStdioMcp } from "./mcp.js";
 import { createStore } from "./store.js";
 import { runCaptureHarness } from "./capture.js";
+import { DEFAULT_SEEDS, defaultCrawlDir, runCrawl, runLogin } from "./crawl/runner.js";
+import { writeCrawlReport } from "./crawl/report.js";
+import { readFileSync } from "node:fs";
 import "./verbs.js";
 
 function arg(name: string, fallback?: string): string | undefined {
@@ -16,6 +19,36 @@ function arg(name: string, fallback?: string): string | undefined {
 
 async function main(): Promise<void> {
   const command = process.argv[2] ?? "serve";
+
+  // Crawl commands drive the dedicated Chrome profile only; no adapter/store.
+  if (command === "crawl-login" || command === "crawl") {
+    const profile = arg("profile", process.env.BT_GATEWAY_PROFILE);
+    if (!profile) throw new Error(`${command} needs --profile or BT_GATEWAY_PROFILE (dedicated gateway profile)`);
+    if (command === "crawl-login") {
+      await runLogin(profile);
+      return;
+    }
+    const seedsFile = arg("seeds");
+    const seeds = seedsFile
+      ? readFileSync(seedsFile, "utf8").split("\n").map((l) => l.trim()).filter((l) => l && !l.startsWith("#"))
+      : DEFAULT_SEEDS;
+    const rec = await runCrawl({
+      profileDir: profile,
+      outDir: arg("out", defaultCrawlDir())!,
+      seeds,
+      maxPages: Number(arg("max-pages", "800")),
+      maxMinutes: Number(arg("max-minutes", "540")),
+      perTemplate: Number(arg("per-template", "2")),
+      navDelay: [Number(arg("nav-min-ms", "6000")), Number(arg("nav-max-ms", "14000"))],
+      clickDelay: [2500, 5000],
+      headless: process.argv.includes("--headless"),
+    });
+    console.error(`REPORT ${await writeCrawlReport(rec.outDir)}`);
+    const stopped = rec.checkpoint.stoppedReason;
+    if (stopped === "needsToRelogin") process.exitCode = 3;
+    return;
+  }
+
   const config = loadConfig();
   const adapter = createAdapter(config, logAdapterRequest);
   const store = await createStore(config.databaseUrl);
@@ -51,7 +84,7 @@ async function main(): Promise<void> {
     return;
   }
 
-  console.error("Usage: bt-gateway <serve|mcp|capture>");
+  console.error("Usage: bt-gateway <serve|mcp|capture|crawl-login|crawl>");
   process.exitCode = 1;
 }
 
