@@ -60,6 +60,8 @@ export interface ScreenRecord {
   explored?: boolean;
   /** An endpoint on this screen answered 401 / needsToRelogin while the session stayed live. */
   forbidden?: boolean;
+  /** Error / not-found view (usually a route needing a real record id). */
+  errorPage?: string;
   endpoints: string[];
   writeCandidates: string[];
 }

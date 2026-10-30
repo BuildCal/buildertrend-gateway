@@ -219,6 +219,7 @@ export function renderCoverageSummary(run: RunData): string {
     `- **Screens, rows and modals explored:** ${screens.filter((s) => s.explored).length}` +
       ` (${screens.filter((s) => s.screen.includes(" ⧉ ")).length} of them modals, drawers or row details)`,
     `- **Forbidden for this login** (bounced to sign-in or 401): ${screens.filter((s) => s.forbidden).length}`,
+    `- **Error / not-found views** (route needs a real record id): ${screens.filter((s) => s.errorPage).length}`,
     `- **Distinct UI fields and grid columns:** ${fields.size} · **dropdowns opened:** ${selects}`,
     `- **Read endpoints observed:** ${run.endpoints.length} · **writes blocked:** ${run.writes.length}`,
   );
@@ -250,6 +251,17 @@ export function renderCoverageSummary(run: RunData): string {
         mi.length - mr.length,
       ];
       if (row.slice(1, 5).some((n) => n) || mi.length) out.push(`| ${row.join(" | ")} |`);
+    }
+    const errorRoutes = screens.filter((s) => s.errorPage).map((s) => s.screen);
+    if (errorRoutes.length) {
+      out.push(
+        "",
+        "<details><summary>Routes that opened an error or not-found view</summary>",
+        "",
+        errorRoutes.map(code).join(" · "),
+        "",
+        "</details>",
+      );
     }
     if (c.routesMissed.length) {
       out.push(

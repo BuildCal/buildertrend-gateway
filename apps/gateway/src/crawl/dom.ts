@@ -104,6 +104,18 @@ export const OPEN_MENU_ITEMS_JS = `(() => {
     .filter(Boolean);
 })()`;
 
+/** Generic error / not-found phrases. Only the matched phrase leaves the page. */
+export const ERROR_PAGE_PATTERN =
+  "page not found|something went wrong|an error (?:has )?occurred|does(?:n't| not) exist|has been deleted|no longer (?:exists|available)|could not (?:be )?(?:found|load)|unable to (?:load|find)|you (?:do not|don't) have (?:access|permission)|not authori[sz]ed|invalid (?:url|link|request)";
+
+/** The error phrase the page shows (main content only), or "". */
+export const ERROR_PAGE_JS = `(() => {
+  const root = document.querySelector("main, [role=main], #root") || document.body;
+  const text = (root.innerText || "").slice(0, 4000);
+  const m = text.match(new RegExp(${JSON.stringify(ERROR_PAGE_PATTERN)}, "i"));
+  return m ? m[0].toLowerCase() : "";
+})()`;
+
 export const OVERLAY_COUNT_JS = `[...document.querySelectorAll(${JSON.stringify(OVERLAY_SELECTOR)})].length`;
 
 /**

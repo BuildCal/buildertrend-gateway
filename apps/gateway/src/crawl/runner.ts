@@ -28,6 +28,7 @@ import { bodyKeys, isSafeEnumLabel, isSystemEnumField, shapeOf } from "./shape.j
 import {
   OPEN_MENU_ITEMS_JS,
   OPEN_SELECT_OPTIONS_JS,
+  ERROR_PAGE_JS,
   OVERLAY_COUNT_JS,
   OVERLAY_SELECTOR,
   buttonLabelsJs,
@@ -668,6 +669,12 @@ export async function runCrawl(opts: CrawlOptions): Promise<CrawlRecorder> {
         // SPA may redirect; record under where we actually landed.
         if (page.url().startsWith(BT_ORIGIN)) currentScreen = screenKey(page.url());
         rec.screen(currentScreen).visits += 1;
+        const errorPhrase = (await page.evaluate(ERROR_PAGE_JS).catch(() => "")) as string;
+        if (errorPhrase) {
+          rec.screen(currentScreen).errorPage = errorPhrase;
+          console.error(`ERROR_PAGE ${currentScreen} (${errorPhrase})`);
+          throw new SkipScreen("error page");
+        }
 
         await collectLinks();
         screenDeadline = Date.now() + opts.screenBudgetMs;

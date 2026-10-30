@@ -307,3 +307,13 @@ describe("crawl session refresh", () => {
     expect(classifyRequest({ method: "POST", url: "https://buildertrend.net/api/Login/LogAuth" }).action).toBe("block");
   });
 });
+
+describe("crawl error pages", () => {
+  it("returns only the matched error phrase", async () => {
+    const { ERROR_PAGE_JS } = await import("../src/crawl/dom.js");
+    const page = (text: string) => ({ querySelector: () => ({ innerText: text }), body: { innerText: text } });
+    const run = (text: string) => new Function("document", `return ${ERROR_PAGE_JS}`)(page(text));
+    expect(run("Jane's Kitchen\nThis item has been deleted or does not exist.")).toBe("has been deleted");
+    expect(run("Purchase Orders\nTitle\nStatus")).toBe("");
+  });
+});
