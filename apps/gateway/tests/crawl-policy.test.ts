@@ -281,3 +281,21 @@ describe("crawl field labels", () => {
     expect(templateFieldLabel("Mark as a Variance PO")).toBe("Mark as a Variance PO");
   });
 });
+
+describe("crawl portal routes", () => {
+  it("never opens client/sub portal or account-linking routes as the builder", async () => {
+    const { isOtherPortalRoute } = await import("../src/crawl/policy.js");
+    for (const bad of [
+      "https://buildertrend.net/app/Owner/ChangeOrders/0/1/Request",
+      "/app/Owner/AccountNotConnected/0",
+      "/app/ownerPortalRedirect/1/false",
+      "/app/Sub/Bids/1",
+      "/app/MagicMobileLogin/0",
+    ]) {
+      expect(isOtherPortalRoute(bad), bad).toBe(true);
+    }
+    for (const ok of ["/app/Subs", "/app/OwnerInvoices", "/app/ChangeOrders/1/2/Details", "/app/DepositExternal/0"]) {
+      expect(isOtherPortalRoute(ok), ok).toBe(false);
+    }
+  });
+});

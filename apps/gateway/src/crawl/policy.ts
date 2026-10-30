@@ -258,6 +258,20 @@ export function screenKey(rawUrl: string): string {
 
 // ── Session ──────────────────────────────────────────────────────────────────
 
+/**
+ * Client/sub portal and account-linking routes. Opening them as the builder
+ * re-runs sign-in as another portal user and ends the builder session.
+ */
+export function isOtherPortalRoute(rawUrl: string): boolean {
+  let path = rawUrl;
+  try {
+    path = new URL(rawUrl, "https://buildertrend.net").pathname;
+  } catch {
+    /* treat as a path */
+  }
+  return /^\/app\/(Owner|Sub|ownerPortal\w*|subPortal\w*)(\/|$)|\/(AccountNotConnected|MagicMobileLogin|Auth0\w*)(\/|$)/i.test(path);
+}
+
 export function looksLikeLoginUrl(rawUrl: string): boolean {
   try {
     const url = new URL(rawUrl);

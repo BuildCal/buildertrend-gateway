@@ -17,6 +17,7 @@ import {
   isSafeNewFormLabel,
   isSafeTabLabel,
   looksLikeLoginUrl,
+  isOtherPortalRoute,
   templateActionLabel,
   templateFieldLabel,
   payloadNeedsRelogin,
@@ -244,7 +245,7 @@ export async function runCrawl(opts: CrawlOptions): Promise<CrawlRecorder> {
     if (url.origin !== BT_ORIGIN || !url.pathname.startsWith("/app/")) return;
     url.hash = "";
     const href = url.toString();
-    if (visited.has(href) || queued.has(href) || looksLikeLoginUrl(href)) return;
+    if (visited.has(href) || queued.has(href) || looksLikeLoginUrl(href) || isOtherPortalRoute(href)) return;
     const tmpl = templateUrl(href).template;
     const cap = tmpl.includes("{") ? opts.perTemplate : 1;
     if ((cp.templateVisits[tmpl] ?? 0) + (queuedPerTemplate.get(tmpl) ?? 0) >= cap) return;
@@ -645,7 +646,7 @@ export async function runCrawl(opts: CrawlOptions): Promise<CrawlRecorder> {
       // Drop copies of a route already visited up to its cap (the cap is also
       // checked at enqueue, but many copies can queue before the first visit).
       const qTmpl = templateUrl(href).template;
-      if ((cp.templateVisits[qTmpl] ?? 0) >= (qTmpl.includes("{") ? opts.perTemplate : 1)) {
+      if (isOtherPortalRoute(href) || (cp.templateVisits[qTmpl] ?? 0) >= (qTmpl.includes("{") ? opts.perTemplate : 1)) {
         cp.queue.shift();
         queued.delete(href);
         continue;
