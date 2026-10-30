@@ -617,6 +617,9 @@ export async function runCrawl(opts: CrawlOptions): Promise<CrawlRecorder> {
       if (opts.headless) throw new StopCrawl("needsToRelogin");
       // Sign-in happens in this same window (the auth cookie is session-only).
       signingIn = true;
+      // The first load ran with the blocker on, which aborts the Auth0
+      // redirect and leaves a blank page. Reload now that sign-in passes.
+      await page.goto(`${BT_ORIGIN}/app/Landing`, { waitUntil: "domcontentloaded" }).catch(() => undefined);
       status = await waitForSignIn(page, 30 * 60_000);
       signingIn = false;
       if (!status) throw new StopCrawl("needsToRelogin");

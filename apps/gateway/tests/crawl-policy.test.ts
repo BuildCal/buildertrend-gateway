@@ -299,3 +299,11 @@ describe("crawl portal routes", () => {
     }
   });
 });
+
+describe("crawl session refresh", () => {
+  it("lets the app refresh its own sign-in but still blocks login logging", async () => {
+    const { classifyRequest } = await import("../src/crawl/policy.js");
+    expect(classifyRequest({ method: "POST", url: "https://buildertrend.net/api/login/Auth0Callback" }).action).toBe("allow");
+    expect(classifyRequest({ method: "POST", url: "https://buildertrend.net/api/Login/LogAuth" }).action).toBe("block");
+  });
+});

@@ -135,6 +135,11 @@ export function classifyRequest(input: {
   if (firstParty && TELEMETRY_PATH.test(url.pathname)) {
     return { action: "drop", reason: "first-party telemetry/push" };
   }
+  // The app refreshes its own sign-in through this callback. Blocking it ends
+  // the session; it changes no Buildertrend records. (LogAuth stays blocked.)
+  if (firstParty && method === "POST" && /^\/api\/login\/Auth0Callback\/?$/i.test(url.pathname)) {
+    return { action: "allow", reason: "session refresh" };
+  }
 
   if (method === "OPTIONS") return { action: "allow", reason: "preflight" };
 
