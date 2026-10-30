@@ -20,6 +20,7 @@ const u=r=>e.get(\`/api/ChangeOrders/\${r}/changeOrder\`),
  g="/app/ChangeOrders/ChangeOrder/\${id}/\${jobId}";
 const routes=[{path:"/Warranties/:warrantyId/:jobId"},{path:"ChangeOrders/:id"},{path:"d"}];
 const img="/app/static/logo-AbC12345.svg";
+const R={details:"/ChangeOrders/:changeOrderId/:jobId/Details",word:"/Default"};
 `;
 
 describe("bundle inventory extractors", () => {
@@ -39,6 +40,7 @@ describe("bundle inventory extractors", () => {
 
   it("finds routes and compiled enums", () => {
     expect(routeRefs(SAMPLE)).toEqual([
+      "/ChangeOrders/:changeOrderId/:jobId/Details",
       "/ChangeOrders/:id",
       "/Warranties/:warrantyId/:jobId",
       "/app/ChangeOrders/ChangeOrder/:p/:p",

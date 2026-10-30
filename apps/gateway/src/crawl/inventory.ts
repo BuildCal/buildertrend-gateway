@@ -74,6 +74,11 @@ export function routeRefs(source: string): string[] {
     const r = m[1]!.replace(/\$\{[^}]*\}/g, ":p");
     if (keep(r)) out.add(r);
   }
+  // Route constants: any literal shaped like "/ChangeOrders/:changeOrderId/:jobId/Details".
+  for (const m of source.matchAll(/["'`](\/?[A-Z][A-Za-z0-9]+(?:\/[A-Za-z0-9_.-]+)*\/:[A-Za-z]+\??(?:\/[A-Za-z0-9_:?.-]+)*)["'`]/g)) {
+    const r = m[1]!.startsWith("/") ? m[1]! : `/${m[1]!}`;
+    if (keep(r)) out.add(r);
+  }
   // Router definitions, with or without a leading slash: path:"ChangeOrders/:id".
   for (const m of source.matchAll(/\bpath\s*:\s*["'`](\/?[A-Z][^"'`\s]*)["'`]/g)) {
     const r = m[1]!.startsWith("/") ? m[1]! : `/${m[1]!}`;
