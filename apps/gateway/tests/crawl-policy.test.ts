@@ -30,6 +30,7 @@ describe("crawl write-blocker policy", () => {
       "/apix/v2/EntityChangeTracking/entity-changes",
       "/apix/v2/EntityRecords/linked-entities/3f2504e0-4f89-11d3-9a0c-0305e82c3301/batch?targetEntityTypes=1",
       "/api/AccountInfo/GlobalInfo",
+      "/api/files/emailSignatures?id=1&rowVersion=2",
       "/app/OwnerInvoices/OwnerInvoice/0/5/false",
     ]) {
       expect(decide("GET", path), path).toBe("allow");
@@ -123,7 +124,7 @@ describe("crawl write-blocker policy", () => {
 
   it("guards UI labels", () => {
     for (const ok of ["Lines", "Files", "Related Items", "Job Info", "Overview"]) expect(isSafeTabLabel(ok), ok).toBe(true);
-    for (const bad of ["Save", "Save & Close", "Send", "Approve", "Delete", "Release", "Notify Owner", "Convert to Job", "Submit", "Pay Online", "Recall", "More › Recall", "Withdraw", "Revert", "Like", "Mark as read", "0", "12"]) {
+    for (const bad of ["Save", "Save & Close", "Send", "Approve", "Delete", "Release", "Notify Owner", "Convert to Job", "Submit", "Pay Online", "Recall", "More › Recall", "Withdraw", "Revert", "Like", "Mark as read", "0", "12", "Rename", "More › Create QR code"]) {
       expect(isSafeTabLabel(bad), bad).toBe(false);
       expect(isSafeNewFormLabel(bad), bad).toBe(false);
     }

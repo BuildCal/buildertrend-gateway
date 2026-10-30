@@ -51,7 +51,7 @@ export const READ_ONLY_POSTS: { pattern: RegExp; why: string }[] = [
 const MUTATING_TOKENS = new Set([
   "add", "create", "insert", "save", "update", "edit", "upsert", "put", "patch",
   "delete", "remove", "destroy", "purge", "void", "cancel", "archive", "restore",
-  "send", "resend", "notify", "email", "sms", "text", "invite", "share", "publish",
+  "send", "resend", "notify", "invite", "share", "publish",
   "submit", "approve", "approval", "decline", "reject", "release", "unrelease",
   "convert", "close", "reopen", "finalize", "finalise", "lock", "unlock",
   "pay", "payment", "charge", "refund", "sync", "import", "upload", "clone",
@@ -174,7 +174,7 @@ function pathLooksMutatingExcept(pathname: string, matched: RegExp): boolean {
  * abort the write anyway. Belt and braces.
  */
 const UNSAFE_LABEL =
-  /\b(save|send|resend|submit|approve|decline|reject|delete|remove|release|unrelease|notify|convert|void|pay|payment|archive|restore|close|reopen|finali[sz]e|sign|publish|import|export|sync|email|text|share|invite|accept|request|lock|unlock|reset|disconnect|apply|assign|mark|complete|clone|copy|duplicate|move|merge|upload|download|print|log ?out|sign ?out|cancel|discard|confirm|ok|yes|done|update|create job|create invoice|generate|refresh|transfer|post|record|charge|refund|deactivate|activate|disable|enable|turn (on|off)|connect|link|unlink|attach|detach|mute|follow|subscribe|unsubscribe|pin|star|favorite|favourite|undo|redo|clear|check ?in|check ?out|clock ?in|clock ?out|start|stop|recall|withdraw|retract|revert|revoke|resubmit|reassign|like|unlike|react|reaction|vote|rate|acknowledge|confirm|dismiss|snooze|read|unread)\b/i;
+  /\b(save|send|resend|submit|approve|decline|reject|delete|remove|release|unrelease|notify|convert|void|pay|payment|archive|restore|close|reopen|finali[sz]e|sign|publish|import|export|sync|email|text|share|invite|accept|request|lock|unlock|reset|disconnect|apply|assign|mark|complete|clone|copy|duplicate|move|merge|upload|download|print|log ?out|sign ?out|cancel|discard|confirm|ok|yes|done|update|create job|create invoice|generate|refresh|transfer|post|record|charge|refund|deactivate|activate|disable|enable|turn (on|off)|connect|link|unlink|attach|detach|mute|follow|subscribe|unsubscribe|pin|star|favorite|favourite|undo|redo|clear|check ?in|check ?out|clock ?in|clock ?out|start|stop|recall|withdraw|retract|revert|revoke|resubmit|reassign|like|unlike|react|reaction|vote|rate|acknowledge|confirm|dismiss|snooze|read|unread|rename|qr)\b/i;
 
 /** Tabs / nav: anything not on the deny list. */
 export function isSafeTabLabel(label: string): boolean {
