@@ -324,7 +324,8 @@ export async function runCrawl(opts: CrawlOptions): Promise<CrawlRecorder> {
   const safeClick = async (label: string, handle: { click: (o?: object) => Promise<void> }) => {
     lastTrigger = label;
     await handle.click({ timeout: 4000 }).catch(() => undefined);
-    await page.waitForLoadState("networkidle", { timeout: 15_000 }).catch(() => undefined);
+    // Buildertrend polls, so networkidle rarely fires: cap the wait.
+    await page.waitForLoadState("networkidle", { timeout: 5_000 }).catch(() => undefined);
     await sleep(jitter(opts.clickDelay));
     await checkSession();
     await collectLinks();
@@ -374,7 +375,7 @@ export async function runCrawl(opts: CrawlOptions): Promise<CrawlRecorder> {
       if (screen.selects.some((x) => x.label === label)) continue;
       lastTrigger = `select:${label}`;
       await sel.click({ timeout: 3000 }).catch(() => undefined);
-      await page.waitForLoadState("networkidle", { timeout: 8000 }).catch(() => undefined);
+      await page.waitForLoadState("networkidle", { timeout: 4000 }).catch(() => undefined);
       await sleep(jitter([700, 1500]));
       const options = ((await page.evaluate(OPEN_SELECT_OPTIONS_JS).catch(() => null)) ?? []) as string[];
       const entry: SelectInfo = { label, count: options.length };
@@ -405,7 +406,7 @@ export async function runCrawl(opts: CrawlOptions): Promise<CrawlRecorder> {
 
   const reload = async (pageUrl: string) => {
     await page.goto(pageUrl, { waitUntil: "domcontentloaded" }).catch(() => undefined);
-    await page.waitForLoadState("networkidle", { timeout: 15_000 }).catch(() => undefined);
+    await page.waitForLoadState("networkidle", { timeout: 8_000 }).catch(() => undefined);
   };
 
   const buttonIn = (scope: string | null, label: string) => {
