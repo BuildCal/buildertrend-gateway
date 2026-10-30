@@ -47,6 +47,8 @@ describe("crawl write-blocker policy", () => {
       "/api/calendar/CalendarList",
       "/api/LeadActivities/Calendar",
       "/api/ActivityFeed",
+      "/apix/v2/TimeClock/summary",
+      "/apix/v2/Tasks/workday-exceptions/list",
       "/api/jobpicker/GetJobPickerData",
       "/api/jobpicker/SetJobPickerData",
       "/api/Search?limit=10",
@@ -81,6 +83,8 @@ describe("crawl write-blocker policy", () => {
       ["POST", "/api/Grid/DeleteList"],
       ["POST", "/api/Calendar/SaveCalendar"],
       ["POST", "/api/Feed/Add"],
+      ["POST", "/apix/v2/Tasks/delete-tasks/list"],
+      ["PUT", "/api/Payroll/RefreshPayPeriods"],
       ["POST", "/api/Unknown/Thing"],
     ];
     for (const [method, path] of writes) {

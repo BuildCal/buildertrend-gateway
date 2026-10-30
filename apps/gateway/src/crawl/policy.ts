@@ -40,6 +40,8 @@ export const READ_ONLY_POSTS: { pattern: RegExp; why: string }[] = [
   // List-shaped POSTs: GridTemplate, CalendarList, Calendar, ActivityFeed, …List.
   { pattern: /^\/api(x)?\/(v\d\/)?([A-Za-z]+\/)?[A-Za-z-]*(grid|calendar|feed)[A-Za-z-]*$/i, why: "grid/calendar/feed read" },
   { pattern: /^\/api(x)?\/(v\d\/)?[A-Za-z]+\/[A-Za-z]*List$/, why: "…List read" },
+  // Last segment names a read: …/list, …/summary, …/search, …/count(s), …/totals, …/preview.
+  { pattern: /^\/api(x)?\/(v\d\/)?([A-Za-z-]+\/){1,3}(list|summary|search|counts?|totals|preview)$/i, why: "list/summary read" },
 ];
 
 /**
