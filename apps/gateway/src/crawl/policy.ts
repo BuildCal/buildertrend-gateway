@@ -18,7 +18,7 @@ const TELEMETRY_HOST =
 
 /** First-party paths that are telemetry / push registration / realtime noise. */
 const TELEMETRY_PATH =
-  /\/(signalr|mp-proxy|notificationhub|push(registration|subscription)?s?|devicetokens?|telemetry|beacon|rum|clientlogs?|heartbeat|keepalive)(\/|$|\?)/i;
+  /\/(signalr|mp-proxy|sawmill[\w-]*|notificationhub|push(registration|subscription)?s?|devicetokens?|telemetry|beacon|rum|clientlogs?|heartbeat|keepalive)(\/|$|\?)/i;
 
 /**
  * Known read-only POSTs. Buildertrend uses POST for grid/list queries and a
@@ -37,6 +37,9 @@ export const READ_ONLY_POSTS: { pattern: RegExp; why: string }[] = [
   { pattern: /^\/apix\/v\d\/JobCostingBudget$/i, why: "costing header read" },
   { pattern: /^\/apix\/v\d\/JobCostingBudget\/line-items$/i, why: "costing lines read" },
   { pattern: /^\/api(x)?\/(v\d\/)?[A-Za-z]+\/(get|search|lookup|list)[A-Za-z]*$/i, why: "explicit Get/Search/List lookup" },
+  // List-shaped POSTs: GridTemplate, CalendarList, Calendar, ActivityFeed, …List.
+  { pattern: /^\/api(x)?\/(v\d\/)?([A-Za-z]+\/)?[A-Za-z]*(grid|calendar|feed)[A-Za-z]*$/i, why: "grid/calendar/feed read" },
+  { pattern: /^\/api(x)?\/(v\d\/)?[A-Za-z]+\/[A-Za-z]*List$/, why: "…List read" },
 ];
 
 /**
@@ -123,6 +126,10 @@ export function classifyRequest(input: {
   }
 
   const firstParty = isBuildertrendHost(url.hostname);
+  // Root-level opaque token POSTs are log/telemetry ingestion beacons.
+  if (method !== "GET" && /^\/[A-Za-z0-9_-]{24,}\/?$/.test(url.pathname)) {
+    return { action: "drop", reason: "opaque ingestion path" };
+  }
   if (firstParty && TELEMETRY_PATH.test(url.pathname)) {
     return { action: "drop", reason: "first-party telemetry/push" };
   }

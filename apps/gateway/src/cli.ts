@@ -40,8 +40,11 @@ async function main(): Promise<void> {
       maxMinutes: Number(arg("max-minutes", "540")),
       perTemplate: Number(arg("per-template", "2")),
       navDelay: [Number(arg("nav-min-ms", "6000")), Number(arg("nav-max-ms", "14000"))],
-      clickDelay: [2500, 5000],
+      clickDelay: [1500, 3500],
+      screenBudgetMs: Number(arg("screen-budget-s", "300")) * 1000,
       headless: process.argv.includes("--headless"),
+      jobText: arg("job"),
+      inventoryOnly: process.argv.includes("--inventory-only"),
     });
     console.error(`REPORT ${await writeCrawlReport(rec.outDir)}`);
     const stopped = rec.checkpoint.stoppedReason;

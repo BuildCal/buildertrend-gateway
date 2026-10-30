@@ -6,6 +6,15 @@ import { existsSync } from "node:fs";
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import type { EnumOptions } from "./shape.js";
+import type { FieldInfo } from "./dom.js";
+
+export interface SelectInfo {
+  /** Field label from the form. */
+  label: string;
+  count: number;
+  /** Only for system enums (status, type, …), never people / vendors / jobs. */
+  options?: string[];
+}
 
 export interface EndpointRecord {
   method: string;
@@ -40,6 +49,13 @@ export interface ScreenRecord {
   visits: number;
   tabs: string[];
   newForms: string[];
+  /** Form controls seen on the screen or its modals (label + type). */
+  fields: FieldInfo[];
+  selects: SelectInfo[];
+  /** Every control label seen, write actions included (never clicked). */
+  actions: string[];
+  /** Controls the crawler actually clicked. */
+  clicked: string[];
   endpoints: string[];
   writeCandidates: string[];
 }
@@ -81,7 +97,10 @@ export class CrawlRecorder {
   screen(key: string): ScreenRecord {
     let rec = this.screens.get(key);
     if (!rec) {
-      rec = { screen: key, visits: 0, tabs: [], newForms: [], endpoints: [], writeCandidates: [] };
+      rec = {
+        screen: key, visits: 0, tabs: [], newForms: [], fields: [], selects: [], actions: [], clicked: [],
+        endpoints: [], writeCandidates: [],
+      };
       this.screens.set(key, rec);
     }
     return rec;

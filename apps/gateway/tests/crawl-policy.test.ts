@@ -42,6 +42,10 @@ describe("crawl write-blocker policy", () => {
       "/api/v1/bills/grid",
       "/apix/v2/Bills/tab-counts",
       "/apix/v2/Landing",
+      "/api/LeadProposal/GridTemplate",
+      "/api/calendar/CalendarList",
+      "/api/LeadActivities/Calendar",
+      "/api/ActivityFeed",
       "/api/jobpicker/GetJobPickerData",
       "/api/jobpicker/SetJobPickerData",
       "/api/Search?limit=10",
@@ -73,6 +77,9 @@ describe("crawl write-blocker policy", () => {
       ["POST", "/api/Foo/GetAndDelete"],
       ["POST", "/api/Foo/ListUpdate"],
       ["POST", "/api/Foo/GetOrCreate"],
+      ["POST", "/api/Grid/DeleteList"],
+      ["POST", "/api/Calendar/SaveCalendar"],
+      ["POST", "/api/Feed/Add"],
       ["POST", "/api/Unknown/Thing"],
     ];
     for (const [method, path] of writes) {
@@ -103,6 +110,8 @@ describe("crawl write-blocker policy", () => {
     expect(decide("POST", `${BT}/signalr/negotiate`)).toBe("drop");
     expect(decide("POST", `${BT}/api/PushRegistration`)).toBe("drop");
     expect(decide("POST", `${BT}/analytics/mp-proxy/track?_=1`)).toBe("drop");
+    expect(decide("POST", `${BT}/sawmill-client-ingestion`)).toBe("drop");
+    expect(decide("POST", "https://x.buildertrend.net/a1B2c3D4e5F6g7H8i9J0k1L2m3")).toBe("drop");
     expect(decide("GET", "wss://buildertrend.net/hub", "websocket")).toBe("drop");
     expect(decide("POST", `${BT}/api/x`, "ping")).toBe("drop");
   });
@@ -199,5 +208,24 @@ describe("in-page probe", () => {
     expect(SESSION_PROBE_JS).not.toMatch(/__name/);
     expect(SESSION_PROBE_JS).toContain("portaltype");
     expect(() => new Function(`return ${SESSION_PROBE_JS}`)).not.toThrow();
+  });
+});
+
+describe("in-page DOM readers", () => {
+  it("are plain JS strings that parse", async () => {
+    const dom = await import("../src/crawl/dom.js");
+    for (const js of [
+      dom.fieldsJs(null),
+      dom.fieldsJs(dom.OVERLAY_SELECTOR),
+      dom.buttonLabelsJs(null),
+      dom.OPEN_SELECT_OPTIONS_JS,
+      dom.OPEN_MENU_ITEMS_JS,
+      dom.OVERLAY_COUNT_JS,
+    ]) {
+      expect(js).not.toMatch(/__name/);
+      expect(() => new Function(`return ${js}`)).not.toThrow();
+    }
+    // Field reader never touches .value.
+    expect(dom.fieldsJs(null)).not.toMatch(/\.value\b/);
   });
 });
