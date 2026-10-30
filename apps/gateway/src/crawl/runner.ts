@@ -67,6 +67,9 @@ export interface CrawlOptions {
  */
 export const DEFAULT_SEEDS = ["/app/Landing"];
 
+/** Abandon the current screen (forbidden route) and move to the next. */
+class SkipScreen extends Error {}
+
 class StopCrawl extends Error {
   constructor(readonly reason: string) {
     super(reason);
@@ -319,14 +322,15 @@ export async function runCrawl(opts: CrawlOptions): Promise<CrawlRecorder> {
    */
   const checkSession = async () => {
     if (!relogin && !looksLikeLoginUrl(page.url())) return;
+    const onLogin = looksLikeLoginUrl(page.url()) || !page.url().startsWith(BT_ORIGIN);
+    if (onLogin) await reload(`${BT_ORIGIN}/app/Landing`);
     const status = await sessionStatusFromPage(page).catch(() => null);
-    if (status?.authenticated && !looksLikeLoginUrl(page.url())) {
-      relogin = false;
-      rec.screen(currentScreen).forbidden = true;
-      console.error(`AUTH_PROBE ok (forbidden on ${currentScreen})`);
-      return;
-    }
-    throw new StopCrawl("needsToRelogin");
+    if (!status?.authenticated || looksLikeLoginUrl(page.url())) throw new StopCrawl("needsToRelogin");
+    relogin = false;
+    rec.screen(currentScreen).forbidden = true;
+    console.error(`AUTH_PROBE ok (forbidden on ${currentScreen})`);
+    // The route bounced to a login page: nothing to explore here.
+    if (onLogin) throw new SkipScreen();
   };
 
   const collectLinks = async () => {
@@ -629,19 +633,23 @@ export async function runCrawl(opts: CrawlOptions): Promise<CrawlRecorder> {
       const target = selectedJobId ? href.replace(/\/-1(?=\/|$|\?)/g, `/${selectedJobId}`) : href;
       await page.goto(target, { waitUntil: "domcontentloaded", timeout: 45_000 }).catch(() => undefined);
       await page.waitForLoadState("networkidle", { timeout: 20_000 }).catch(() => undefined);
-      await sleep(1500);
-      await checkSession();
-      // SPA may redirect; record under where we actually landed.
-      if (page.url().startsWith(BT_ORIGIN)) currentScreen = screenKey(page.url());
-      rec.screen(currentScreen).visits += 1;
+      try {
+        await sleep(1500);
+        await checkSession();
+        // SPA may redirect; record under where we actually landed.
+        if (page.url().startsWith(BT_ORIGIN)) currentScreen = screenKey(page.url());
+        rec.screen(currentScreen).visits += 1;
 
-      await collectLinks();
-      screenDeadline = Date.now() + opts.screenBudgetMs;
-      const firstVisit = !rec.screen(currentScreen).explored;
-      rec.screen(currentScreen).explored = true;
-      await recordFields(null);
-      if (firstVisit) await exploreHere(href);
-      await exploreFirstRow(href);
+        await collectLinks();
+        screenDeadline = Date.now() + opts.screenBudgetMs;
+        const firstVisit = !rec.screen(currentScreen).explored;
+        rec.screen(currentScreen).explored = true;
+        await recordFields(null);
+        if (firstVisit) await exploreHere(href);
+        await exploreFirstRow(href);
+      } catch (err) {
+        if (!(err instanceof SkipScreen)) throw err;
+      }
 
       // "New" variant of a detail route: first id → 0 fires the Defaults GET.
       const tmpl = templateUrl(href).template;
