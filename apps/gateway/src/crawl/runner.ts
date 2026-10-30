@@ -220,6 +220,7 @@ export async function runCrawl(opts: CrawlOptions): Promise<CrawlRecorder> {
   }
   const visited = new Set(cp.visited);
   const queued = new Set(cp.queue);
+  const queuedPerTemplate = new Map<string, number>();
   const enqueue = (raw: string, front = false) => {
     let url: URL;
     try {
@@ -233,7 +234,8 @@ export async function runCrawl(opts: CrawlOptions): Promise<CrawlRecorder> {
     if (visited.has(href) || queued.has(href) || looksLikeLoginUrl(href)) return;
     const tmpl = templateUrl(href).template;
     const cap = tmpl.includes("{") ? opts.perTemplate : 1;
-    if ((cp.templateVisits[tmpl] ?? 0) >= cap) return;
+    if ((cp.templateVisits[tmpl] ?? 0) + (queuedPerTemplate.get(tmpl) ?? 0) >= cap) return;
+    queuedPerTemplate.set(tmpl, (queuedPerTemplate.get(tmpl) ?? 0) + 1);
     queued.add(href);
     if (front) cp.queue.unshift(href);
     else cp.queue.push(href);
@@ -625,6 +627,14 @@ export async function runCrawl(opts: CrawlOptions): Promise<CrawlRecorder> {
       if (cp.pagesVisited >= opts.maxPages) throw new StopCrawl("maxPages");
       if (Date.now() > deadline) throw new StopCrawl("maxMinutes");
       const href = cp.queue[0]!;
+      // Drop copies of a route already visited up to its cap (the cap is also
+      // checked at enqueue, but many copies can queue before the first visit).
+      const qTmpl = templateUrl(href).template;
+      if ((cp.templateVisits[qTmpl] ?? 0) >= (qTmpl.includes("{") ? opts.perTemplate : 1)) {
+        cp.queue.shift();
+        queued.delete(href);
+        continue;
+      }
       cp.resumeFrom = href;
       await sleep(jitter(opts.navDelay));
       currentScreen = screenKey(href);
