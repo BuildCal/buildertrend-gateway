@@ -100,3 +100,26 @@ pnpm --filter gateway capture -- \
 ```
 
 Perform **one** draft save. The harness records method, path, content-type, and JSON keys (cookies stripped) and appends `buildertrend-api-map.md`. Then implement the verb, replay `dry_run`, then one real draft, GET to verify, leave **Not sent**.
+
+## Read-only coverage crawl
+
+Maps every screen, form, modal and data point the web app exposes, scored
+against an inventory read from the app's own JavaScript. Output:
+[docs/buildertrend-coverage-map.md](../../docs/buildertrend-coverage-map.md).
+
+```bash
+# Sign in (password / MFA are yours) and crawl in the same window.
+BT_GATEWAY_PROFILE=/path/to/bt-gateway/chrome-profile pnpm --filter gateway crawl -- --out <run-dir>
+pnpm --filter gateway crawl-doc -- --run <run-dir>   # module sections for the coverage map
+```
+
+Read-only is enforced at the network layer (`src/crawl/policy.ts`): only GET
+reads and an allowlist of read-only POSTs (grids, calendars, feeds,
+list/summary/search, job picker, costing reads) leave the browser. Every other
+request is aborted and logged as a **write candidate** with its body keys —
+those are the capture targets. Write buttons (Save, Send, Approve, Delete…)
+are listed but never clicked. Field values, cookies and tokens are never
+recorded; dropdown options are kept only for system-enum fields. Output lives
+outside the repo (`~/Library/Application Support/bt-gateway/crawl/` by
+default) — do not commit it. Stops on `needsToRelogin` and resumes from its
+checkpoint on the next run.
