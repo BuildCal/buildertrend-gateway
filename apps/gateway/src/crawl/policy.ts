@@ -52,7 +52,7 @@ const MUTATING_TOKENS = new Set([
   "add", "create", "insert", "save", "update", "edit", "upsert", "put", "patch",
   "delete", "remove", "destroy", "purge", "void", "cancel", "archive", "restore",
   "send", "resend", "notify", "invite", "share", "publish",
-  "submit", "approve", "approval", "decline", "reject", "release", "unrelease",
+  "submit", "approve", "decline", "reject", "release", "unrelease",
   "convert", "close", "reopen", "finalize", "finalise", "lock", "unlock",
   "pay", "payment", "charge", "refund", "sync", "import", "upload", "clone",
   "copy", "duplicate", "move", "merge", "assign", "unassign", "mark", "complete",

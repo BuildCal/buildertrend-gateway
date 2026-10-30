@@ -31,6 +31,7 @@ describe("crawl write-blocker policy", () => {
       "/apix/v2/EntityRecords/linked-entities/3f2504e0-4f89-11d3-9a0c-0305e82c3301/batch?targetEntityTypes=1",
       "/api/AccountInfo/GlobalInfo",
       "/api/files/emailSignatures?id=1&rowVersion=2",
+      "/apix/v2/Bills/approval-users/5",
       "/app/OwnerInvoices/OwnerInvoice/0/5/false",
     ]) {
       expect(decide("GET", path), path).toBe("allow");
@@ -250,5 +251,14 @@ describe("action label templating", () => {
     expect(templateActionLabel("PO Status")).toBe("PO Status");
     expect(templateActionLabel("Add New Saved View")).toBe("Add New Saved View");
     expect(templateActionLabel("Freeze Bill # column")).toBe("Freeze Bill # column");
+  });
+});
+
+describe("crawl print guard", () => {
+  it("stubs window.print so print views cannot block the tab", async () => {
+    const { NO_PRINT_JS } = await import("../src/crawl/runner.js");
+    const win: { print: () => unknown } = { print: () => "dialog" };
+    new Function("window", NO_PRINT_JS)(win);
+    expect(win.print()).toBeUndefined();
   });
 });

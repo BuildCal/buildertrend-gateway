@@ -77,6 +77,18 @@ class StopCrawl extends Error {
 }
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/** Reject with SkipScreen if `work` outlives `ms` (a hung modal or print dialog). */
+function withScreenTimeout<T>(work: Promise<T>, ms: number): Promise<T> {
+  let timer: NodeJS.Timeout | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new SkipScreen("screen timeout")), ms);
+  });
+  return Promise.race([work, timeout]).finally(() => clearTimeout(timer));
+}
+
+/** Print views call window.print(), whose native dialog blocks the tab. */
+export const NO_PRINT_JS = "window.print = function () {};";
 const jitter = ([lo, hi]: [number, number]) => lo + Math.floor(Math.random() * (hi - lo));
 
 type PlaywrightModule = typeof import("playwright");
@@ -274,6 +286,7 @@ export async function runCrawl(opts: CrawlOptions): Promise<CrawlRecorder> {
     () => signingIn,
   );
 
+  await context.addInitScript(NO_PRINT_JS);
   context.on("page", (p) => {
     // Popups / new tabs: close them; the crawl drives one tab.
     if (context.pages().length > 1) void p.close().catch(() => undefined);
@@ -654,11 +667,18 @@ export async function runCrawl(opts: CrawlOptions): Promise<CrawlRecorder> {
         screenDeadline = Date.now() + opts.screenBudgetMs;
         const firstVisit = !rec.screen(currentScreen).explored;
         rec.screen(currentScreen).explored = true;
-        await recordFields(null);
-        if (firstVisit) await exploreHere(href);
-        await exploreFirstRow(href);
+        // Hard cap: the budget only stops new clicks, so allow it twice over.
+        await withScreenTimeout(
+          (async () => {
+            await recordFields(null);
+            if (firstVisit) await exploreHere(href);
+            await exploreFirstRow(href);
+          })(),
+          opts.screenBudgetMs * 2 + 60_000,
+        );
       } catch (err) {
         if (!(err instanceof SkipScreen)) throw err;
+        if (err.message === "screen timeout") console.error(`TIMEOUT ${currentScreen}`);
       }
 
       // "New" variant of a detail route: first id → 0 fires the Defaults GET.
