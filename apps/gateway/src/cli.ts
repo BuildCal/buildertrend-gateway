@@ -20,6 +20,14 @@ function arg(name: string, fallback?: string): string | undefined {
 async function main(): Promise<void> {
   const command = process.argv[2] ?? "serve";
 
+  if (command === "crawl-doc") {
+    const run = arg("run");
+    if (!run) throw new Error("crawl-doc needs --run <crawl output dir>");
+    const { loadRun, renderModuleSections } = await import("./crawl/coverage-doc.js");
+    process.stdout.write(renderModuleSections(await loadRun(run)) + "\n");
+    return;
+  }
+
   // Crawl commands drive the dedicated Chrome profile only; no adapter/store.
   if (command === "crawl-login" || command === "crawl") {
     const profile = arg("profile", process.env.BT_GATEWAY_PROFILE);

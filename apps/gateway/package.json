@@ -19,7 +19,8 @@
     "serve": "tsx src/cli.ts serve",
     "capture": "tsx src/cli.ts capture",
     "crawl-login": "tsx src/cli.ts crawl-login",
-    "crawl": "tsx src/cli.ts crawl"
+    "crawl": "tsx src/cli.ts crawl",
+    "crawl-doc": "tsx src/cli.ts crawl-doc"
   },
   "engines": {
     "node": ">=22.23.4"
