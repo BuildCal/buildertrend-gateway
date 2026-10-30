@@ -48,7 +48,7 @@ async function main(): Promise<void> {
       maxMinutes: Number(arg("max-minutes", "540")),
       perTemplate: Number(arg("per-template", "2")),
       navDelay: [Number(arg("nav-min-ms", "6000")), Number(arg("nav-max-ms", "14000"))],
-      clickDelay: [1500, 3500],
+      clickDelay: [Number(arg("click-min-ms", "1000")), Number(arg("click-max-ms", "2500"))],
       screenBudgetMs: Number(arg("screen-budget-s", "300")) * 1000,
       headless: process.argv.includes("--headless"),
       jobText: arg("job"),

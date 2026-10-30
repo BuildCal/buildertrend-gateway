@@ -421,7 +421,8 @@ export async function runCrawl(opts: CrawlOptions): Promise<CrawlRecorder> {
   /** After a click: follow navigation, or explore the modal / drawer it opened. */
   const handleOpened = async (label: string, before: string, overlaysBefore: number, pageUrl: string, depth: number) => {
     if (page.url() !== before) {
-      enqueue(page.url(), true);
+      // Back of the queue: menu and inventory routes come first.
+      enqueue(page.url());
       await reload(pageUrl);
       return;
     }
