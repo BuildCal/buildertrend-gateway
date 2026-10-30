@@ -56,6 +56,8 @@ export interface ScreenRecord {
   actions: string[];
   /** Controls the crawler actually clicked. */
   clicked: string[];
+  /** Deep exploration (tabs, dropdowns, buttons) already done for this screen. */
+  explored?: boolean;
   endpoints: string[];
   writeCandidates: string[];
 }

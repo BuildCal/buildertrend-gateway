@@ -45,6 +45,16 @@ describe("crawl payload shapes", () => {
     expect(JSON.stringify(shape)).not.toMatch(/Jane|John|Acme/);
   });
 
+  it("keeps option labels only for system-enum field names", async () => {
+    const { isSystemEnumField } = await import("../src/crawl/shape.js");
+    for (const ok of ["Status", "Type", "Bill type", "PO Status", "Columns", "Cost type", "Priority", "Unit"]) {
+      expect(isSystemEnumField(ok), ok).toBe(true);
+    }
+    for (const bad of ["Pay to", "Purchase Order", "Job", "Assigned to", "Client", "select#6", "", "Vendor", "Required Approvers", "Contact type name"]) {
+      expect(isSystemEnumField(bad), bad).toBe(false);
+    }
+  });
+
   it("rejects contact-shaped labels", () => {
     expect(isSafeEnumLabel("Draft")).toBe(true);
     expect(isSafeEnumLabel("a@b.com")).toBe(false);

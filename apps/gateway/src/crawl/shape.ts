@@ -23,7 +23,7 @@ const MAX_ENUM_LABELS = 40;
 
 /** Fields whose option labels are people, companies, jobs or contact data. */
 const PERSONAL_FIELD =
-  /(person|people|user|member|employee|staff|assign|owner|vendor|sub(contractor)?s?\b|subs?[A-Z]|contact|customer|client|lead|job|builder|account|email|phone|mobile|address|street|suburb|city|postcode|zip|manager|creat|modif|approver|signer|recipient|viewer|watcher|crew|worker|sales|estimator|bank|card|name|company|supplier|payee|tag|folder|file|template|costcode|cost_code|costitem|catalog|item|location|lot)/i;
+  /(pay|purchase|order|invoice|bill|bid|selection|schedule|phase|project|site|approv|person|people|user|member|employee|staff|assign|owner|vendor|sub(contractor)?s?\b|subs?[A-Z]|contact|customer|client|lead|job|builder|account|email|phone|mobile|address|street|suburb|city|postcode|zip|manager|creat|modif|approver|signer|recipient|viewer|watcher|crew|worker|sales|estimator|bank|card|name|company|supplier|payee|tag|folder|file|template|costcode|cost_code|costitem|catalog|item|location|lot)/i;
 
 const OPTION_ID = ["id", "value", "key", "code", "enumValue"];
 const OPTION_LABEL = ["name", "text", "label", "title", "displayName", "description"];
@@ -64,11 +64,20 @@ export function isSafeEnumLabel(label: string): boolean {
   return true;
 }
 
-/** System enum = option array on a key that is not about people / jobs / vendors. */
+/** Field names that hold system enums (allow-list: labels are only kept for these). */
+const ENUM_FIELD =
+  /(status|type|kind|category|categories|priority|unit|frequency|method|format|view|column|stage|source|reason|terms|tax|mode|visibility|permission|sort|group|range|period|role|level|option|state|condition|action|rule|setting|preference|currency|measure|scope|class|grade|severity|outcome|result)/i;
+
+/**
+ * System enum = option array on a key that names an enum (status, type, …)
+ * and is not about people / jobs / vendors. Anything else keeps a count only.
+ */
 export function isSystemEnumField(path: string): boolean {
   const last = path.split(".").pop() ?? path;
   const bare = last.replace(/\[\]$/, "");
-  return !PERSONAL_FIELD.test(bare);
+  // "Bill type", "PO status": the suffix makes it an enum of the entity.
+  if (/(status|type)(es|s)?$/i.test(bare.trim())) return !/(user|contact|email|phone|address|name)/i.test(bare);
+  return ENUM_FIELD.test(bare) && !PERSONAL_FIELD.test(bare);
 }
 
 export function shapeOf(payload: unknown): PayloadShape {

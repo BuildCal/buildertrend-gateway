@@ -17,6 +17,7 @@ import {
   isSafeNewFormLabel,
   isSafeTabLabel,
   looksLikeLoginUrl,
+  templateActionLabel,
   payloadNeedsRelogin,
   screenKey,
   templateUrl,
@@ -29,14 +30,14 @@ import {
   OVERLAY_SELECTOR,
   buttonLabelsJs,
   fieldsJs,
+  selectLabelsJs,
   type FieldInfo,
 } from "./dom.js";
 import { CrawlRecorder, type SelectInfo } from "./state.js";
-import { addChunk, emptyInventory, type Inventory } from "./inventory.js";
+import { addChunk, emptyInventory, routeSeeds, type Inventory } from "./inventory.js";
 import { unwrapData } from "../adapter.js";
 import { asRecord, numberish } from "../grids.js";
-import { buildJobPickerSelectBody } from "../job-picker.js";
-import { writeFile } from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 
 export const BT_ORIGIN = "https://buildertrend.net";
 
@@ -109,8 +110,6 @@ export const SESSION_PROBE_JS = `(async () => {
 
 const getJs = (path: string) =>
   `fetch(${JSON.stringify(path)}, { credentials: "include", headers: { accept: "application/json", portaltype: "1" } }).then((r) => r.json())`;
-const postJs = (path: string, body: unknown) =>
-  `fetch(${JSON.stringify(path)}, { method: "POST", credentials: "include", headers: { accept: "application/json", "content-type": "application/json", portaltype: "1" }, body: ${JSON.stringify(JSON.stringify(body))} }).then((r) => r.json())`;
 
 const LINKS_JS = `[...document.querySelectorAll("a[href]")].map((a) => a.href)`;
 
@@ -244,6 +243,7 @@ export async function runCrawl(opts: CrawlOptions): Promise<CrawlRecorder> {
   let relogin = false;
   let signingIn = false;
   let screenDeadline = 0;
+  let selectedJobId: number | undefined;
 
   await installWriteBlocker(
     context,
@@ -339,9 +339,10 @@ export async function runCrawl(opts: CrawlOptions): Promise<CrawlRecorder> {
     for (let i = 0; i < n; i++) {
       const tab = tabs.nth(i);
       const label = ((await tab.innerText().catch(() => "")) || "").replace(/\s+/g, " ").trim();
-      if (!isSafeTabLabel(label) || screen.tabs.includes(label)) continue;
+      const recorded = templateActionLabel(label);
+      if (!isSafeTabLabel(label) || screen.tabs.includes(recorded)) continue;
       if (!(await tab.isVisible().catch(() => false))) continue;
-      screen.tabs.push(label);
+      screen.tabs.push(recorded);
       await safeClick(`tab:${label}`, tab);
       await recordFields(scope);
     }
@@ -365,16 +366,11 @@ export async function runCrawl(opts: CrawlOptions): Promise<CrawlRecorder> {
     const root = scope ? page.locator(scope).last() : page;
     const sels = root.locator(".ant-select:not(.ant-select-disabled)");
     const n = Math.min(await sels.count().catch(() => 0), 30);
+    const selLabels = ((await page.evaluate(selectLabelsJs(scope)).catch(() => [])) ?? []) as string[];
     for (let i = 0; i < n && Date.now() < screenDeadline; i++) {
       const sel = sels.nth(i);
       if (!(await sel.isVisible().catch(() => false))) continue;
-      const label =
-        ((await sel
-          .locator("xpath=ancestor::*[contains(@class,'ant-form-item')][1]//*[contains(@class,'ant-form-item-label')]")
-          .first()
-          .innerText({ timeout: 500 })
-          .catch(() => "")) || "").replace(/\s+/g, " ").replace(/[*:]+$/, "").trim() ||
-        ((await sel.getAttribute("aria-label").catch(() => null)) ?? `select#${i}`);
+      const label = selLabels[i] || `select#${i}`;
       if (screen.selects.some((x) => x.label === label)) continue;
       lastTrigger = `select:${label}`;
       await sel.click({ timeout: 3000 }).catch(() => undefined);
@@ -382,7 +378,10 @@ export async function runCrawl(opts: CrawlOptions): Promise<CrawlRecorder> {
       await sleep(jitter([700, 1500]));
       const options = ((await page.evaluate(OPEN_SELECT_OPTIONS_JS).catch(() => null)) ?? []) as string[];
       const entry: SelectInfo = { label, count: options.length };
-      if (isSystemEnumField(label) && options.length && options.every(isSafeEnumLabel)) entry.options = options;
+      // Options only for a KNOWN label that is a system enum (status, type…):
+      // unlabeled dropdowns can list vendors / people.
+      const named = options.filter((o) => !/^-?\d+$/.test(o));
+      if (selLabels[i] && isSystemEnumField(label) && named.length && named.every(isSafeEnumLabel)) entry.options = named;
       screen.selects.push(entry);
       await page.keyboard.press("Escape").catch(() => undefined);
       await checkSession();
@@ -446,7 +445,7 @@ export async function runCrawl(opts: CrawlOptions): Promise<CrawlRecorder> {
   const exploreButtons = async (scope: string | null, pageUrl: string, depth = 0) => {
     const screen = rec.screen(currentScreen);
     const labels = ((await page.evaluate(buttonLabelsJs(scope)).catch(() => [])) ?? []) as string[];
-    for (const l of labels) if (!screen.actions.includes(l)) screen.actions.push(l);
+    for (const l of labels.map(templateActionLabel)) if (!screen.actions.includes(l)) screen.actions.push(l);
     const clickable = labels.filter((l) => isSafeTabLabel(l) || isSafeNewFormLabel(l));
     for (const label of clickable.slice(0, 20)) {
       if (Date.now() > screenDeadline) return;
@@ -460,7 +459,10 @@ export async function runCrawl(opts: CrawlOptions): Promise<CrawlRecorder> {
       // "…" / split buttons open an action menu: list every item, open safe ones.
       const items = ((await page.evaluate(OPEN_MENU_ITEMS_JS).catch(() => [])) ?? []) as string[];
       if (items.length) {
-        for (const it of items) if (!screen.actions.includes(`${label} › ${it}`)) screen.actions.push(`${label} › ${it}`);
+        for (const it of items) {
+          const a = templateActionLabel(`${label} › ${it}`);
+          if (!screen.actions.includes(a)) screen.actions.push(a);
+        }
         await page.keyboard.press("Escape").catch(() => undefined);
         for (const it of items.filter(isSafeTabLabel).slice(0, 8)) {
           if (Date.now() > screenDeadline) break;
@@ -492,58 +494,72 @@ export async function runCrawl(opts: CrawlOptions): Promise<CrawlRecorder> {
   };
 
   /**
-   * Select a job the way jobs.picker.select does (the sidebar click does not
-   * reliably fire SetJobPickerData). Session scope only, not a data write.
+   * Select a job by clicking it in the sidebar picker, as a person would. The
+   * web app keeps the selection client-side (no SetJobPickerData request), so
+   * success = the "No job selected" banner goes away.
    */
   const selectJob = async () => {
     lastTrigger = "select-job";
-    const existing = await page.evaluate(getJs("/api/jobpicker/GetExistingJobList")).catch(() => null);
-    const jobs = asRecord(unwrapData(existing)).jobs;
-    const rows = (Array.isArray(jobs) ? jobs : []).map(asRecord);
-    const wanted = opts.jobText?.toLowerCase();
-    const row =
-      rows.find((r) => wanted && JSON.stringify([r.jobName, r.title, r.name]).toLowerCase().includes(wanted)) ?? rows[0];
-    const jobId = row ? numberish(row.jobID ?? row.jobId ?? row.id ?? row.jobsiteId) : undefined;
-    if (!row || !jobId) {
-      console.error("JOB not selected (no jobs listed)");
+    const rows = page.locator(".JobPickerReact div.rounded-md.cursor-pointer").filter({ hasText: /\d{2,6} - / });
+    const row = opts.jobText ? rows.filter({ hasText: opts.jobText }).first() : rows.first();
+    if (!(await row.isVisible().catch(() => false))) {
+      console.error("JOB not selected (no job row visible)");
       return;
     }
-    for (const body of [buildJobPickerSelectBody([jobId], row), [jobId]]) {
-      await page.evaluate(postJs("/api/jobpicker/SetJobPickerData", body)).catch(() => null);
-      const status = await sessionStatusFromPage(page).catch(() => null);
-      if (status?.currentJob?.jobId) {
-        console.error("JOB selected");
-        await reload(`${BT_ORIGIN}/app/Landing`);
-        return;
-      }
-    }
-    console.error("JOB not confirmed");
+    const rowText = ((await row.innerText().catch(() => "")) || "").replace(/\s+/g, " ").trim();
+    await row.click({ timeout: 4000 }).catch(() => undefined);
+    await page.waitForLoadState("networkidle", { timeout: 15_000 }).catch(() => undefined);
+    await sleep(2000);
+    const unselected = await page.locator("text=No job selected").count().catch(() => 1);
+    // Job id for route seeds: match the clicked row against the existing-job list.
+    const existing = await page.evaluate(getJs("/api/jobpicker/GetExistingJobList")).catch(() => null);
+    const jobs = asRecord(unwrapData(existing)).jobs;
+    const match = (Array.isArray(jobs) ? jobs : [])
+      .map(asRecord)
+      .find((r) => typeof r.jobName === "string" && r.jobName && rowText.includes(r.jobName));
+    selectedJobId = match ? numberish(match.jobID ?? match.jobId) : undefined;
+    console.error(`JOB ${unselected ? "not confirmed" : "selected"} id=${selectedJobId ? "known" : "unknown"}`);
   };
 
-  /** Open the first row of a list grid so its detail endpoints fire. */
+  /** Deep-explore whatever is open now (page + overlays) under the current screen key. */
+  const exploreHere = async (pageUrl: string) => {
+    await recordFields(null);
+    await recordFields(OVERLAY_SELECTOR);
+    await exploreTabs();
+    await exploreTabs(OVERLAY_SELECTOR);
+    await exploreSelects(null);
+    await exploreButtons(null, pageUrl);
+  };
+
+  /**
+   * Open the first row of a list grid and deep-explore the detail while it is
+   * open (detail routes redirect to the list when visited cold).
+   */
   const exploreFirstRow = async (pageUrl: string) => {
     const row = page.locator(".k-grid-table tr.k-master-row, .ant-table-tbody tr.ant-table-row").first();
     if (!(await row.isVisible().catch(() => false))) return;
     const before = page.url();
+    const overlaysBefore = await overlayCount();
     const target = row.locator("td:not(.BTGridSelectCell) a, td:not(.BTGridSelectCell) .BTLink").first();
     const handle = (await target.isVisible().catch(() => false))
       ? target
       : row.locator("td:not(.BTGridSelectCell):not(.k-grid-content-sticky)").nth(1);
     await safeClick("row:first", handle);
+    const opened = page.url() !== before || (await overlayCount()) > overlaysBefore;
+    if (!opened) return;
     const listScreen = currentScreen;
-    if (page.url() !== before) {
-      enqueue(page.url(), true);
-      currentScreen = screenKey(page.url());
-      rec.screen(currentScreen).visits += 1;
+    currentScreen = page.url() !== before ? screenKey(page.url()) : `${listScreen} ⧉ row`;
+    const detail = rec.screen(currentScreen);
+    detail.visits += 1;
+    if (!detail.explored) {
+      detail.explored = true;
+      await sleep(2000);
+      screenDeadline = Date.now() + opts.screenBudgetMs;
+      await exploreHere(page.url());
     }
-    await recordFields(null);
-    await recordFields(OVERLAY_SELECTOR);
-    await exploreTabs(OVERLAY_SELECTOR);
-    await exploreTabs();
     currentScreen = listScreen;
     await page.keyboard.press("Escape").catch(() => undefined);
-    await page.goto(pageUrl, { waitUntil: "domcontentloaded" }).catch(() => undefined);
-    await page.waitForLoadState("networkidle", { timeout: 15_000 }).catch(() => undefined);
+    await reload(pageUrl);
   };
 
   const stopOnSignal = () => {
@@ -578,6 +594,13 @@ export async function runCrawl(opts: CrawlOptions): Promise<CrawlRecorder> {
     }
     await selectJob();
     await discoverMenu();
+    // Every route the app defines (from the bundle), after the menu routes.
+    const invPath = join(opts.outDir, "inventory.json");
+    if (existsSync(invPath)) {
+      const inv = JSON.parse(await readFile(invPath, "utf8")) as Inventory;
+      for (const url of routeSeeds(inv.routes, selectedJobId)) enqueue(url);
+      console.error(`ROUTES queued from inventory: ${inv.routes.length}`);
+    }
 
     while (cp.queue.length) {
       if (cp.pagesVisited >= opts.maxPages) throw new StopCrawl("maxPages");
@@ -587,7 +610,9 @@ export async function runCrawl(opts: CrawlOptions): Promise<CrawlRecorder> {
       await sleep(jitter(opts.navDelay));
       currentScreen = screenKey(href);
       lastTrigger = `nav:${currentScreen}`;
-      await page.goto(href, { waitUntil: "domcontentloaded", timeout: 45_000 }).catch(() => undefined);
+      // Quick-add / job-scoped routes use -1 for "no job": use the selected job.
+      const target = selectedJobId ? href.replace(/\/-1(?=\/|$|\?)/g, `/${selectedJobId}`) : href;
+      await page.goto(target, { waitUntil: "domcontentloaded", timeout: 45_000 }).catch(() => undefined);
       await page.waitForLoadState("networkidle", { timeout: 20_000 }).catch(() => undefined);
       await sleep(1500);
       await checkSession();
@@ -597,13 +622,10 @@ export async function runCrawl(opts: CrawlOptions): Promise<CrawlRecorder> {
 
       await collectLinks();
       screenDeadline = Date.now() + opts.screenBudgetMs;
-      const firstVisit = rec.screen(currentScreen).visits === 1;
+      const firstVisit = !rec.screen(currentScreen).explored;
+      rec.screen(currentScreen).explored = true;
       await recordFields(null);
-      if (firstVisit) {
-        await exploreTabs();
-        await exploreSelects(null);
-        await exploreButtons(null, href);
-      }
+      if (firstVisit) await exploreHere(href);
       await exploreFirstRow(href);
 
       // "New" variant of a detail route: first id → 0 fires the Defaults GET.

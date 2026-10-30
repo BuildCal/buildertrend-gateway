@@ -18,7 +18,8 @@ const u=r=>e.get(\`/api/ChangeOrders/\${r}/changeOrder\`),
  c=(r,n)=>fetch(\`/api/ChangeOrders/\${r}/Update\`,{method:"PUT",body:n}),
  d=()=>e.post("/apix/v2/LineItems/add-change-order-line-items",{}),
  g="/app/ChangeOrders/ChangeOrder/\${id}/\${jobId}";
-const routes=[{path:"/Warranties/:warrantyId/:jobId"}];
+const routes=[{path:"/Warranties/:warrantyId/:jobId"},{path:"ChangeOrders/:id"},{path:"d"}];
+const img="/app/static/logo-AbC12345.svg";
 `;
 
 describe("bundle inventory extractors", () => {
@@ -37,7 +38,11 @@ describe("bundle inventory extractors", () => {
   });
 
   it("finds routes and compiled enums", () => {
-    expect(routeRefs(SAMPLE)).toEqual(["/Warranties/:warrantyId/:jobId", "/app/ChangeOrders/ChangeOrder/:p/:p"]);
+    expect(routeRefs(SAMPLE)).toEqual([
+      "/ChangeOrders/:id",
+      "/Warranties/:warrantyId/:jobId",
+      "/app/ChangeOrders/ChangeOrder/:p/:p",
+    ]);
     expect(enumRefs(SAMPLE)).toEqual([
       [
         { name: "Draft", value: 0 },
@@ -83,5 +88,14 @@ describe("coverage score", () => {
     expect(c.apisMissed.map((a) => a.path)).toEqual(["/api/Warranty/Grid"]);
     expect(c.routesMissed).toEqual(["/app/Warranties"]);
     expect(c.observedNotInInventory).toEqual(["/api/other/thing"]);
+  });
+});
+
+describe("routeSeeds", () => {
+  it("fills job params with the selected job and other ids with 0", async () => {
+    const { routeSeeds } = await import("../src/crawl/inventory.js");
+    expect(
+      routeSeeds(["/Warranties/:warrantyId/:jobId", "/app/ChangeOrders/ChangeOrder/:p/:p", "/Settings", "/Files/*", "/app/Logout"], 42),
+    ).toEqual(["/app/ChangeOrders/ChangeOrder/0/0", "/app/Settings", "/app/Warranties/0/42"]);
   });
 });

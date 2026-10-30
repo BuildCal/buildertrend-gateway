@@ -38,7 +38,7 @@ export const READ_ONLY_POSTS: { pattern: RegExp; why: string }[] = [
   { pattern: /^\/apix\/v\d\/JobCostingBudget\/line-items$/i, why: "costing lines read" },
   { pattern: /^\/api(x)?\/(v\d\/)?[A-Za-z]+\/(get|search|lookup|list)[A-Za-z]*$/i, why: "explicit Get/Search/List lookup" },
   // List-shaped POSTs: GridTemplate, CalendarList, Calendar, ActivityFeed, …List.
-  { pattern: /^\/api(x)?\/(v\d\/)?([A-Za-z]+\/)?[A-Za-z]*(grid|calendar|feed)[A-Za-z]*$/i, why: "grid/calendar/feed read" },
+  { pattern: /^\/api(x)?\/(v\d\/)?([A-Za-z]+\/)?[A-Za-z-]*(grid|calendar|feed)[A-Za-z-]*$/i, why: "grid/calendar/feed read" },
   { pattern: /^\/api(x)?\/(v\d\/)?[A-Za-z]+\/[A-Za-z]*List$/, why: "…List read" },
 ];
 
@@ -55,7 +55,7 @@ const MUTATING_TOKENS = new Set([
   "pay", "payment", "charge", "refund", "sync", "import", "upload", "clone",
   "copy", "duplicate", "move", "merge", "assign", "unassign", "mark", "complete",
   "sign", "accept", "logout", "logoff", "signout", "reset", "disconnect", "set",
-  "bulk", "batch", "apply", "temp", "tempfile", "ocr",
+  "bulk", "apply", "temp", "tempfile", "ocr",
 ]);
 
 /** Read-ish prefixes that neutralise a mutating token (e.g. GetLinkedItems). */
@@ -189,6 +189,19 @@ export function isSafeNewFormLabel(label: string): boolean {
   // "Add" alone is fine; "Add & Send", "Create and release" are not.
   const rest = text.replace(/^\+?\s*(new|add|create)\b/i, "");
   return !UNSAFE_LABEL.test(rest);
+}
+
+/**
+ * Control labels can carry data ("Email ‹person›", "Purchase Order: PO-305").
+ * Template numbers and person-name tails before a label is recorded.
+ */
+export function templateActionLabel(label: string): string {
+  // Avatar buttons: initials then a name ("JS Jane Smith", "AT Acme Trade").
+  if (/^[A-Z]{1,3}\s+[A-Z0-9]/.test(label) && !/^(PO|CO|RFI|ID|GST|PDF|CSV|AIA|URL)\b/.test(label)) return "{avatar}";
+  let t = label.replace(/\d+/g, "{n}");
+  t = t.replace(/^(Email|Call|Text|Message|Chat with)\s+([A-Z][a-z'’-]+)(\s+(&|and)?\s*[A-Z][a-z'’-]+)*$/u, "$1 {person}");
+  t = t.replace(/:\s+.+$/, ": {value}");
+  return t;
 }
 
 // ── Templating (never record ids or personal data) ─────────────────────────

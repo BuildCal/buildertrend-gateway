@@ -69,8 +69,16 @@ export function apiRefs(source: string): { path: string; methods: string[] }[] {
 /** SPA routes: `/app/...` literals and router `path: "/X/:id"` definitions. */
 export function routeRefs(source: string): string[] {
   const out = new Set<string>();
-  for (const m of source.matchAll(/["'`](\/app\/[A-Za-z][^"'`\s?#]*)["'`]/g)) out.add(m[1]!.replace(/\$\{[^}]*\}/g, ":p"));
-  for (const m of source.matchAll(/\bpath\s*:\s*["'`](\/[A-Za-z][^"'`\s]*)["'`]/g)) out.add(m[1]!);
+  const keep = (r: string) => !/\.(js|css|png|svg|jpe?g|gif|mp3|woff2?|json|ico)$/i.test(r) && !r.includes("${");
+  for (const m of source.matchAll(/["'`](\/app\/[A-Za-z][^"'`\s?#]*)["'`]/g)) {
+    const r = m[1]!.replace(/\$\{[^}]*\}/g, ":p");
+    if (keep(r)) out.add(r);
+  }
+  // Router definitions, with or without a leading slash: path:"ChangeOrders/:id".
+  for (const m of source.matchAll(/\bpath\s*:\s*["'`](\/?[A-Z][^"'`\s]*)["'`]/g)) {
+    const r = m[1]!.startsWith("/") ? m[1]! : `/${m[1]!}`;
+    if (keep(r)) out.add(r);
+  }
   return [...out].sort();
 }
 
@@ -144,4 +152,23 @@ export function pathKey(path: string): string {
     .replace(/\/(?:\d+|0|-1)(?=\/|$)/g, "/{}")
     .toLowerCase()
     .replace(/\/+$/, "");
+}
+
+/**
+ * Concrete URLs for every route the app defines. `:jobId`-style params get the
+ * selected job (or -1); every other id param gets 0, which opens the "new"
+ * form and fires its Defaults GET. Wildcards are skipped.
+ */
+export function routeSeeds(routes: string[], jobId?: number): string[] {
+  const out = new Set<string>();
+  for (const raw of routes) {
+    if (raw.includes("*") || raw.includes("(")) continue;
+    let r = raw.startsWith("/app/") ? raw : `/app${raw.startsWith("/") ? raw : `/${raw}`}`;
+    r = r.replace(/:([A-Za-z]+)\??/g, (_m, name: string) =>
+      /^job(site)?(id)?s?$/i.test(name) || /jobId$/i.test(name) ? String(jobId ?? -1) : /id$/i.test(name) || name === "p" ? "0" : "0",
+    );
+    if (/\/app\/(login|logout|signin)/i.test(r)) continue;
+    out.add(r);
+  }
+  return [...out].sort();
 }

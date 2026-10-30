@@ -28,6 +28,7 @@ describe("crawl write-blocker policy", () => {
       "/api/PurchaseOrders/9/EntityApprovals",
       "/api/Accounting/9/LinkedEntityInfo",
       "/apix/v2/EntityChangeTracking/entity-changes",
+      "/apix/v2/EntityRecords/linked-entities/3f2504e0-4f89-11d3-9a0c-0305e82c3301/batch?targetEntityTypes=1",
       "/api/AccountInfo/GlobalInfo",
       "/app/OwnerInvoices/OwnerInvoice/0/5/false",
     ]) {
@@ -218,6 +219,7 @@ describe("in-page DOM readers", () => {
       dom.fieldsJs(null),
       dom.fieldsJs(dom.OVERLAY_SELECTOR),
       dom.buttonLabelsJs(null),
+      dom.selectLabelsJs(dom.OVERLAY_SELECTOR),
       dom.OPEN_SELECT_OPTIONS_JS,
       dom.OPEN_MENU_ITEMS_JS,
       dom.OVERLAY_COUNT_JS,
@@ -227,5 +229,21 @@ describe("in-page DOM readers", () => {
     }
     // Field reader never touches .value.
     expect(dom.fieldsJs(null)).not.toMatch(/\.value\b/);
+  });
+});
+
+describe("action label templating", () => {
+  it("drops people and numbers from control labels", async () => {
+    const { templateActionLabel } = await import("../src/crawl/policy.js");
+    expect(templateActionLabel("Email Jane Citizen")).toBe("Email {person}");
+    expect(templateActionLabel("Purchase Order: PO-305")).toBe("Purchase Order: {value}");
+    expect(templateActionLabel("Inbox 20")).toBe("Inbox {n}");
+    expect(templateActionLabel("Open Filter Settings")).toBe("Open Filter Settings");
+    expect(templateActionLabel("EN Eli Nash")).toBe("{avatar}");
+    expect(templateActionLabel("AT AAA Test Sub Vendor (expired cert)")).toBe("{avatar}");
+    expect(templateActionLabel("M Misc")).toBe("{avatar}");
+    expect(templateActionLabel("PO Status")).toBe("PO Status");
+    expect(templateActionLabel("Add New Saved View")).toBe("Add New Saved View");
+    expect(templateActionLabel("Freeze Bill # column")).toBe("Freeze Bill # column");
   });
 });

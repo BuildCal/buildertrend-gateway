@@ -45,6 +45,7 @@ export function fieldsJs(scope: string | null): string {
   const out = [];
   const els = root.querySelectorAll("input:not([type=hidden]), textarea, .ant-select, .ant-switch, [contenteditable=true]");
   for (const e of els) {
+    if (e.closest("header, nav, .JobPickerContainer, #reactJobPicker")) continue;
     const el = e.classList && e.classList.contains("ant-select") ? (e.querySelector("input") || e) : e;
     if (!vis(e)) continue;
     const label = labelOf(el);
@@ -56,7 +57,15 @@ export function fieldsJs(scope: string | null): string {
     seen.add(key);
     out.push({ label, type, name });
   }
-  return out.slice(0, 300);
+  // Grid / line-item table column headers are data points too.
+  for (const th of root.querySelectorAll("th, [role=columnheader]")) {
+    if (!vis(th) || th.closest("header, nav, .JobPickerContainer")) continue;
+    const label = clean(th.innerText || th.getAttribute("title") || "");
+    if (!label || label.length > 60 || seen.has(label + "|column")) continue;
+    seen.add(label + "|column");
+    out.push({ label, type: "column" });
+  }
+  return out.slice(0, 400);
 })()`;
 }
 
@@ -96,3 +105,24 @@ export const OPEN_MENU_ITEMS_JS = `(() => {
 })()`;
 
 export const OVERLAY_COUNT_JS = `[...document.querySelectorAll(${JSON.stringify(OVERLAY_SELECTOR)})].length`;
+
+/**
+ * Label for every `.ant-select:not(.ant-select-disabled)` in the scope, in DOM
+ * order (matches Playwright's nth()). Empty string when no label is found.
+ */
+export function selectLabelsJs(scope: string | null): string {
+  return `(() => {
+  const root = ${scopeExpr(scope)};
+  if (!root) return [];
+  const clean = (t) => (t || "").replace(/\\s+/g, " ").replace(/[*:]+$/, "").trim().slice(0, 80);
+  return [...root.querySelectorAll(".ant-select:not(.ant-select-disabled)")].map((e) => {
+    const item = e.closest(".ant-form-item, .form-group, [class*='FormItem'], [class*='form-item']");
+    const l = item && item.querySelector(".ant-form-item-label, label");
+    if (l && clean(l.textContent)) return clean(l.textContent);
+    const input = e.querySelector("input");
+    if (input && input.id) { const f = document.querySelector('label[for="' + CSS.escape(input.id) + '"]'); if (f && clean(f.textContent)) return clean(f.textContent); }
+    const ph = e.querySelector(".ant-select-selection-placeholder");
+    return clean((ph && ph.textContent) || e.getAttribute("aria-label") || (input && input.getAttribute("aria-label")) || "");
+  });
+})()`;
+}
