@@ -58,6 +58,8 @@ export interface ScreenRecord {
   clicked: string[];
   /** Deep exploration (tabs, dropdowns, buttons) already done for this screen. */
   explored?: boolean;
+  /** An endpoint on this screen answered 401 / needsToRelogin while the session stayed live. */
+  forbidden?: boolean;
   endpoints: string[];
   writeCandidates: string[];
 }

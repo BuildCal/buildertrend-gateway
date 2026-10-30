@@ -312,8 +312,21 @@ export async function runCrawl(opts: CrawlOptions): Promise<CrawlRecorder> {
     });
   }
 
+  /**
+   * A 401 / needsToRelogin on one endpoint can be a permission wall (e.g.
+   * /app/Admin routes), not a dead session. Re-probe session.status: stop only
+   * if the session itself is gone.
+   */
   const checkSession = async () => {
-    if (relogin || looksLikeLoginUrl(page.url())) throw new StopCrawl("needsToRelogin");
+    if (!relogin && !looksLikeLoginUrl(page.url())) return;
+    const status = await sessionStatusFromPage(page).catch(() => null);
+    if (status?.authenticated && !looksLikeLoginUrl(page.url())) {
+      relogin = false;
+      rec.screen(currentScreen).forbidden = true;
+      console.error(`AUTH_PROBE ok (forbidden on ${currentScreen})`);
+      return;
+    }
+    throw new StopCrawl("needsToRelogin");
   };
 
   const collectLinks = async () => {
