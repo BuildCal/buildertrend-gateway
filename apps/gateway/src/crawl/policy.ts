@@ -207,7 +207,7 @@ export function isSafeNewFormLabel(label: string): boolean {
 export function templateActionLabel(label: string): string {
   // Avatar buttons: initials then a name ("JS Jane Smith", "AT Acme Trade").
   if (/^[A-Z]{1,3}\s+[A-Z0-9]/.test(label) && !/^(PO|CO|RFI|ID|GST|PDF|CSV|AIA|URL)\b/.test(label)) return "{avatar}";
-  let t = label.replace(/\d+/g, "{n}");
+  let t = templateByline(label).replace(/\d+/g, "{n}");
   // Grid rows read as one button (folder name + timestamps): tenant data.
   if (/\{n\}:\{n\}|\b(AM|PM)\b/.test(t) || t.length > 60) return "{row}";
   t = t.replace(/^(Email|Call|Text|Message|Chat with)\s+([A-Z][a-z'’-]+)(\s+(&|and)?\s*[A-Z][a-z'’-]+)*$/u, "$1 {person}");
@@ -216,9 +216,16 @@ export function templateActionLabel(label: string): string {
 }
 
 /** Form labels that embed a person ("Grant Jane automatic access to new jobs"). */
+/** "… by Jane Citizen", "on Oct 29, 2026": who and when, never recorded. */
+function templateByline(label: string): string {
+  return label
+    .replace(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]* \d{1,2}, \d{4}/g, "{date}")
+    .replace(/\bby\s+[A-Z][a-z'’-]+(\s+[A-Z][a-z'’-]+)*/gu, "by {person}");
+}
+
 export function templateFieldLabel(label: string): string {
   // Not templateActionLabel: its avatar rule would eat "GL Account".
-  return label
+  return templateByline(label)
     .replace(/^(Grant|Give)\s+[A-Z][a-z'’-]+(\s+[A-Z][a-z'’-]+)?(?=\s+[a-z])/u, "$1 {person}")
     // "track when Jane clocks in": a capitalised word between lowercase ones.
     .replace(/(?<=\b[a-z]+\s)(?!Buildertrend\b)[A-Z][a-z'’-]+(?=\s+[a-z])/gu, "{person}");

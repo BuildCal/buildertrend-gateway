@@ -274,6 +274,7 @@ describe("crawl field labels", () => {
     const { templateActionLabel } = await import("../src/crawl/policy.js");
     expect(templateActionLabel("3. Sales Add Jan 5, 2026, 4:12 PM Jan 6, 2026, 1:00 PM")).toBe("{row}");
     expect(templateFieldLabel("GL Account")).toBe("GL Account");
+    expect(templateFieldLabel("Completed on Oct 29, 2026 by Jane Citizen")).toBe("Completed on {date} by {person}");
     expect(templateFieldLabel("Require location and track when Jane clocks in or out")).toBe(
       "Require location and track when {person} clocks in or out",
     );
