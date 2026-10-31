@@ -16,15 +16,25 @@ export type ListSpec =
       query?: Record<string, string | number>;
       /** Sends every job id; without it Buildertrend lists only the picker's job. */
       jobScoped: boolean;
+      /** Largest page this grid accepts (some answer 400 above it). */
+      maxPageSize?: number;
+      /** Extra top-level body fields the web app sends (Leads needs gridType). */
+      extra?: Record<string, unknown>;
     }
   | {
       kind: "post";
       path: string;
-      /** Request body for the given job ids. */
-      body: (jobIds: number[]) => unknown;
+      /** Request body for the given job ids and page. */
+      body: (jobIds: number[], page: number, pageSize: number) => unknown;
       /** Key of the row array inside `data`. */
       rowsAt: string;
       jobScoped: boolean;
+      /** Honours page / pageSize in the body. */
+      paged?: boolean;
+      /** One request per job: the endpoint silently truncates at `cap` rows. */
+      perJob?: boolean;
+      /** Row count at which the endpoint truncates; a response this long is incomplete. */
+      cap?: number;
     }
   | {
       kind: "get";
@@ -95,13 +105,14 @@ export function scalar(value: unknown): unknown {
   return undefined;
 }
 
-const grid = (path: string, entity: number, jobScoped = true, query?: Record<string, string | number>): ListSpec => ({
-  kind: "grid",
-  path,
-  entity,
-  jobScoped,
-  query,
-});
+const grid = (
+  path: string,
+  entity: number,
+  jobScoped = true,
+  query?: Record<string, string | number>,
+  maxPageSize?: number,
+  extra?: Record<string, unknown>,
+): ListSpec => ({ kind: "grid", path, entity, jobScoped, query, maxPageSize, extra });
 
 export const RESOURCES: ResourceDef[] = [
   {
@@ -132,7 +143,7 @@ export const RESOURCES: ResourceDef[] = [
     prefix: "leads",
     label: "Lead opportunities",
     module: "Leads (sales)",
-    list: grid("/api/Leads/Grid", 0, false),
+    list: grid("/api/Leads/Grid", 14, false, undefined, undefined, { gridType: 1 }),
     get: { path: "/api/Leads/{id}" },
     defaults: { path: "/api/Leads/Defaults" },
     setup: "/api/Leads/Setup",
@@ -144,7 +155,7 @@ export const RESOURCES: ResourceDef[] = [
     prefix: "leadActivities",
     label: "Lead activities",
     module: "Leads (sales)",
-    list: grid("/api/LeadActivities/Grid", 0, false),
+    list: grid("/api/LeadActivities/Grid", 39, false),
     get: { path: "/api/LeadActivities/{id}" },
     id: byKey("id"),
     syncDefault: true,
@@ -235,7 +246,7 @@ export const RESOURCES: ResourceDef[] = [
     module: "Owner invoices (progress claims)",
     list: grid("/api/CreditMemos/Grid", 22),
     get: { path: "/api/CreditMemos/{id}" },
-    defaults: { path: "/api/CreditMemos/DefaultInfo" },
+    defaults: { path: "/api/CreditMemos/DefaultInfo", query: { jobId: "{jobId}" } },
     id: byKey("id"),
     syncDefault: true,
   },
@@ -291,7 +302,7 @@ export const RESOURCES: ResourceDef[] = [
     prefix: "dailyLogs",
     label: "Daily logs",
     module: "Daily logs",
-    list: grid("/apix/v2/DailyLogs/grid", 18),
+    list: grid("/apix/v2/DailyLogs/grid", 18, true, undefined, 50),
     get: { path: "/apix/v2/DailyLogs/{id}", query: { jobId: "{jobId}" } },
     defaults: { path: "/api/Logs/DefaultInfo", query: { jobId: "{jobId}" } },
     setup: "/api/Logs/Setup",
@@ -344,6 +355,8 @@ export const RESOURCES: ResourceDef[] = [
       body: (jobIds) => ({ jobIds, filters: { filterTree: { groups: [] } }, includeDeleted: false }),
       rowsAt: "tasks",
       jobScoped: true,
+      perJob: true,
+      cap: 4000,
     },
     id: byKey("taskId", "id"),
     syncDefault: true,
@@ -356,13 +369,22 @@ export const RESOURCES: ResourceDef[] = [
     list: {
       kind: "post",
       path: "/apix/v2/Submittals/list",
-      body: (jobIds) => ({
+      body: (jobIds, page, pageSize) => ({
         jobIds,
-        pagingData: { pageNumber: 1, pageSize: 1000, firstRow: 1, lastRow: 1000, currentPage: 1 },
+        pagingData: {
+          pageNumber: page,
+          pageSize,
+          resetScroll: false,
+          firstRow: (page - 1) * pageSize + 1,
+          lastRow: page * pageSize,
+          totalRowsAllPages: pageSize,
+          currentPage: page,
+        },
         gridRequest: { sortColumn: "SubmittalId", sortDirection: "asc" },
       }),
       rowsAt: "submittals",
       jobScoped: true,
+      paged: true,
     },
     defaults: { path: "/apix/v2/Submittals/defaults", query: { job: "{jobId}" } },
     id: byKey("submittalId", "id"),

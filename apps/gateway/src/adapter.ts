@@ -355,13 +355,11 @@ class LazyProfileAdapter implements BtAdapter {
 
 /** Mirror-only mode: anything but a read is refused before it leaves the gateway. */
 export class ReadOnlyAdapter implements BtAdapter {
-  constructor(
-    private readonly inner: BtAdapter,
-    private readonly baseUrl: string,
-  ) {}
+  constructor(private readonly inner: BtAdapter) {}
 
   async request(req: BtRequest): Promise<BtResponse> {
-    if (classifyRequest({ method: req.method, url: `${this.baseUrl}${req.path}` }).action !== "allow") {
+    // Classified as a first-party Buildertrend call whatever BT_BASE_URL says.
+    if (classifyRequest({ method: req.method, url: `https://buildertrend.net${req.path}` }).action !== "allow") {
       throw new GatewayError("send_disabled", "Read-only mode: this request would change Buildertrend.", {
         method: req.method,
         path: redactUrl(req.path),
@@ -378,7 +376,7 @@ export function createAdapter(config: GatewayConfig, hook?: RequestHook): BtAdap
       : config.transport === "profile"
         ? new LazyProfileAdapter(config)
         : new SidecarAdapter(config);
-  if (config.readOnly) inner = new ReadOnlyAdapter(inner, config.baseUrl);
+  if (config.readOnly) inner = new ReadOnlyAdapter(inner);
   return hook ? new RecordingAdapter(inner, hook) : inner;
 }
 

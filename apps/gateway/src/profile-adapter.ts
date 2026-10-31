@@ -1,9 +1,12 @@
 // Profile transport: requests run as fetch() inside the dedicated gateway
 // Chrome profile, so they carry its cookies and Chrome's own TLS. The context
 // keeps the crawl's network write-blocker: the Buildertrend page itself can
-// never write. Only the gateway's own fetches (tagged with GATEWAY_HEADER) pass;
+// never write. Only the gateway's own fetches pass: they carry a random
+// per-process secret in GATEWAY_HEADER, and each tag admits exactly the one
+// (method, url) the adapter queued, once. Page scripts cannot guess or replay it;
 // BT_GATEWAY_READ_ONLY is enforced in front of this adapter (ReadOnlyAdapter).
 
+import { randomUUID, timingSafeEqual } from "node:crypto";
 import type { BrowserContext, Page, Route } from "playwright";
 import {
   assertSafePath,
@@ -59,6 +62,9 @@ export class ProfileAdapter implements BtAdapter {
   private page: Page | undefined;
   private opening: Promise<Page> | undefined;
   private queue: Promise<unknown> = Promise.resolve();
+  private readonly nonce = randomUUID();
+  /** Gateway requests in flight, keyed by `METHOD url`: the only ones the tag admits. */
+  private readonly expected = new Map<string, number>();
 
   constructor(private readonly config: GatewayConfig) {}
 
@@ -77,16 +83,25 @@ export class ProfileAdapter implements BtAdapter {
       accept: "application/json, text/plain, */*",
       "content-type": contentTypeFor(req),
       portaltype: "1",
-      [GATEWAY_HEADER]: "1",
+      [GATEWAY_HEADER]: this.nonce,
     };
-    const result = (await page.evaluate(`(${FETCH_JS})(${JSON.stringify({
-      url,
-      method: req.method,
-      headers,
-      body: req.json !== undefined && req.method !== "GET" ? JSON.stringify(req.json) : undefined,
-      raw: Boolean(req.raw),
-      multipart: req.multipart?.length ? req.multipart : undefined,
-    })})`)) as PageResult;
+    const expectKey = requestKey(req.method, url);
+    this.expected.set(expectKey, (this.expected.get(expectKey) ?? 0) + 1);
+    let result: PageResult;
+    try {
+      const call = {
+        url,
+        method: req.method,
+        headers,
+        body: req.json !== undefined && req.method !== "GET" ? JSON.stringify(req.json) : undefined,
+        raw: Boolean(req.raw),
+        multipart: req.multipart?.length ? req.multipart : undefined,
+      };
+      // The anchor page is plain JSON, so no page script sees this call or its tag.
+      result = (await page.evaluate(`(${FETCH_JS})(${JSON.stringify(call)})`)) as PageResult;
+    } finally {
+      this.consume(expectKey);
+    }
     const text = result.text ?? "";
     let json: unknown;
     if (result.contentType.includes("json") && text) {
@@ -139,14 +154,38 @@ export class ProfileAdapter implements BtAdapter {
   private async route(route: Route): Promise<void> {
     const req = route.request();
     const headers = req.headers();
-    if (headers[GATEWAY_HEADER]) {
+    const tag = headers[GATEWAY_HEADER];
+    if (tag !== undefined) {
       const { [GATEWAY_HEADER]: _tag, ...rest } = headers;
-      await route.continue({ headers: rest });
+      const key = requestKey(req.method(), req.url());
+      if (this.tagMatches(tag) && this.consume(key)) {
+        await route.continue({ headers: rest });
+        return;
+      }
+      // Forged or replayed tag: judge it like any page request, without the header.
+      const decision = classifyRequest({ method: req.method(), url: req.url(), resourceType: req.resourceType() });
+      if (decision.action === "allow") await route.continue({ headers: rest });
+      else await route.abort("blockedbyclient");
       return;
     }
     const decision = classifyRequest({ method: req.method(), url: req.url(), resourceType: req.resourceType() });
     if (decision.action === "allow") await route.continue();
     else await route.abort("blockedbyclient");
+  }
+
+  private tagMatches(tag: string): boolean {
+    const a = Buffer.from(tag);
+    const b = Buffer.from(this.nonce);
+    return a.length === b.length && timingSafeEqual(a, b);
+  }
+
+  /** Use up one admission for `key`; false when none was pending. */
+  private consume(key: string): boolean {
+    const count = this.expected.get(key) ?? 0;
+    if (count <= 0) return false;
+    if (count === 1) this.expected.delete(key);
+    else this.expected.set(key, count - 1);
+    return true;
   }
 
   /** Load the app once so Auth0 SSO can renew the session. Never types a password. */
@@ -170,6 +209,16 @@ export class ProfileAdapter implements BtAdapter {
     this.context = undefined;
     this.page = undefined;
   }
+}
+
+export function requestKey(method: string, url: string): string {
+  let href = url;
+  try {
+    href = new URL(url).href;
+  } catch {
+    // keep as given
+  }
+  return `${method.toUpperCase()} ${href}`;
 }
 
 function queryString(query: BtRequest["query"]): string {

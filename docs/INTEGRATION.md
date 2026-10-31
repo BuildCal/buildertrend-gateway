@@ -93,7 +93,12 @@ acknowledged cursor otherwise.
 - `updated` fires when any list field changes; fields that change merely by
   viewing a record are ignored.
 - `removed` means the record is no longer in Buildertrend's lists: deleted,
-  or its job was closed or archived. Only a full, uncapped pass reports it.
+  or its job was closed or archived. Only a full pass that the list itself
+  confirms finished can report it, and a pass that would remove more than
+  half of a type is treated as a bad read (the type's result carries a
+  `removal guard` error instead).
+- One sync runs at a time per sync file (a lease in the file), so several
+  gateway processes sharing it cannot interleave runs or re-send webhooks.
 - Buildertrend has no change feed or webhooks of its own, so this is polling.
   It is gentle: one request at a time, a pause between pages.
 
@@ -124,7 +129,19 @@ Writes are **dry runs unless you send `dry_run: false`**, land as Draft / Not
 sent, refuse to overwrite a record that changed in Buildertrend since your last
 read (`conflict`), and never send, notify, pay or approve.
 
+Duplicates are guarded twice. Only one push per app record runs at a time.
+And a real create that fails part-way (it may have reached Buildertrend)
+leaves the record **pending**: the next push answers `conflict` until you
+check Buildertrend and either `links.set` the record it made or
+`links.delete` to clear. A push through a link to a different Buildertrend
+type is refused.
+
 ## 5. What you can and cannot do today
+
+Checked live against a real account (read-only): a full sync mirrored
+48,000+ records across every type below in under two minutes, and an
+immediate second pass reported zero changes. Every `.list`, `.get`,
+`.defaults` and `.setup` verb answered.
 
 | Buildertrend type | Read (list + record) | Create | Update |
 | --- | --- | --- | --- |

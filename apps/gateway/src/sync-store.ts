@@ -72,6 +72,12 @@ export interface SyncStore {
   deleteLink(app: string, appType: string, appId: string): Promise<boolean>;
   getCursor(name: string): Promise<string | undefined>;
   setCursor(name: string, value: string): Promise<void>;
+  deleteCursor(name: string): Promise<void>;
+  /** Set only if the cursor still holds `expected` (undefined = absent). False when another writer moved it. */
+  compareAndSetCursor(name: string, expected: string | undefined, value: string): Promise<boolean>;
+  /** Cross-process lease: true when `holder` now owns `name` until ttl expires. */
+  acquireLease(name: string, holder: string, ttlMs: number): Promise<boolean>;
+  releaseLease(name: string, holder: string): Promise<void>;
 }
 
 export class MemorySyncStore implements SyncStore {
@@ -155,6 +161,30 @@ export class MemorySyncStore implements SyncStore {
   async setCursor(name: string, value: string): Promise<void> {
     this.cursors.set(name, value);
   }
+
+  async deleteCursor(name: string): Promise<void> {
+    this.cursors.delete(name);
+  }
+
+  async compareAndSetCursor(name: string, expected: string | undefined, value: string): Promise<boolean> {
+    if (this.cursors.get(name) !== expected) return false;
+    this.cursors.set(name, value);
+    return true;
+  }
+
+  private readonly leases = new Map<string, { holder: string; until: number }>();
+
+  async acquireLease(name: string, holder: string, ttlMs: number): Promise<boolean> {
+    const now = Date.now();
+    const lease = this.leases.get(name);
+    if (lease && lease.holder !== holder && lease.until > now) return false;
+    this.leases.set(name, { holder, until: now + ttlMs });
+    return true;
+  }
+
+  async releaseLease(name: string, holder: string): Promise<void> {
+    if (this.leases.get(name)?.holder === holder) this.leases.delete(name);
+  }
 }
 
 type SqliteDb = {
@@ -179,6 +209,7 @@ CREATE TABLE IF NOT EXISTS bt_links (
   bt_id TEXT NOT NULL, created_at TEXT NOT NULL, PRIMARY KEY (app, app_type, app_id));
 CREATE INDEX IF NOT EXISTS bt_links_bt ON bt_links (bt_type, bt_id);
 CREATE TABLE IF NOT EXISTS bt_cursors (name TEXT PRIMARY KEY, value TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS bt_leases (name TEXT PRIMARY KEY, holder TEXT NOT NULL, until INTEGER NOT NULL);
 `;
 
 export class SqliteSyncStore implements SyncStore {
@@ -321,6 +352,34 @@ export class SqliteSyncStore implements SyncStore {
     this.db
       .prepare("INSERT INTO bt_cursors (name, value) VALUES (?, ?) ON CONFLICT (name) DO UPDATE SET value = excluded.value")
       .run(name, value);
+  }
+
+  async deleteCursor(name: string): Promise<void> {
+    this.db.prepare("DELETE FROM bt_cursors WHERE name = ?").run(name);
+  }
+
+  async compareAndSetCursor(name: string, expected: string | undefined, value: string): Promise<boolean> {
+    const result =
+      expected === undefined
+        ? this.db.prepare("INSERT INTO bt_cursors (name, value) VALUES (?, ?) ON CONFLICT (name) DO NOTHING").run(name, value)
+        : this.db.prepare("UPDATE bt_cursors SET value = ? WHERE name = ? AND value = ?").run(value, name, expected);
+    return Number(result.changes) > 0;
+  }
+
+  async acquireLease(name: string, holder: string, ttlMs: number): Promise<boolean> {
+    const now = Date.now();
+    const result = this.db
+      .prepare(
+        `INSERT INTO bt_leases (name, holder, until) VALUES (?, ?, ?)
+         ON CONFLICT (name) DO UPDATE SET holder = excluded.holder, until = excluded.until
+         WHERE bt_leases.until <= ? OR bt_leases.holder = excluded.holder`,
+      )
+      .run(name, holder, now + ttlMs, now);
+    return Number(result.changes) > 0;
+  }
+
+  async releaseLease(name: string, holder: string): Promise<void> {
+    this.db.prepare("DELETE FROM bt_leases WHERE name = ? AND holder = ?").run(name, holder);
   }
 }
 

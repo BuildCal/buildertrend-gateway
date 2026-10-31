@@ -234,7 +234,7 @@ describe("webhooks", () => {
 describe("read-only mode", () => {
   it("lets reads and list POSTs through and refuses writes", async () => {
     const inner = new ScriptedAdapter(() => json({ ok: 1 }));
-    const adapter = new ReadOnlyAdapter(inner, "https://buildertrend.net");
+    const adapter = new ReadOnlyAdapter(inner);
     await expect(adapter.request({ method: "GET", path: "/api/Subs/1" })).resolves.toBeTruthy();
     await expect(adapter.request({ method: "POST", path: "/api/Subs/Grid", json: {} })).resolves.toBeTruthy();
     await expect(adapter.request({ method: "PUT", path: "/api/PurchaseOrders/1", json: {} })).rejects.toMatchObject({ code: "send_disabled" });
@@ -273,5 +273,174 @@ describe("HTTP surface", () => {
     const feed = await app.request("/v1/changes/list?since=0", { headers });
     expect(((await feed.json()) as { data: { events: unknown[] } }).data.events).toHaveLength(1);
     expect((await app.request("/v1/changes/list")).status).toBe(401);
+  });
+});
+
+describe("review hardening", () => {
+  it("treats an odd list response as an error, never as everything removed", async () => {
+    const state = { subs: [{ id: 10, company: "A" }], bills: [] };
+    const h = harness(state);
+    await h.invoke("sync.run", { types: ["sub"] });
+    (state as { subs: unknown }).subs = "oops";
+    const run = (await h.invoke("sync.run", { types: ["sub"] })).data as { results: { removed: number; error?: string }[] };
+    expect(run.results[0]!.removed).toBe(0);
+    expect(run.results[0]!.error).toMatch(/Unexpected list shape/);
+  });
+
+  it("refuses to mark most of a type removed in one pass", async () => {
+    const subs = Array.from({ length: 20 }, (_, i) => ({ id: i + 1, company: `S${i}` }));
+    const state = { subs, bills: [] };
+    const h = harness(state);
+    await h.invoke("sync.run", { types: ["sub"] });
+    state.subs = subs.slice(0, 2);
+    const run = (await h.invoke("sync.run", { types: ["sub"] })).data as { results: { removed: number; error?: string }[] };
+    expect(run.results[0]!.removed).toBe(0);
+    expect(run.results[0]!.error).toMatch(/removal guard/);
+  });
+
+  it("refuses job-scoped syncs when Buildertrend lists no jobs", async () => {
+    const adapter = new ScriptedAdapter(() => json({ data: [] }));
+    const sync = new MemorySyncStore();
+    await expect(
+      invokeByName("sync.run", { config: testConfig(), adapter, store: new MemoryStore(), sync, args: { types: ["bill"] } }),
+    ).rejects.toMatchObject({ code: "bt_error" });
+  });
+
+  it("refuses a second sync while one holds the lease", async () => {
+    const h = harness({ subs: [], bills: [] });
+    expect(await h.sync.acquireLease("sync", "other", 60_000)).toBe(true);
+    await expect(h.invoke("sync.run", { types: ["sub"] })).rejects.toMatchObject({ code: "conflict" });
+  });
+
+  it("stops at a truncating endpoint and reports the pass incomplete", async () => {
+    const adapter = new ScriptedAdapter((req) => {
+      if (req.path === "/api/Jobsites/Grid") return json({ data: [{ jobId: 1 }], records: 1 });
+      return json({ tasks: Array.from({ length: 4000 }, (_, i) => ({ taskId: i + 1 })) });
+    });
+    const sync = new MemorySyncStore();
+    const run = await invokeByName("sync.run", {
+      config: testConfig({ syncDelayMs: 0 }),
+      adapter,
+      store: new MemoryStore(),
+      sync,
+      args: { types: ["task"] },
+    });
+    expect((run.data as { results: { complete: boolean }[] }).results[0]!.complete).toBe(false);
+  });
+
+  it("refuses to push through a link to a different Buildertrend type", async () => {
+    const h = harness({ subs: [], bills: [] });
+    await h.invoke("links.set", { app: "a", appType: "estimate", appId: "7", btType: "variation", btId: "555" });
+    await expect(h.invoke("push", { app: "a", appType: "estimate", appId: "7", btType: "bill", args: {} })).rejects.toMatchObject({
+      code: "validation",
+    });
+  });
+
+  it("blocks a repeat create after one that may have reached Buildertrend", async () => {
+    const adapter = new ScriptedAdapter(() => ({ status: 500, contentType: CONTENT_JSON, json: { success: false, message: "boom" } }));
+    const sync = new MemorySyncStore();
+    const ctx = { config: testConfig({ sandbox: true }), adapter, store: new MemoryStore(), sync };
+    const push = { app: "a", appType: "bill", appId: "b1", btType: "bill", dry_run: false, args: { jobId: 1, vendorId: 2 } };
+    await expect(invokeByName("push", { ...ctx, args: push })).rejects.toMatchObject({ code: "bt_error" });
+    await expect(invokeByName("push", { ...ctx, args: push })).rejects.toMatchObject({ code: "conflict" });
+    await invokeByName("links.delete", { ...ctx, args: { app: "a", appType: "bill", appId: "b1" } });
+    await expect(invokeByName("push", { ...ctx, args: push })).rejects.toMatchObject({ code: "bt_error" });
+  });
+
+  it("does not leave a pending create when nothing was sent", async () => {
+    const h = harness({ subs: [], bills: [] });
+    const push = { app: "a", appType: "bill", appId: "b2", btType: "bill", dry_run: false, args: { jobId: 1, vendorId: 2 } };
+    await expect(h.invoke("push", push)).rejects.toMatchObject({ code: "sandbox_required" });
+    expect(await h.sync.getCursor("pending-create:a:bill:b2")).toBeUndefined();
+  });
+
+  it("reads a fresh record without adding it to the mirror", async () => {
+    const h = harness({ subs: [], bills: [] });
+    const res = (await h.invoke("records.get", { type: "sub", id: "10", fresh: true })).data as { mirrored: boolean };
+    expect(res.mirrored).toBe(false);
+    expect(await h.sync.getRecord("sub", "10")).toBeNull();
+  });
+
+  it("moves the webhook cursor only by compare-and-set", async () => {
+    const sync = await SqliteSyncStore.open(":memory:");
+    expect(await sync.compareAndSetCursor("webhook", undefined, "5")).toBe(true);
+    expect(await sync.compareAndSetCursor("webhook", undefined, "6")).toBe(false);
+    expect(await sync.compareAndSetCursor("webhook", "4", "6")).toBe(false);
+    expect(await sync.compareAndSetCursor("webhook", "5", "6")).toBe(true);
+    expect(await sync.acquireLease("sync", "a", 60_000)).toBe(true);
+    expect(await sync.acquireLease("sync", "b", 60_000)).toBe(false);
+    await sync.releaseLease("sync", "a");
+    expect(await sync.acquireLease("sync", "b", 60_000)).toBe(true);
+  });
+});
+
+describe("profile transport tag", () => {
+  type FakeRoute = { request: () => unknown; continue: (o?: unknown) => Promise<void>; abort: () => Promise<void> };
+  const route = (method: string, url: string, headers: Record<string, string>) => {
+    const out = { continued: false, aborted: false, headers: undefined as unknown };
+    const fake: FakeRoute = {
+      request: () => ({ method: () => method, url: () => url, headers: () => headers, resourceType: () => "fetch" }),
+      continue: async (o?: unknown) => {
+        out.continued = true;
+        out.headers = (o as { headers?: unknown } | undefined)?.headers;
+      },
+      abort: async () => {
+        out.aborted = true;
+      },
+    };
+    return { fake, out };
+  };
+
+  it("admits only the queued request with the secret, once, and strips the tag", async () => {
+    const { ProfileAdapter, GATEWAY_HEADER, requestKey } = await import("../src/profile-adapter.js");
+    const adapter = new ProfileAdapter(testConfig()) as unknown as {
+      nonce: string;
+      expected: Map<string, number>;
+      route: (r: FakeRoute) => Promise<void>;
+    };
+    const url = "https://buildertrend.net/api/PurchaseOrders/1";
+    adapter.expected.set(requestKey("PUT", url), 1);
+
+    const forged = route("PUT", url, { [GATEWAY_HEADER]: "1" });
+    await adapter.route(forged.fake);
+    expect(forged.out.aborted).toBe(true);
+
+    const real = route("PUT", url, { [GATEWAY_HEADER]: adapter.nonce, accept: "x" });
+    await adapter.route(real.fake);
+    expect(real.out.continued).toBe(true);
+    expect(real.out.headers).toEqual({ accept: "x" });
+
+    const replay = route("PUT", url, { [GATEWAY_HEADER]: adapter.nonce });
+    await adapter.route(replay.fake);
+    expect(replay.out.aborted).toBe(true);
+  });
+});
+
+describe("list body quirks found live", () => {
+  it("sends searchText only when searching, and gridType for leads", async () => {
+    const calls: BtRequest[] = [];
+    const adapter = new ScriptedAdapter((req) => {
+      calls.push(req);
+      return json({ data: [], records: 0 });
+    });
+    const ctx = { config: testConfig(), adapter, store: new MemoryStore(), sync: new MemorySyncStore() };
+    await invokeByName("sync.run", { ...ctx, args: { types: ["lead"] } });
+    const body = calls.find((c) => c.path === "/api/Leads/Grid")!.json as Record<string, unknown>;
+    expect(body).not.toHaveProperty("searchText");
+    expect(body.gridType).toBe(1);
+    expect((body.gridRequest as { emptyStateEntity: number }).emptyStateEntity).toBe(14);
+  });
+
+  it("caps daily log pages at the size Buildertrend accepts", async () => {
+    const calls: BtRequest[] = [];
+    const adapter = new ScriptedAdapter((req) => {
+      calls.push(req);
+      if (req.path === "/api/Jobsites/Grid") return json({ data: [{ jobId: 1 }], records: 1 });
+      return json({ data: [], records: 0 });
+    });
+    const ctx = { config: testConfig({ syncDelayMs: 0 }), adapter, store: new MemoryStore(), sync: new MemorySyncStore() };
+    await invokeByName("sync.run", { ...ctx, args: { types: ["dailyLog"] } });
+    const body = calls.find((c) => c.path === "/apix/v2/DailyLogs/grid")!.json as { pagingData: { pageSize: number } };
+    expect(body.pagingData.pageSize).toBe(50);
   });
 });

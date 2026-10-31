@@ -6,7 +6,8 @@ import { unwrapData } from "./adapter.js";
 import { GENERATED_VERBS, VERB_BY_NAME } from "./catalog.js";
 import { GatewayError } from "./errors.js";
 import { asRecord, numberish, pickId } from "./grids.js";
-import { btJson, invokeByName, registerVerb, type VerbContext } from "./invoke.js";
+import { randomUUID } from "node:crypto";
+import { btJson, invokeByName, registerVerb, resolveDryRun, type VerbContext } from "./invoke.js";
 import { RESOURCES, RESOURCE_BY_TYPE, resolveGet, type ResourceDef } from "./resources.js";
 import { parseVerbArgs } from "./schemas.js";
 import { sanitizeReadOutput } from "./secret-scan.js";
@@ -18,8 +19,8 @@ import {
   fetchListPage,
   requireSync,
   runSync,
-  toSyncRecord,
 } from "./sync.js";
+import type { SyncStore } from "./sync-store.js";
 
 function jobIdsArg(ctx: VerbContext): number[] | undefined {
   const ids = Array.isArray(ctx.args.jobIds) ? (ctx.args.jobIds as unknown[]).map(Number).filter(Boolean) : [];
@@ -145,10 +146,9 @@ registerVerb("records.get", async (ctx) => {
     return record;
   }
   const detail = await fetchDetail(ctx, def, id, numberish(ctx.args.jobId) ?? record?.jobId);
-  const now = new Date().toISOString();
-  const updated = record
-    ? { ...record, detail, lastSeenAt: now }
-    : { ...toSyncRecord(def, { ...asRecord(detail), id }, now)!, detail };
+  // Only sync.run adds records (so every record gets its "created" event); here we refresh detail.
+  if (!record) return { type: def.type, id, mirrored: false, detail };
+  const updated = { ...record, detail, lastSeenAt: new Date().toISOString() };
   await sync.putRecord(updated);
   return updated;
 });
@@ -167,7 +167,9 @@ registerVerb("links.set", async (ctx) => {
   const btId = String(ctx.args.btId ?? "");
   if (!btId) throw new GatewayError("validation", "btId is required");
   const link = { ...key, btType: def.type, btId, createdAt: new Date().toISOString() };
-  await requireSync(ctx).putLink(link);
+  const sync = requireSync(ctx);
+  await sync.putLink(link);
+  await sync.deleteCursor(pendingKey(key));
   return link;
 });
 
@@ -191,7 +193,9 @@ registerVerb("links.list", async (ctx) => ({
 
 registerVerb("links.delete", async (ctx) => {
   const key = linkKey(ctx);
-  return { deleted: await requireSync(ctx).deleteLink(key.app, key.appType, key.appId) };
+  const sync = requireSync(ctx);
+  await sync.deleteCursor(pendingKey(key));
+  return { deleted: await sync.deleteLink(key.app, key.appType, key.appId) };
 });
 
 /**
@@ -218,12 +222,42 @@ export function createdIdFrom(data: unknown, idKey: string): string | undefined 
   return undefined;
 }
 
+const pendingKey = (key: { app: string; appType: string; appId: string }) =>
+  `pending-create:${key.app}:${key.appType}:${key.appId}`;
+
+/** Errors raised before any request reaches Buildertrend: nothing can have been created. */
+const NOTHING_SENT = new Set(["validation", "not_captured", "sandbox_required", "send_disabled", "not_found"]);
+
 registerVerb("push", async (ctx) => {
   const def = requireType(ctx.args.btType);
   const key = linkKey({ ...ctx, args: { ...ctx.args, appType: ctx.args.appType ?? def.type } });
   const sync = requireSync(ctx);
+  const holder = `${process.pid}:${randomUUID()}`;
+  const lease = `push:${key.app}:${key.appType}:${key.appId}`;
+  if (!(await sync.acquireLease(lease, holder, 10 * 60_000))) {
+    throw new GatewayError("conflict", "A push for this record is already in progress.", key);
+  }
+  try {
+    return await pushLocked(ctx, def, key, sync);
+  } finally {
+    await sync.releaseLease(lease, holder);
+  }
+});
+
+async function pushLocked(
+  ctx: VerbContext,
+  def: ResourceDef,
+  key: { app: string; appType: string; appId: string },
+  sync: SyncStore,
+): Promise<unknown> {
   const route = WRITE_ROUTES[def.type];
   const link = await sync.findLinkByApp(key.app, key.appType, key.appId);
+  if (link && link.btType !== def.type) {
+    throw new GatewayError("validation", `This app record is linked to a ${link.btType}, not a ${def.type}.`, {
+      ...key,
+      linked: { btType: link.btType, btId: link.btId },
+    });
+  }
   const op = link ? "update" : "create";
   const verb = route?.[op];
   if (!route || !verb) {
@@ -233,7 +267,8 @@ registerVerb("push", async (ctx) => {
     });
   }
   const target = VERB_BY_NAME.get(verb);
-  if (target && !target.captured) {
+  if (!target) throw new GatewayError("not_found", `Unknown verb ${verb}`);
+  if (!target.captured) {
     throw new GatewayError("not_captured", `${verb} has no captured write path.`, {
       btType: def.type,
       op,
@@ -241,26 +276,49 @@ registerVerb("push", async (ctx) => {
       discovery: target.discovery,
     });
   }
-  const args: Record<string, unknown> = { ...asRecord(ctx.args.args) };
-  if (ctx.args.dry_run !== undefined) args.dry_run = ctx.args.dry_run;
-  if (link) args[route.idArg] = numberish(link.btId) ?? link.btId;
-  const result = await invokeByName(verb, {
-    config: ctx.config,
-    adapter: ctx.adapter,
-    store: ctx.store,
-    sync,
-    args: parseVerbArgs(verb, args),
-  });
+  const raw: Record<string, unknown> = { ...asRecord(ctx.args.args) };
+  if (ctx.args.dry_run !== undefined) raw.dry_run = ctx.args.dry_run;
+  if (link) raw[route.idArg] = numberish(link.btId) ?? link.btId;
+  const args = parseVerbArgs(verb, raw);
+  const realCreate = !link && !resolveDryRun(target, args, ctx.config);
+
+  if (realCreate) {
+    const pending = await sync.getCursor(pendingKey(key));
+    if (pending) {
+      throw new GatewayError(
+        "conflict",
+        "An earlier create for this record may have reached Buildertrend. Check Buildertrend, then links.set to link it (or links.delete to clear) before pushing again.",
+        { ...key, pendingSince: pending },
+      );
+    }
+    await sync.setCursor(pendingKey(key), new Date().toISOString());
+  }
+
+  let result;
+  try {
+    result = await invokeByName(verb, { config: ctx.config, adapter: ctx.adapter, store: ctx.store, sync, args });
+  } catch (err) {
+    if (realCreate && err instanceof GatewayError && NOTHING_SENT.has(err.code)) {
+      await sync.deleteCursor(pendingKey(key));
+    }
+    throw err;
+  }
+
   let saved = link;
-  if (!link && result.ok && result.dry_run === false) {
-    const btId = createdIdFrom(result.data, route.idArg);
+  let warning: string | undefined;
+  if (realCreate) {
+    const btId = result.ok ? createdIdFrom(result.data, route.idArg) : undefined;
     if (btId) {
       saved = { ...key, btType: def.type, btId, createdAt: new Date().toISOString() };
       await sync.putLink(saved);
+      await sync.deleteCursor(pendingKey(key));
+    } else {
+      warning = "Created, but the new Buildertrend id was not in the response. Link it with links.set before pushing again.";
     }
   }
-  return { op, verb, link: saved ?? null, result };
-});
+  return { op, verb, link: saved ?? null, result, warning };
+}
+
 
 registerVerb("webhooks.deliver", async (ctx) => deliverWebhooks(ctx.config, requireSync(ctx)));
 

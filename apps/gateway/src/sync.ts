@@ -4,7 +4,7 @@
 // read `changes.list` from a cursor or receive the same events by webhook.
 // Buildertrend has no change feed of its own, so this is polling, gently.
 
-import { createHmac } from "node:crypto";
+import { createHmac, randomUUID } from "node:crypto";
 import { unwrapData } from "./adapter.js";
 import type { GatewayConfig } from "./config.js";
 import { GatewayError } from "./errors.js";
@@ -104,7 +104,27 @@ export async function allJobIds(ctx: VerbContext): Promise<number[]> {
 
 export interface ListPage {
   rows: Record<string, unknown>[];
+  /** Total row count, when the list reports one. */
   total?: number;
+  /** The list's own "more rows" flag, when it reports one. */
+  hasMore?: boolean;
+  /** The endpoint truncated this response. */
+  capped?: boolean;
+}
+
+/** Rows must be where the list keeps them; an odd 200 must not read as "no rows". */
+function requireRows(value: unknown, path: string): Record<string, unknown>[] {
+  if (!Array.isArray(value)) {
+    throw new GatewayError("bt_error", `Unexpected list shape from ${path}`, { path });
+  }
+  return asRows(value);
+}
+
+function gridRows(payload: unknown, path: string): { rows: Record<string, unknown>[]; data: Record<string, unknown> } {
+  const data = unwrapData(payload);
+  if (Array.isArray(data)) return { rows: asRows(data), data: {} };
+  const record = asRecord(data);
+  return { rows: requireRows(record.data, path), data: record };
 }
 
 export async function fetchListPage(
@@ -118,47 +138,88 @@ export async function fetchListPage(
   const list = def.list;
   if (list.kind === "get") {
     const data = asRecord(unwrapData(await btJson(ctx, { method: "GET", path: list.path, query: list.query })));
-    return { rows: asRows(data[list.rowsAt]) };
+    return { rows: requireRows(data[list.rowsAt], list.path) };
   }
   if (list.kind === "post") {
-    const data = asRecord(unwrapData(await btJson(ctx, { method: "POST", path: list.path, json: list.body(jobIds) })));
-    return { rows: asRows(data[list.rowsAt]) };
+    const json = list.body(jobIds, page, pageSize);
+    const data = asRecord(unwrapData(await btJson(ctx, { method: "POST", path: list.path, json })));
+    const rows = requireRows(data[list.rowsAt], list.path);
+    return { rows, capped: list.cap != null && rows.length >= list.cap };
   }
-  const body = buildGridBody({ jobIds: list.jobScoped ? jobIds : [], page, pageSize, search });
+  const size = Math.min(pageSize, list.maxPageSize ?? pageSize);
+  const body = buildGridBody({ jobIds: list.jobScoped ? jobIds : [], page, pageSize: size, search });
   const gridRequest = asRecord(body.gridRequest);
   if (list.entity) gridRequest.emptyStateEntity = list.entity;
   body.filters = "{}";
+  Object.assign(body, list.extra);
   const payload = await btJson(ctx, { method: "POST", path: list.path, query: list.query, json: body });
-  return { rows: asRows(extractGridRows(payload)), total: numberish(asRecord(unwrapData(payload)).records) };
+  const { rows, data } = gridRows(payload, list.path);
+  return {
+    rows,
+    total: numberish(data.records),
+    hasMore: typeof data.hasMoreRows === "boolean" ? data.hasMoreRows : undefined,
+  };
 }
 
-/** Page through a list. `complete` is false when the page cap cut it short. */
+function effectivePageSize(def: ResourceDef, requested: number): number {
+  return def.list.kind === "grid" ? Math.min(requested, def.list.maxPageSize ?? requested) : requested;
+}
+
+/**
+ * Page through a list. `complete` is true only when the list itself says it
+ * is finished (hasMoreRows false, total reached, or a short last page when it
+ * reports neither). A capped, repeated or inconsistent page leaves it false,
+ * and only complete passes may report removals.
+ */
 export async function fetchAll(
   ctx: VerbContext,
   def: ResourceDef,
   jobIds: number[],
   opts: { pageSize?: number; maxPages?: number; delayMs?: number } = {},
 ): Promise<{ rows: Record<string, unknown>[]; complete: boolean }> {
-  const pageSize = opts.pageSize ?? DEFAULT_PAGE_SIZE;
-  const maxPages = opts.maxPages ?? 50;
+  const list = def.list;
+  const pageSize = effectivePageSize(def, opts.pageSize ?? DEFAULT_PAGE_SIZE);
+  const maxPages = opts.maxPages ?? 100;
+  const paged = list.kind === "grid" || (list.kind === "post" && list.paged === true);
+  const batches = list.kind === "post" && list.perJob ? jobIds.map((id) => [id]) : [jobIds];
   const rows: Record<string, unknown>[] = [];
   const seen = new Set<string>();
-  for (let page = 1; page <= maxPages; page += 1) {
-    const result = await fetchListPage(ctx, def, jobIds, page, pageSize);
-    let fresh = 0;
-    for (const row of result.rows) {
-      const key = def.id(row) ?? stableHash(row);
-      if (seen.has(key)) continue;
-      seen.add(key);
-      rows.push(row);
-      fresh += 1;
+  let complete = true;
+
+  for (const batch of batches) {
+    let batchComplete = false;
+    for (let page = 1; page <= maxPages; page += 1) {
+      const result = await fetchListPage(ctx, def, batch, page, pageSize);
+      let fresh = 0;
+      for (const row of result.rows) {
+        const key = def.id(row) ?? stableHash(row);
+        if (seen.has(key)) continue;
+        seen.add(key);
+        rows.push(row);
+        fresh += 1;
+      }
+      if (result.capped) break;
+      if (!paged || result.hasMore === false) {
+        batchComplete = true;
+        break;
+      }
+      if (result.total != null) {
+        if (rows.length >= result.total) {
+          batchComplete = true;
+          break;
+        }
+        if (result.rows.length === 0) break;
+      } else if (result.hasMore === undefined && result.rows.length < pageSize) {
+        batchComplete = true;
+        break;
+      }
+      if (fresh === 0) break;
+      if (opts.delayMs) await sleep(opts.delayMs);
     }
-    // Non-grid lists return everything at once; grids stop on a short or repeated page.
-    if (def.list.kind !== "grid" || result.rows.length < pageSize || fresh === 0) return { rows, complete: true };
-    if (result.total != null && rows.length >= result.total) return { rows, complete: true };
-    if (opts.delayMs) await sleep(opts.delayMs);
+    complete &&= batchComplete;
+    if (batches.length > 1 && opts.delayMs) await sleep(opts.delayMs);
   }
-  return { rows, complete: false };
+  return { rows, complete };
 }
 
 export async function fetchDetail(ctx: VerbContext, def: ResourceDef, id: string, jobId?: number): Promise<unknown> {
@@ -189,13 +250,35 @@ export interface TypeResult {
   error?: string;
 }
 
-export async function runSync(ctx: VerbContext, opts: SyncRunOptions = {}): Promise<{
+export interface SyncRunResult {
   startedAt: string;
   finishedAt: string;
   cursor: number;
   results: TypeResult[];
-}> {
+}
+
+/** Hold `name` across processes sharing the sync file; refuse to run twice at once. */
+async function withLease<T>(sync: SyncStore, name: string, ttlMs: number, work: () => Promise<T>): Promise<T> {
+  const holder = `${process.pid}:${randomUUID()}`;
+  if (!(await sync.acquireLease(name, holder, ttlMs))) {
+    throw new GatewayError("conflict", `Another ${name} is already running against this sync store.`);
+  }
+  try {
+    return await work();
+  } finally {
+    await sync.releaseLease(name, holder);
+  }
+}
+
+/** A full pass that would remove more than this share of a type is treated as a bad read, not deletions. */
+export const REMOVAL_GUARD = { minRecords: 10, maxShare: 0.5 };
+
+export async function runSync(ctx: VerbContext, opts: SyncRunOptions = {}): Promise<SyncRunResult> {
   const sync = requireSync(ctx);
+  return withLease(sync, "sync", 2 * 60 * 60_000, () => runSyncLocked(ctx, sync, opts));
+}
+
+async function runSyncLocked(ctx: VerbContext, sync: SyncStore, opts: SyncRunOptions): Promise<SyncRunResult> {
   const startedAt = new Date().toISOString();
   const defs = opts.types?.length
     ? opts.types.map((type) => {
@@ -206,6 +289,10 @@ export async function runSync(ctx: VerbContext, opts: SyncRunOptions = {}): Prom
     : RESOURCES.filter((r) => r.syncDefault);
   const partial = Boolean(opts.jobIds?.length);
   const jobIds = partial ? opts.jobIds! : await allJobIds(ctx);
+  if (!jobIds.length && defs.some((def) => def.list.jobScoped)) {
+    // Without job ids Buildertrend lists only the picker's job: that would look like mass deletion.
+    throw new GatewayError("bt_error", "Buildertrend returned no jobs; refusing to sync job-scoped lists.");
+  }
   let hydrateBudget = opts.maxHydrate ?? 200;
   const results: TypeResult[] = [];
 
@@ -258,13 +345,18 @@ export async function runSync(ctx: VerbContext, opts: SyncRunOptions = {}): Prom
       }
       // Only a full, uncapped pass can say a record is gone.
       if (!partial && listed.complete) {
-        for (const id of await sync.recordIds(def.type)) {
-          if (seen.has(id)) continue;
-          const previous = await sync.getRecord(def.type, id);
-          if (!previous) continue;
-          await sync.putRecord({ ...previous, removed: true, lastSeenAt: now });
-          await sync.appendChange({ type: def.type, id, jobId: previous.jobId, action: "removed", at: now });
-          result.removed += 1;
+        const gone = (await sync.recordIds(def.type)).filter((id) => !seen.has(id));
+        const known = gone.length + seen.size;
+        if (gone.length >= REMOVAL_GUARD.minRecords && gone.length > known * REMOVAL_GUARD.maxShare) {
+          result.error = `removal guard: ${gone.length} of ${known} ${def.type} records missing from the list; not marking them removed`;
+        } else {
+          for (const id of gone) {
+            const previous = await sync.getRecord(def.type, id);
+            if (!previous) continue;
+            await sync.putRecord({ ...previous, removed: true, lastSeenAt: now });
+            await sync.appendChange({ type: def.type, id, jobId: previous.jobId, action: "removed", at: now });
+            result.removed += 1;
+          }
         }
       }
     } catch (err) {
@@ -312,7 +404,27 @@ export async function deliverWebhooks(
   if (!config.webhookSecret) {
     return { delivered: 0, cursor: 0, error: "BT_WEBHOOK_SECRET is required to sign webhooks." };
   }
-  let cursor = Number((await sync.getCursor("webhook")) ?? 0);
+  const secret = config.webhookSecret;
+  const url = config.webhookUrl;
+  try {
+    return await withLease(sync, "webhook", 10 * 60_000, () => deliverLocked(url, secret, sync, post, batchSize));
+  } catch (err) {
+    if (err instanceof GatewayError && err.code === "conflict") {
+      return { delivered: 0, cursor: Number((await sync.getCursor("webhook")) ?? 0), error: err.message };
+    }
+    throw err;
+  }
+}
+
+async function deliverLocked(
+  url: string,
+  secret: string,
+  sync: SyncStore,
+  post: typeof fetch,
+  batchSize: number,
+): Promise<{ delivered: number; cursor: number; error?: string }> {
+  let stored = await sync.getCursor("webhook");
+  let cursor = Number(stored ?? 0);
   let delivered = 0;
   for (;;) {
     const events = await sync.changesSince(cursor, batchSize);
@@ -324,12 +436,12 @@ export async function deliverWebhooks(
     };
     const body = JSON.stringify(payload);
     try {
-      const res = await post(config.webhookUrl, {
+      const res = await post(url, {
         method: "POST",
         headers: {
           "content-type": "application/json",
           "x-bt-gateway-event": "changes",
-          "x-bt-gateway-signature": signWebhook(config.webhookSecret, body),
+          "x-bt-gateway-signature": signWebhook(secret, body),
         },
         body,
       });
@@ -339,7 +451,11 @@ export async function deliverWebhooks(
     }
     cursor = payload.cursor;
     delivered += events.length;
-    await sync.setCursor("webhook", String(cursor));
+    // Never move the cursor backwards over another deliverer's progress.
+    if (!(await sync.compareAndSetCursor("webhook", stored, String(cursor)))) {
+      return { delivered, cursor: Number((await sync.getCursor("webhook")) ?? cursor), error: "webhook cursor moved by another deliverer" };
+    }
+    stored = String(cursor);
   }
   return { delivered, cursor };
 }
