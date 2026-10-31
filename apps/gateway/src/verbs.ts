@@ -45,6 +45,7 @@ import {
   type VerbContext,
 } from "./invoke.js";
 import { sanitizeReadOutput } from "./secret-scan.js";
+import "./sync-verbs.js";
 import {
   assertSessionStatusSafe,
   projectSessionStatus,

@@ -5,6 +5,8 @@ import { loadConfig } from "./config.js";
 import { createHttpApp } from "./http.js";
 import { startStdioMcp } from "./mcp.js";
 import { createStore } from "./store.js";
+import { createSyncStore } from "./sync-store.js";
+import { startSyncLoop } from "./sync.js";
 import { runCaptureHarness } from "./capture.js";
 import { DEFAULT_SEEDS, defaultCrawlDir, runCrawl, runLogin } from "./crawl/runner.js";
 import { writeCrawlReport } from "./crawl/report.js";
@@ -30,10 +32,10 @@ async function main(): Promise<void> {
   }
 
   // Crawl commands drive the dedicated Chrome profile only; no adapter/store.
-  if (command === "crawl-login" || command === "crawl") {
+  if (command === "login" || command === "crawl-login" || command === "crawl") {
     const profile = arg("profile", process.env.BT_GATEWAY_PROFILE);
     if (!profile) throw new Error(`${command} needs --profile or BT_GATEWAY_PROFILE (dedicated gateway profile)`);
-    if (command === "crawl-login") {
+    if (command === "login" || command === "crawl-login") {
       await runLogin(profile);
       return;
     }
@@ -65,20 +67,43 @@ async function main(): Promise<void> {
   const config = loadConfig();
   const adapter = createAdapter(config, logAdapterRequest);
   const store = await createStore(config.databaseUrl);
+  const sync = await createSyncStore(config.syncDbPath);
 
   if (command === "mcp") {
-    await startStdioMcp(config, adapter, store);
+    await startStdioMcp(config, adapter, store, sync);
+    startSyncLoop({ config, adapter, store, sync });
     return;
+  }
+
+  if (command === "sync") {
+    const { invokeByName } = await import("./invoke.js");
+    const types = arg("types");
+    // Always exit: the profile transport keeps a browser open that would hold the profile lock.
+    try {
+      const result = await invokeByName("sync.run", {
+        config,
+        adapter,
+        store,
+        sync,
+        args: { types: types ? types.split(",") : undefined, hydrate: process.argv.includes("--hydrate") },
+      });
+      process.stdout.write(JSON.stringify(result, null, 2) + "\n");
+      process.exit(0);
+    } catch (err) {
+      console.error(err instanceof Error ? err.message : err);
+      process.exit(1);
+    }
   }
 
   if (command === "serve") {
     if (!config.gatewayToken?.trim()) {
       throw new Error("BT_GATEWAY_TOKEN is required. HTTP /v1 fails closed.");
     }
-    const app = createHttpApp(config, adapter, store);
+    const app = createHttpApp(config, adapter, store, sync);
     serve({ fetch: app.fetch, port: config.port }, (info) => {
-      console.error(`Buildertrend Gateway HTTP on :${info.port} (send=${config.enableSend})`);
+      console.error(`Buildertrend Gateway HTTP on :${info.port} (send=${config.enableSend}, readOnly=${config.readOnly})`);
     });
+    startSyncLoop({ config, adapter, store, sync });
     return;
   }
 
@@ -97,7 +122,7 @@ async function main(): Promise<void> {
     return;
   }
 
-  console.error("Usage: bt-gateway <serve|mcp|capture|crawl-login|crawl>");
+  console.error("Usage: bt-gateway <serve|mcp|sync|login|capture|crawl-login|crawl|crawl-doc>");
   process.exitCode = 1;
 }
 

@@ -1,3 +1,5 @@
+import { resourceVerbSpecs, SYNC_VERB_SPECS } from "./sync-catalog.js";
+
 export type VerbKind = "read" | "session" | "write" | "send";
 
 export interface DiscoveryStep {
@@ -20,7 +22,7 @@ export interface VerbSpec {
   discovery?: DiscoveryStep;
 }
 
-export const VERBS: VerbSpec[] = [
+const HAND_WRITTEN: VerbSpec[] = [
   {
     verb: "session.status",
     tool: "bt_session_status",
@@ -765,6 +767,11 @@ export const VERBS: VerbSpec[] = [
     description: "Mirror / command-log status.",
   },
 ];
+
+/** Registry reads for names no hand-written verb owns (handlers in sync-verbs.ts). */
+export const GENERATED_VERBS = resourceVerbSpecs(new Set(HAND_WRITTEN.map((v) => v.verb)));
+
+export const VERBS: VerbSpec[] = [...HAND_WRITTEN, ...GENERATED_VERBS, ...SYNC_VERB_SPECS];
 
 export const VERB_BY_NAME = new Map(VERBS.map((v) => [v.verb, v]));
 export const VERB_BY_TOOL = new Map(VERBS.map((v) => [v.tool, v]));

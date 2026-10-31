@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { ERROR_CODES, GatewayError, type ErrorCode } from "./errors.js";
 import type { GatewayConfig } from "./config.js";
+import { classifyRequest } from "./crawl/policy.js";
 import { looksLikeLoginHtml, redactHeaders, redactUrl, safeErrorSnippet } from "./redact.js";
 
 export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
@@ -340,9 +341,44 @@ function configSafe(config: GatewayConfig): GatewayConfig {
   return config;
 }
 
+/** Loads Playwright only when the profile transport is used. */
+class LazyProfileAdapter implements BtAdapter {
+  private inner: Promise<BtAdapter> | undefined;
+
+  constructor(private readonly config: GatewayConfig) {}
+
+  async request(req: BtRequest): Promise<BtResponse> {
+    this.inner ??= import("./profile-adapter.js").then((m) => new m.ProfileAdapter(this.config));
+    return (await this.inner).request(req);
+  }
+}
+
+/** Mirror-only mode: anything but a read is refused before it leaves the gateway. */
+export class ReadOnlyAdapter implements BtAdapter {
+  constructor(
+    private readonly inner: BtAdapter,
+    private readonly baseUrl: string,
+  ) {}
+
+  async request(req: BtRequest): Promise<BtResponse> {
+    if (classifyRequest({ method: req.method, url: `${this.baseUrl}${req.path}` }).action !== "allow") {
+      throw new GatewayError("send_disabled", "Read-only mode: this request would change Buildertrend.", {
+        method: req.method,
+        path: redactUrl(req.path),
+      });
+    }
+    return this.inner.request(req);
+  }
+}
+
 export function createAdapter(config: GatewayConfig, hook?: RequestHook): BtAdapter {
-  const inner =
-    config.transport === "direct" ? new DirectAdapter(config) : new SidecarAdapter(config);
+  let inner: BtAdapter =
+    config.transport === "direct"
+      ? new DirectAdapter(config)
+      : config.transport === "profile"
+        ? new LazyProfileAdapter(config)
+        : new SidecarAdapter(config);
+  if (config.readOnly) inner = new ReadOnlyAdapter(inner, config.baseUrl);
   return hook ? new RecordingAdapter(inner, hook) : inner;
 }
 

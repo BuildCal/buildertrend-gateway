@@ -6,12 +6,14 @@ import { invokeByName } from "./invoke.js";
 import { parseVerbArgs } from "./schemas.js";
 import type { BtAdapter } from "./adapter.js";
 import type { GatewayStore } from "./store.js";
+import type { SyncStore } from "./sync-store.js";
 import "./verbs.js";
 
 export function createHttpApp(
   config: GatewayConfig,
   adapter: BtAdapter,
   store: GatewayStore,
+  sync?: SyncStore,
 ): Hono {
   const app = new Hono();
 
@@ -89,7 +91,7 @@ export function createHttpApp(
       if (!VERB_BY_NAME.has(verb)) {
         throw new GatewayError("not_found", `Unknown verb ${verb}`);
       }
-      const result = await invokeByName(verb, { config, adapter, store, args });
+      const result = await invokeByName(verb, { config, adapter, store, sync, args });
       return c.json(result);
     } catch (err) {
       if (isGatewayError(err)) {

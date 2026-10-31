@@ -3,6 +3,7 @@ import type { GatewayConfig } from "./config.js";
 import { GatewayError } from "./errors.js";
 import type { BtAdapter, BtRequest, BtResponse } from "./adapter.js";
 import type { GatewayStore, MirrorEntity } from "./store.js";
+import type { SyncStore } from "./sync-store.js";
 import { assertNoConflict, hashEntity } from "./store.js";
 import { summarizePayload } from "./redact.js";
 
@@ -20,6 +21,8 @@ export interface VerbContext {
   config: GatewayConfig;
   adapter: BtAdapter;
   store: GatewayStore;
+  /** Sync mirror / change log / links. Optional so older callers keep working. */
+  sync?: SyncStore;
   dryRun: boolean;
   args: Record<string, unknown>;
 }

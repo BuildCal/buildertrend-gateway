@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { VERBS } from "./catalog.js";
+import { GENERATED_VERBS, VERBS } from "./catalog.js";
 import { GatewayError } from "./errors.js";
 
 const dry = { dry_run: z.coerce.boolean().optional() };
@@ -43,7 +43,7 @@ const jobScope = {
   jobIds: z.array(z.coerce.number().int().positive()).optional(),
 };
 
-export const VERB_SCHEMAS = {
+const HAND_SCHEMAS = {
   "session.status": z.object({}),
   "jobs.picker.list": z.object({
     search: z.string().optional(),
@@ -278,7 +278,63 @@ export const VERB_SCHEMAS = {
   "sync.status": z.object({}),
 } satisfies Record<string, z.ZodTypeAny>;
 
-export type VerbName = keyof typeof VERB_SCHEMAS;
+/** Real booleans: z.coerce.boolean() would read the string "false" as true. */
+const bool = z.union([z.boolean(), z.enum(["true", "false"]).transform((v) => v === "true")]);
+const types = z.union([z.array(z.string()), z.string()]).optional();
+const linkKey = { app: z.string().optional(), appType: z.string().optional(), appId: z.coerce.string().optional() };
+
+function generatedSchema(verb: string): z.ZodTypeAny {
+  const action = verb.slice(verb.lastIndexOf(".") + 1);
+  if (action === "list") return z.object({ ...page, ...jobScope });
+  if (action === "get") return z.object({ id: z.coerce.string().min(1), jobId: jobScope.jobId });
+  if (action === "defaults") return z.object({ jobId: jobScope.jobId });
+  return z.object({});
+}
+
+const SYNC_SCHEMAS: Record<string, z.ZodTypeAny> = {
+  "resources.list": z.object({}),
+  "sync.run": z.object({
+    types,
+    ...jobScope,
+    hydrate: bool.optional(),
+    maxHydrate: z.coerce.number().int().nonnegative().optional(),
+    maxPages: z.coerce.number().int().positive().optional(),
+    pageSize: z.coerce.number().int().positive().max(1000).optional(),
+    deliver: bool.optional(),
+  }),
+  "changes.list": z.object({
+    since: z.coerce.number().int().nonnegative().optional(),
+    limit: z.coerce.number().int().positive().optional(),
+    types,
+  }),
+  "records.list": z.object({
+    type: z.string(),
+    jobId: jobScope.jobId,
+    includeRemoved: bool.optional(),
+    limit: z.coerce.number().int().positive().optional(),
+    offset: z.coerce.number().int().nonnegative().optional(),
+  }),
+  "records.get": z.object({ type: z.string(), id: z.coerce.string().min(1), jobId: jobScope.jobId, fresh: bool.optional() }),
+  "links.set": z.object({ ...linkKey, btType: z.string(), btId: z.coerce.string().min(1) }),
+  "links.get": z.object({ ...linkKey, btType: z.string().optional(), btId: z.coerce.string().optional() }),
+  "links.list": z.object({ app: z.string().optional(), appType: z.string().optional() }),
+  "links.delete": z.object(linkKey),
+  push: z.object({
+    ...linkKey,
+    btType: z.string(),
+    args: z.record(z.unknown()).optional(),
+    dry_run: bool.optional(),
+  }),
+  "webhooks.deliver": z.object({}),
+};
+
+export const VERB_SCHEMAS: Record<string, z.ZodTypeAny> = {
+  ...HAND_SCHEMAS,
+  ...Object.fromEntries(GENERATED_VERBS.map((v) => [v.verb, generatedSchema(v.verb)])),
+  ...SYNC_SCHEMAS,
+};
+
+export type VerbName = string;
 
 export function mcpShape(verb: string): z.ZodRawShape {
   const schema = VERB_SCHEMAS[verb as VerbName];

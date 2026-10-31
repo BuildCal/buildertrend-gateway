@@ -23,6 +23,12 @@ Your app / Xero / Grok / Cursor
 
 Do **not** start a second MCP per app. Call these verbs.
 
+**Connecting another app** (Buildertrend as the record, your app as the
+working app): see [docs/INTEGRATION.md](../../docs/INTEGRATION.md). In short:
+`sync.run` mirrors 25 Buildertrend record types, `changes.list` / webhooks
+tell your app what changed, `links.*` pair your ids with Buildertrend ids,
+and `push` creates or updates the linked record as a Draft.
+
 ## Safety (non-negotiable)
 
 | Lock | Default |
@@ -54,6 +60,11 @@ BT_SERVICE_INTERNAL_TOKEN=...
 # BT_BUILDER_ID from session.status / GlobalInfo after login
 BT_GATEWAY_ENABLE_SEND=false
 
+# Profile: requests run inside the dedicated gateway Chrome profile (one machine,
+# no sidecar). Sign in once: pnpm --filter gateway login
+BT_TRANSPORT=profile
+BT_GATEWAY_PROFILE=/path/to/bt-gateway/chrome-profile
+
 # Direct (tests / capture). Never commit the jar.
 BT_TRANSPORT=direct
 BT_COOKIE_JAR=/var/lib/bt-gateway/cookies.json
@@ -68,6 +79,8 @@ Cookie jar shape (either Chrome export list or name → `{ value, domain, path }
 pnpm --filter gateway test
 pnpm --filter gateway mcp      # stdio MCP for Cursor / Grok
 pnpm --filter gateway serve    # HTTP :8787
+pnpm --filter gateway sync     # one read-only sync pass, prints counts
+pnpm --filter gateway login    # profile transport: sign in once
 ```
 
 HTTP **requires** `BT_GATEWAY_TOKEN`. Unset or empty token → 401 on every `/v1` route (health stays open). Stdio MCP is local-only.
