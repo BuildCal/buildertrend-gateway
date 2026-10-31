@@ -7,12 +7,14 @@ import { invokeByName } from "./invoke.js";
 import { mcpShape, parseVerbArgs } from "./schemas.js";
 import type { BtAdapter } from "./adapter.js";
 import type { GatewayStore } from "./store.js";
+import type { SyncStore } from "./sync-store.js";
 import "./verbs.js";
 
 export function createMcpServer(
   config: GatewayConfig,
   adapter: BtAdapter,
   store: GatewayStore,
+  sync?: SyncStore,
 ): McpServer {
   const server = new McpServer({
     name: "buildertrend-gateway",
@@ -29,7 +31,7 @@ export function createMcpServer(
       async (input) => {
         const args = parseVerbArgs(spec.verb, (input ?? {}) as Record<string, unknown>);
         try {
-          const result = await invokeByName(spec.verb, { config, adapter, store, args });
+          const result = await invokeByName(spec.verb, { config, adapter, store, sync, args });
           return { content: [{ type: "text" as const, text: JSON.stringify(result) }] };
         } catch (err) {
           const body = isGatewayError(err)
@@ -81,8 +83,9 @@ export async function startStdioMcp(
   config: GatewayConfig,
   adapter: BtAdapter,
   store: GatewayStore,
+  sync?: SyncStore,
 ): Promise<void> {
-  const server = createMcpServer(config, adapter, store);
+  const server = createMcpServer(config, adapter, store, sync);
   const transport = new StdioServerTransport();
   await server.connect(transport);
 }

@@ -23,6 +23,12 @@ Your app / Xero / Grok / Cursor
 
 Do **not** start a second MCP per app. Call these verbs.
 
+**Connecting another app** (Buildertrend as the record, your app as the
+working app): see [docs/INTEGRATION.md](../../docs/INTEGRATION.md). In short:
+`sync.run` mirrors 25 Buildertrend record types, `changes.list` / webhooks
+tell your app what changed, `links.*` pair your ids with Buildertrend ids,
+and `push` creates or updates the linked record as a Draft.
+
 ## Safety (non-negotiable)
 
 | Lock | Default |
@@ -54,6 +60,11 @@ BT_SERVICE_INTERNAL_TOKEN=...
 # BT_BUILDER_ID from session.status / GlobalInfo after login
 BT_GATEWAY_ENABLE_SEND=false
 
+# Profile: requests run inside the dedicated gateway Chrome profile (one machine,
+# no sidecar). Sign in once: pnpm --filter gateway login
+BT_TRANSPORT=profile
+BT_GATEWAY_PROFILE=/path/to/bt-gateway/chrome-profile
+
 # Direct (tests / capture). Never commit the jar.
 BT_TRANSPORT=direct
 BT_COOKIE_JAR=/var/lib/bt-gateway/cookies.json
@@ -68,6 +79,8 @@ Cookie jar shape (either Chrome export list or name → `{ value, domain, path }
 pnpm --filter gateway test
 pnpm --filter gateway mcp      # stdio MCP for Cursor / Grok
 pnpm --filter gateway serve    # HTTP :8787
+pnpm --filter gateway sync     # one read-only sync pass, prints counts
+pnpm --filter gateway login    # profile transport: sign in once
 ```
 
 HTTP **requires** `BT_GATEWAY_TOKEN`. Unset or empty token → 401 on every `/v1` route (health stays open). Stdio MCP is local-only.
@@ -100,3 +113,26 @@ pnpm --filter gateway capture -- \
 ```
 
 Perform **one** draft save. The harness records method, path, content-type, and JSON keys (cookies stripped) and appends `buildertrend-api-map.md`. Then implement the verb, replay `dry_run`, then one real draft, GET to verify, leave **Not sent**.
+
+## Read-only coverage crawl
+
+Maps every screen, form, modal and data point the web app exposes, scored
+against an inventory read from the app's own JavaScript. Output:
+[docs/buildertrend-coverage-map.md](../../docs/buildertrend-coverage-map.md).
+
+```bash
+# Sign in (password / MFA are yours) and crawl in the same window.
+BT_GATEWAY_PROFILE=/path/to/bt-gateway/chrome-profile pnpm --filter gateway crawl -- --out <run-dir>
+pnpm --filter gateway crawl-doc -- --run <run-dir>   # module sections for the coverage map
+```
+
+Read-only is enforced at the network layer (`src/crawl/policy.ts`): only GET
+reads and an allowlist of read-only POSTs (grids, calendars, feeds,
+list/summary/search, job picker, costing reads) leave the browser. Every other
+request is aborted and logged as a **write candidate** with its body keys —
+those are the capture targets. Write buttons (Save, Send, Approve, Delete…)
+are listed but never clicked. Field values, cookies and tokens are never
+recorded; dropdown options are kept only for system-enum fields. Output lives
+outside the repo (`~/Library/Application Support/bt-gateway/crawl/` by
+default) — do not commit it. Stops on `needsToRelogin` and resumes from its
+checkpoint on the next run.

@@ -21,7 +21,7 @@ export function buildGridBody(args: GridArgs, defaults?: { sortColumn?: string }
   const page = args.page ?? 1;
   const pageSize = args.pageSize ?? 100;
   const filters = args.filters ?? {};
-  return {
+  const body: Record<string, unknown> = {
     gridRequest: {
       hideMultiJobsColumns: true,
       selectedColumns: [],
@@ -40,8 +40,10 @@ export function buildGridBody(args: GridArgs, defaults?: { sortColumn?: string }
     },
     filters: typeof filters === "string" ? filters : JSON.stringify(filters),
     jobIds: jobIdsFrom(args),
-    searchText: args.search ?? "",
   };
+  // Only when searching: an empty searchText makes some grids (Leads) return no rows.
+  if (args.search) body.searchText = args.search;
+  return body;
 }
 
 export function extractGridRows(payload: unknown): unknown[] {
