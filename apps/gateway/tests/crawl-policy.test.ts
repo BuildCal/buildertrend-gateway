@@ -317,3 +317,18 @@ describe("crawl error pages", () => {
     expect(run("Purchase Orders\nTitle\nStatus")).toBe("");
   });
 });
+
+describe("crawl duplicate routes", () => {
+  it("templates timestamps and keys nested pop-ups by the pop-up alone", async () => {
+    const { nestedModalKey, templateUrl } = await import("../src/crawl/policy.js");
+    expect(templateUrl("https://buildertrend.net/app/NotificationHistory/NotificationDetails/1/2/2026-10-29T17:33:18Z/true").path).toBe(
+      "/app/NotificationHistory/NotificationDetails/{id}/{id}/{date}/true",
+    );
+    expect(nestedModalKey("/app/DailyLogs/JobPickerActions/Compose/{id}/{id}")).toBe("/JobPickerActions/Compose/{id}/{id}");
+    expect(nestedModalKey("/app/ChangeOrders/{id}/{id}/Details/JobPickerActions/Compose/{id}/{id}")).toBe(
+      "/JobPickerActions/Compose/{id}/{id}",
+    );
+    expect(nestedModalKey("/app/Landing/QuickAction/Bill/0/{id}/Add/CostCatalog")).toBe("/CostCatalog");
+    expect(nestedModalKey("/app/ChangeOrders/{id}/{id}/Details")).toBeNull();
+  });
+});

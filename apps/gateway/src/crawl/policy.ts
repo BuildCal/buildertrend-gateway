@@ -239,6 +239,7 @@ export function templateSegment(segment: string): string {
   if (GUID.test(decoded)) return "{guid}";
   if (decoded.includes("@")) return "{email}";
   if (/^(true|false)$/i.test(decoded)) return decoded.toLowerCase();
+  if (/^\d{4}-\d{2}-\d{2}(T[\d:.]+Z?)?$/.test(decoded)) return "{date}";
   if (/^[A-Za-z0-9+/=_-]{24,}$/.test(decoded) && /\d/.test(decoded)) return "{token}";
   if (/\s/.test(decoded) || decoded.length > 60) return "{text}";
   return segment;
@@ -254,6 +255,18 @@ export function templateUrl(rawUrl: string): { path: string; queryKeys: string[]
   const queryKeys = [...new Set([...url.searchParams.keys()])].sort();
   const query = queryKeys.length ? "?" + queryKeys.map((k) => `${k}=`).join("&") : "";
   return { path, queryKeys, template: path + query };
+}
+
+const NESTED_MODAL = /\/(JobPickerActions|CostCatalog|ContactSearch|Media\/(Properties|FolderProperties|FolderViewingPermissions)|viewSettings)(\/|$)/;
+
+/**
+ * The same pop-up route can hang off any parent page ("…/JobPickerActions/
+ * Compose/{id}/{id}" under every module). Key it by the pop-up part alone so
+ * it is explored once. Null for ordinary routes.
+ */
+export function nestedModalKey(template: string): string | null {
+  const i = template.search(NESTED_MODAL);
+  return i < 0 ? null : template.slice(i);
 }
 
 /** Screen (SPA route) key: path only, templated. Query dropped. */

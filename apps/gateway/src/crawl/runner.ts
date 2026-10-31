@@ -18,6 +18,7 @@ import {
   isSafeTabLabel,
   looksLikeLoginUrl,
   isOtherPortalRoute,
+  nestedModalKey,
   templateActionLabel,
   templateFieldLabel,
   payloadNeedsRelogin,
@@ -643,6 +644,11 @@ export async function runCrawl(opts: CrawlOptions): Promise<CrawlRecorder> {
       console.error(`ROUTES queued from inventory: ${inv.routes.length}`);
     }
 
+    // Runs resumed from older checkpoints: count pop-ups already explored.
+    for (const t of Object.keys(cp.templateVisits)) {
+      const k = nestedModalKey(t);
+      if (k !== null) cp.templateVisits[`modal:${k}`] = Math.max(cp.templateVisits[`modal:${k}`] ?? 0, 1);
+    }
     while (cp.queue.length) {
       if (cp.pagesVisited >= opts.maxPages) throw new StopCrawl("maxPages");
       if (Date.now() > deadline) throw new StopCrawl("maxMinutes");
@@ -650,7 +656,12 @@ export async function runCrawl(opts: CrawlOptions): Promise<CrawlRecorder> {
       // Drop copies of a route already visited up to its cap (the cap is also
       // checked at enqueue, but many copies can queue before the first visit).
       const qTmpl = templateUrl(href).template;
-      if (isOtherPortalRoute(href) || (cp.templateVisits[qTmpl] ?? 0) >= (qTmpl.includes("{") ? opts.perTemplate : 1)) {
+      const modalKey = nestedModalKey(qTmpl);
+      if (
+        isOtherPortalRoute(href) ||
+        (modalKey !== null && (cp.templateVisits[`modal:${modalKey}`] ?? 0) >= 1) ||
+        (cp.templateVisits[qTmpl] ?? 0) >= (qTmpl.includes("{") ? opts.perTemplate : 1)
+      ) {
         cp.queue.shift();
         queued.delete(href);
         continue;
@@ -705,6 +716,8 @@ export async function runCrawl(opts: CrawlOptions): Promise<CrawlRecorder> {
       visited.add(href);
       cp.visited.push(href);
       cp.templateVisits[tmpl] = (cp.templateVisits[tmpl] ?? 0) + 1;
+      const visitedModal = nestedModalKey(tmpl);
+      if (visitedModal !== null) cp.templateVisits[`modal:${visitedModal}`] = (cp.templateVisits[`modal:${visitedModal}`] ?? 0) + 1;
       cp.pagesVisited += 1;
       await rec.save();
       console.error(
