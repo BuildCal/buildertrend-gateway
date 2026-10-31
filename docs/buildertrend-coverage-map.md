@@ -46,52 +46,52 @@ pnpm --filter gateway crawl -- --out <run-dir>
 pnpm --filter gateway crawl-doc -- --run <run-dir>
 ```
 
-**Run:** 2026-10-30, 595 pages visited, stopped (maxMinutes), 187 queued URLs left (mostly repeats of templates already visited).
+**Run:** 2026-10-30, 748 pages visited, queue exhausted.
 
 ## Coverage summary
 
-- **Screens, rows and modals explored:** 449 (153 of them modals, drawers or row details)
+- **Screens, rows and modals explored:** 585 (157 of them modals, drawers or row details)
 - **Forbidden for this login** (bounced to sign-in or 401): 19
-- **Error / not-found views** (route needs a real record id): 72
-- **Distinct UI fields and grid columns:** 686 · **dropdowns opened:** 1319
-- **Read endpoints observed:** 339 · **writes blocked:** 30
+- **Error / not-found views** (route needs a real record id): 74
+- **Distinct UI fields and grid columns:** 720 · **dropdowns opened:** 1632
+- **Read endpoints observed:** 350 · **writes blocked:** 31
 - **App bundle:** 1787 API paths (777 reads, 1010 writes) and 305 routes
-- **Bundle reads reached:** 240 / 777 · **routes reached:** 296 / 305
+- **Bundle reads reached:** 244 / 777 · **routes reached:** 296 / 305
 - **Observed but not in the bundle** (paths built at run time): 12
 
 | Module | Screens | Fields | Reads seen | Writes blocked | Bundle reads reached | Bundle writes (never fired) |
 | --- | --- | --- | --- | --- | --- | --- |
-| Change orders (variations) | 23 | 81 | 7 | 3 | 7 / 16 | 26 |
-| Owner invoices (progress claims) | 31 | 70 | 10 | 1 | 8 / 86 | 130 |
-| Bills (AP) | 20 | 61 | 6 | 1 | 5 / 13 | 33 |
-| Purchase orders | 38 | 81 | 6 | 0 | 5 / 12 | 19 |
+| Change orders (variations) | 30 | 92 | 7 | 3 | 7 / 16 | 26 |
+| Owner invoices (progress claims) | 33 | 70 | 10 | 1 | 8 / 86 | 130 |
+| Bills (AP) | 26 | 66 | 6 | 1 | 5 / 13 | 33 |
+| Purchase orders | 45 | 81 | 6 | 0 | 5 / 12 | 19 |
 | Bids | 8 | 10 | 3 | 0 | 1 / 9 | 20 |
-| Estimates / proposals | 44 | 119 | 18 | 0 | 12 / 29 | 51 |
-| Budget / job costing | 17 | 50 | 16 | 0 | 13 / 31 | 37 |
-| Schedule | 34 | 57 | 9 | 5 | 10 / 27 | 20 |
-| Daily logs | 24 | 33 | 4 | 1 | 1 / 2 | 5 |
+| Estimates / proposals | 53 | 119 | 18 | 0 | 12 / 29 | 51 |
+| Budget / job costing | 18 | 50 | 17 | 0 | 13 / 31 | 37 |
+| Schedule | 44 | 57 | 9 | 5 | 10 / 27 | 20 |
+| Daily logs | 28 | 40 | 4 | 1 | 1 / 2 | 5 |
 | Tasks / to-dos | 12 | 12 | 6 | 0 | 4 / 22 | 43 |
 | Selections | 26 | 25 | 9 | 0 | 7 / 35 | 47 |
-| Warranty | 21 | 11 | 5 | 0 | 4 / 7 | 11 |
-| RFIs | 15 | 19 | 5 | 0 | 3 / 4 | 7 |
-| Submittals | 4 | 22 | 4 | 0 | 4 / 11 | 26 |
+| Warranty | 22 | 11 | 5 | 0 | 4 / 7 | 11 |
+| RFIs | 16 | 19 | 5 | 0 | 3 / 4 | 7 |
+| Submittals | 5 | 22 | 4 | 0 | 4 / 11 | 26 |
 | Time clock | 12 | 28 | 4 | 2 | 3 / 12 | 18 |
-| Plans and specs | 17 | 5 | 13 | 0 | 6 / 31 | 35 |
+| Plans and specs | 18 | 5 | 13 | 0 | 6 / 31 | 35 |
 | Client updates / owner portal | 9 | 3 | 8 | 2 | 4 / 9 | 18 |
-| Files (documents, photos, videos) | 40 | 13 | 29 | 4 | 12 / 43 | 52 |
-| Messaging, comments, notifications | 31 | 25 | 13 | 1 | 8 / 29 | 43 |
-| Leads (sales) | 42 | 103 | 13 | 0 | 11 / 19 | 25 |
-| Client contacts | 5 | 18 | 6 | 1 | 4 / 12 | 7 |
+| Files (documents, photos, videos) | 44 | 14 | 30 | 4 | 13 / 43 | 52 |
+| Messaging, comments, notifications | 38 | 29 | 14 | 2 | 9 / 29 | 43 |
+| Leads (sales) | 85 | 154 | 15 | 0 | 11 / 19 | 25 |
+| Client contacts | 7 | 18 | 6 | 1 | 4 / 12 | 7 |
 | Subs / vendors | 6 | 38 | 7 | 1 | 6 / 19 | 31 |
-| Internal users and roles | 8 | 54 | 12 | 0 | 10 / 23 | 31 |
-| Jobs | 26 | 88 | 27 | 0 | 20 / 64 | 52 |
+| Internal users and roles | 15 | 63 | 12 | 0 | 10 / 23 | 31 |
+| Jobs | 32 | 94 | 27 | 0 | 20 / 64 | 52 |
 | Reports | 28 | 33 | 10 | 0 | 7 / 7 | 0 |
-| Company settings and setup | 49 | 87 | 14 | 0 | 10 / 35 | 42 |
-| Landing, search and session | 122 | 82 | 75 | 8 | 55 / 170 | 181 |
+| Company settings and setup | 70 | 125 | 15 | 0 | 10 / 35 | 42 |
+| Landing, search and session | 126 | 82 | 80 | 8 | 57 / 170 | 181 |
 
 <details><summary>Routes that opened an error or not-found view</summary>
 
-`/app/admin` · `/app/ApplyToInvoice/0/0` · `/app/ChangeOrderDraft/0` · `/app/ContractedProfit/0` · `/app/CreditMemos/JobPickerActions/Compose/0/{id}` · `/app/DailyLogView/0/{id}/none` · `/app/Documents/AttachedFiles/{id}` · `/app/DrawSchedule/0` · `/app/import-templates/0` · `/app/Job/0/0/0/0/0/0` · `/app/Landing` · `/app/Landing/ActivityFeed/Bill/{id}/{id}/Add/CostCatalog` · `/app/Landing/ActivityFeed/Bill/{id}/{id}/Add/CostCatalog/CostCatalog/CostCode/{id}` · `/app/Landing/ActivityFeed/Bill/{id}/{id}/Add/CostCatalog/CostCatalog/CostItem/{id}` · `/app/Landing/ActivityFeed/PurchaseOrder/{id}/{id}/Bill/{id}/{id}` · `/app/Landing/ActivityFeed/PurchaseOrder/{id}/{id}/RFI/0/{id}` · `/app/link` · `/app/Media/Copy/0` · `/app/Media/FolderViewingPermissions/0/0` · `/app/QuestionReport/0/{id}` · `/app/QuickAction` · `/app/Rebate/0` · `/app/Receipt/0` · `/app/RecentComments` · `/app/RemoveSignatureRequest/0` · `/app/RiskInsurance/BuilderProposalForm/0` · `/app/RiskInsurance/JobRequestForm/{id}` · `/app/RiskInsurance/JobRequestForm/0` · `/app/RiskInsurance/JobsiteRequestForm/{id}` · `/app/RiskInsurance/JobsiteRequestForm/0` · `/app/RoleManagement/Role/0/0` · `/app/SalesSettings/CustomField/0` · `/app/ScheduleCopy/0/{id}` · `/app/ScheduleHistory/{id}` · `/app/ScheduleHistory/0` · `/app/ScheduleRFI/0/{id}` · `/app/ScheduleWorkdayExceptions/0/{id}` · `/app/SelectionInvoicingWizard` · `/app/SelectionOption/0/{id}/0/0` · `/app/SelectionOptionsModal/0/{id}/0/0` · `/app/SelectionQuickAdd/{id}` · `/app/SelectionQuickAdd/0` · `/app/Service/0/0` · `/app/Settlement/0` · `/app/share` · `/app/SignatureRequest/0` · `/app/SignatureRequest/0/{id}` · `/app/SignatureRequest/0/{id}/0` · `/app/SignDocument/0` · `/app/Signups/0/0/0/0/0/0/0` · `/app/Signups/Pricing/0` · `/app/Signups/WhatsNext/0/0/0/0` · `/app/Specification/0/{id}` · `/app/SubBid/0/{id}` · `/app/SubscriptionManager/0/0` · `/app/SubscriptionSettings/0/0` · `/app/Supplier/0` · `/app/Survey/0` · `/app/SurveyDefinition/0` · `/app/SurveyQuestion/0` · `/app/Surveys/0` · `/app/Tag/0/0` · `/app/Tax/TaxGroup/0` · `/app/Tax/TaxRate/0` · `/app/Template/{id}` · `/app/Template/CopyTemplateToOrg/0` · `/app/TemplateImport/0/{id}` · `/app/TimeClock/Reports/JobPickerActions/Compose/0/{id}` · `/app/TradeAgreement/0/0` · `/app/TradeAgreement/Print/0` · `/app/VendorReceipt/0/0` · `/app/VendorStoreFinder/0`
+`/app/admin` · `/app/ApplyToInvoice/0/0` · `/app/ChangeOrderDraft/0` · `/app/ChangeOrders/0/{id}/Details` · `/app/ContractedProfit/0` · `/app/CreditMemos/JobPickerActions/Compose/0/{id}` · `/app/DailyLogView/0/{id}/none` · `/app/Documents/AttachedFiles/{id}` · `/app/DrawSchedule/0` · `/app/import-templates/0` · `/app/Job/0/0/0/0/0/0` · `/app/Landing` · `/app/Landing/ActivityFeed/Bill/{id}/{id}/Add/CostCatalog` · `/app/Landing/ActivityFeed/Bill/{id}/{id}/Add/CostCatalog/CostCatalog/CostCode/{id}` · `/app/Landing/ActivityFeed/Bill/{id}/{id}/Add/CostCatalog/CostCatalog/CostItem/{id}` · `/app/Landing/ActivityFeed/PurchaseOrder/{id}/{id}/Bill/{id}/{id}` · `/app/Landing/ActivityFeed/PurchaseOrder/{id}/{id}/RFI/0/{id}` · `/app/Landing/ActivityFeed/PurchaseOrder/0/{id}/Bill/{id}/{id}` · `/app/link` · `/app/Media/Copy/0` · `/app/Media/FolderViewingPermissions/0/0` · `/app/QuestionReport/0/{id}` · `/app/QuickAction` · `/app/Rebate/0` · `/app/Receipt/0` · `/app/RecentComments` · `/app/RemoveSignatureRequest/0` · `/app/RiskInsurance/BuilderProposalForm/0` · `/app/RiskInsurance/JobRequestForm/{id}` · `/app/RiskInsurance/JobRequestForm/0` · `/app/RiskInsurance/JobsiteRequestForm/{id}` · `/app/RiskInsurance/JobsiteRequestForm/0` · `/app/RoleManagement/Role/0/0` · `/app/SalesSettings/CustomField/0` · `/app/ScheduleCopy/0/{id}` · `/app/ScheduleHistory/{id}` · `/app/ScheduleHistory/0` · `/app/ScheduleRFI/0/{id}` · `/app/ScheduleWorkdayExceptions/0/{id}` · `/app/SelectionInvoicingWizard` · `/app/SelectionOption/0/{id}/0/0` · `/app/SelectionOptionsModal/0/{id}/0/0` · `/app/SelectionQuickAdd/{id}` · `/app/SelectionQuickAdd/0` · `/app/Service/0/0` · `/app/Settlement/0` · `/app/share` · `/app/SignatureRequest/0` · `/app/SignatureRequest/0/{id}` · `/app/SignatureRequest/0/{id}/0` · `/app/SignDocument/0` · `/app/Signups/0/0/0/0/0/0/0` · `/app/Signups/Pricing/0` · `/app/Signups/WhatsNext/0/0/0/0` · `/app/Specification/0/{id}` · `/app/SubBid/0/{id}` · `/app/SubscriptionManager/0/0` · `/app/SubscriptionSettings/0/0` · `/app/Supplier/0` · `/app/Survey/0` · `/app/SurveyDefinition/0` · `/app/SurveyQuestion/0` · `/app/Surveys/0` · `/app/Tag/0/0` · `/app/Tax/TaxGroup/0` · `/app/Tax/TaxRate/0` · `/app/Template/{id}` · `/app/Template/CopyTemplateToOrg/0` · `/app/TemplateImport/0/{id}` · `/app/TimeClock/Reports/JobPickerActions/Compose/0/{id}` · `/app/TradeAgreement/0/0` · `/app/TradeAgreement/Print/0` · `/app/VendorReceipt/0/0` · `/app/VendorStoreFinder/0`
 
 </details>
 
@@ -105,7 +105,7 @@ pnpm --filter gateway crawl-doc -- --run <run-dir>
 
 - **VIABUILD equivalent:** `variations`, `variation_line_items`, `variation_attachments`
 - **Gateway verbs:** `variations.list`, `variations.get`, `variations.saveDraftHeader`, `variations.saveDraft`, `variations.updateLine`, `variations.addLines`, `variations.deleteLines`, `variations.recomputeGst`, `variations.createDraft` (not_captured), `variations.notifyOwners` (send, locked)
-- **Coverage:** 23 screens/modals · 7 read endpoints · 3 blocked writes · bundle APIs reached 10/42
+- **Coverage:** 30 screens/modals · 7 read endpoints · 3 blocked writes · bundle APIs reached 10/42
 
 ### Screens
 
@@ -123,10 +123,15 @@ pnpm --filter gateway crawl-doc -- --run <run-dir>
 | `/app/ChangeOrders/POMapping/ChangeOrder` | — | 17 | Add Purchase Order, Apply filter |
 | `/app/ChangeOrders/PurchaseOrder/0/{id}/{id}` | — | 12 | Add Purchase Order, Apply filter |
 | `/app/ChangeOrders/RelatedRfi/{id}/{id}/{id}/{id}` | — | 12 | Add Purchase Order, Apply filter |
+| `/app/ChangeOrders/RelatedRfi/{id}/{id}/{id}/{id}/RFI/0/{id}` | — | 18 | Add Purchase Order, Apply filter |
+| `/app/ChangeOrders/RelatedRfi/0/{id}/{id}/{id}` | — | 12 | Add Purchase Order, Apply filter |
+| `/app/ChangeOrders/RelatedRfi/0/{id}/{id}/{id}/RFI/0/{id}` | — | 12 | Add Purchase Order, Apply filter |
 | `/app/JobCostingBudget/ChangeOrder/{id}/{id}` | Details, Client preview | 31 | Apply filter, Copy share link, Add to |
+| `/app/JobCostingBudget/ChangeOrder/0/{id}` | — | 11 | Apply filter |
 | `/app/JobFinancials/ChangeOrder/{id}/{id}` | Details, Client preview | 25 | Copy share link, Add to, More › Recall, Add to › New Schedule Item, Add to › Purchase Order, Add to › Invoice |
 | `/app/JobFinancials/ChangeOrder/{id}/{id} ⧉ Comments` | Internal ({n}), Clients, Subs/vendors | 0 | — |
 | `/app/JobFinancials/ChangeOrder/{id}/{id} ⧉ More › Recall` | — | 0 | Recall |
+| `/app/JobFinancials/ChangeOrder/0/{id}` | — | 6 | — |
 | `/app/Landing/QuickAction/ChangeOrderDraft/{id}` | — | 0 | — |
 | `/app/Landing/QuickAction/ChangeOrderDraft/0` | — | 1 | — |
 | `/app/Owner/ChangeOrders/0/{id}/Request` | — | 0 | — |
@@ -134,10 +139,12 @@ pnpm --filter gateway crawl-doc -- --run <run-dir>
 | `/app/PurchaseOrder/0/{id}/ChangeOrder/0/{id}` | — | 13 | Add, Create new doc, Add From, New Bill, Save |
 | `/app/Reporting/ChangeOrderProfitReport` | Columns, Filters | 9 | — |
 | `/app/Settings/ChangeOrderSettings` | — | 9 | — |
+| `/app/Settings/ChangeOrderSettings/ChangeOrdersCustomField/{id}` | — | 16 | — |
+| `/app/Settings/ChangeOrderSettings/ChangeOrdersCustomField/0` | — | 15 | — |
 
 ### Fields (UI)
 
-% Invoiced (column) · Actual costs (column) · Amount (column) · Approval Deadline (date) · Assigned to (select) · Assignee (column) · Builder Cost (column) · Builder cost (column) · CO ID# (column) · Change order prefix (text) · Choice (column) · Choose date (radio) · Client (column) · Client Price (column) · Client notes (textarea) · Client price (column) · Column with Header Selection (checkbox) · Columns (select) · Comments (column) · Committed costs (column) · Cost categories (column) · Cost codes (column) · Cost type (column) · Cost types (column) · Created date (column) · Data type (column) · Date (column) · Description (column) · Display order (column) · Display to client (select) · Files (column) · Filter Columns Input (text) · ID# (text) · Include description (column) · Include files and photos (column) · Include in filters (column) · Internal Notes (column) · Internal Notes (textarea) · Internal notes (textarea) · Invoice Change Orders upon client approval (checkbox) · Invoice client upon approval (checkbox) · Items (column) · Job costing (column) · Job name (column) · Job status (column) · Label (column) · Margin (column) · Mark as a Variance PO (checkbox) · Markup (column) · Materials Only (checkbox) · Original budget costs (column) · Payment type (column) · Pending costs (column) · Press SPACE to toggle visibility (hidden) (checkbox) · Press SPACE to toggle visibility (indeterminate) (checkbox) · Press SPACE to toggle visibility (visible) (checkbox) · Press Space to toggle row selection (unchecked) (checkbox) · Price (column) · Profit (column) · Purchase Order # (text) · Qty/Unit (column) · Quantity (column) · RFIs (column) · Related POs (column) · Required (column) · Required Approvers (select) · Revised budget costs (column) · Select a Job (select) · Show client internally declined Change Orders (checkbox) · Status (column) · Status change date (column) · Sub/Vendor notes (textarea) · Tax (column) · Title (column) · Title (text) · Total price (column) · Unit (column) · Unit Price (column) · Unit cost (column) · View (select) · customFields.0.value (number)
+% Invoiced (column) · Actual costs (column) · Allow permitted sub/vendor to view? (checkbox) · Amount (column) · Approval Deadline (date) · Assigned to (select) · Assignee (column) · Assignee (select) · Builder Cost (column) · Builder cost (column) · CO ID# (column) · Change order prefix (text) · Choice (column) · Choose date (radio) · Client (column) · Client Price (column) · Client notes (textarea) · Client price (column) · Column with Header Selection (checkbox) · Columns (select) · Comments (column) · Committed costs (column) · Cost categories (column) · Cost codes (column) · Cost type (column) · Cost types (column) · Created date (column) · Data type (column) · Date (column) · Description (column) · Display order (column) · Display to client (select) · Files (column) · Filter Columns Input (text) · ID # (text) · ID# (text) · Include In My Filters (checkbox) · Include description (column) · Include files and photos (column) · Include in filters (column) · Internal Notes (column) · Internal Notes (textarea) · Internal notes (textarea) · Invoice Change Orders upon client approval (checkbox) · Invoice client upon approval (checkbox) · Items (column) · Job costing (column) · Job name (column) · Job status (column) · Label (column) · Margin (column) · Mark as a Variance PO (checkbox) · Markup (column) · Materials Only (checkbox) · Original budget costs (column) · Payment type (column) · Pending costs (column) · Press SPACE to toggle visibility (hidden) (checkbox) · Press SPACE to toggle visibility (indeterminate) (checkbox) · Press SPACE to toggle visibility (visible) (checkbox) · Press Space to toggle row selection (unchecked) (checkbox) · Price (column) · Profit (column) · Purchase Order # (text) · Qty/Unit (column) · Quantity (column) · RFIs (column) · Related POs (column) · Reminder (select) · Required (column) · Required Approvers (select) · Required? (checkbox) · Revised budget costs (column) · Select a Job (select) · Show client internally declined Change Orders (checkbox) · Show clients? (checkbox) · Status (column) · Status change date (column) · Sub/Vendor notes (textarea) · Tax (column) · Title (column) · Title (text) · Total price (column) · Unit (column) · Unit Price (column) · Unit cost (column) · View (select) · Viewers (select) · customField.defaultValue (number) · customField.displayOrder (number) · customField.toolTipText (textarea) · customFields.0.value (number)
 
 ### Enums and dropdown options
 
@@ -201,7 +208,7 @@ pnpm --filter gateway crawl-doc -- --run <run-dir>
 
 - **VIABUILD equivalent:** `progress_claims`, `claim_line_items`, `contracts` (retention, GST)
 - **Gateway verbs:** `invoices.list`, `invoices.get`, `invoices.accountingStatus`, `invoices.changes`, `invoices.saveDraft` (not_captured), `invoices.addLines` (not_captured), `invoices.send` (send, locked)
-- **Coverage:** 31 screens/modals · 10 read endpoints · 1 blocked writes · bundle APIs reached 11/216
+- **Coverage:** 33 screens/modals · 10 read endpoints · 1 blocked writes · bundle APIs reached 11/216
 
 ### Screens
 
@@ -213,7 +220,9 @@ pnpm --filter gateway crawl-doc -- --run <run-dir>
 | `/app/InvoicePayments/JobPickerActions/Compose/0/{id}` | Invoices, Payments, Credit memos | 10 | — |
 | `/app/InvoicePayments/OwnerInvoice/{id}/{id}/false` | Invoices, Payments, Credit memos, Details, Client preview | 18 | Apply filter |
 | `/app/InvoicePayments/OwnerInvoice/{id}/{id}/false ⧉ Give feedback` | — | 1 | — |
+| `/app/InvoicePayments/OwnerInvoice/0/{id}/false` | Invoices, Payments, Credit memos, Details, Client preview | 20 | Apply filter, Save, Send |
 | `/app/JobFinancials/OwnerInvoice/{id}/{id}/false` | Details, Client preview | 18 | More › Void, More › Delete |
+| `/app/JobFinancials/OwnerInvoice/0/{id}/false` | Details, Client preview | 20 | Save, Send |
 | `/app/Landing/QuickAction/OwnerInvoice/0/{id}/false` | Details, Client preview | 14 | Apply filter, Save, Send |
 | `/app/Landing/QuickAction/OwnerInvoice/0/{id}/false ⧉ Give feedback` | — | 1 | — |
 | `/app/LeadProposal/0/payOnlineMobile` | — | 0 | — |
@@ -410,7 +419,7 @@ pnpm --filter gateway crawl-doc -- --run <run-dir>
 
 - **VIABUILD equivalent:** `invoices`, `invoice_line_items`, `invoice_po_matches`, `invoice_approval_log`
 - **Gateway verbs:** `bills.list`, `bills.tabCounts`, `bills.get`, `bills.file`, `bills.defaults`, `bills.availablePurchaseOrders`, `bills.create`, `bills.update`, `bills.attach`, `bills.linkPurchaseOrder`, `bills.markReadyForPayment` (send, locked)
-- **Coverage:** 20 screens/modals · 6 read endpoints · 1 blocked writes · bundle APIs reached 7/46
+- **Coverage:** 26 screens/modals · 6 read endpoints · 1 blocked writes · bundle APIs reached 7/46
 
 ### Screens
 
@@ -419,10 +428,14 @@ pnpm --filter gateway crawl-doc -- --run <run-dir>
 | `/app/Bills` | Purchase Orders, Bills, Inbox {n}, In Review {n}, Paid {n}, All Bills {n} | 14 | Pay to, Freeze Pay to column, Apply filter, More › Reset, More › Save as new view |
 | `/app/Bills ⧉ More › Manage saved views` | — | 1 | Apply View, Add New Saved View, Add a new saved view |
 | `/app/Bills/Bill/{id}/{id}` | Purchase Orders, Bills, Inbox {n}, In Review {n}, Paid {n}, All Bills {n}, Bill, Lien Waiver | 20 | Pay to, Freeze Pay to column, Apply filter, Link schedule item, Add from catalog, Add, Create new doc, Delete, Save draft, Save to Job, Mark Ready for Payment |
+| `/app/Bills/Bill/0/{id}` | Purchase Orders, Bills, Inbox {n}, In Review {n}, Paid {n}, All Bills {n}, Bill, Lien Waiver | 22 | Pay to, Freeze Pay to column, Apply filter, Link schedule item, Add from catalog, + Add approver, Add, Create new doc, Save draft, Save to Job, Mark Ready for Payment |
 | `/app/Bills/JobPickerActions/Compose/0/{id}` | Purchase Orders, Bills, Inbox {n}, In Review {n}, Paid {n}, All Bills {n} | 13 | — |
 | `/app/Comments/Comment/RecentComments/Bill/{id}/{id}` | Conversations, Comments, Bill, Lien Waiver, Internal ({n}), Clients, Subs/vendors | 13 | Apply filter, Link schedule item, Add, Create new doc, Add to Invoice, Save & Close |
+| `/app/Comments/Comment/RecentComments/Bill/0/{id}` | Conversations, Comments, Bill, Lien Waiver, Internal, Clients, Subs/vendors | 16 | Apply filter, Link schedule item, Add from catalog, + Add approver, Add, Create new doc, Save draft, Save to Job, Mark Ready for Payment |
 | `/app/Comments/Conversation/RecentComments/Bill/{id}/{id}` | Conversations, Comments, Bill, Lien Waiver, Internal ({n}), Clients, Subs/vendors | 13 | Apply filter, Link schedule item, Add, Create new doc, Add to Invoice, Save & Close |
+| `/app/Comments/Conversation/RecentComments/Bill/0/{id}` | — | 16 | — |
 | `/app/JobCostingBudget/Bill/{id}/{id}` | Bill, Lien Waiver | 21 | Apply filter, Link schedule item, Add, Create new doc, Add to Invoice, Save & Close |
+| `/app/JobCostingBudget/Bill/0/{id}` | Bill, Lien Waiver | 25 | Apply filter, Link schedule item, Add from catalog, + Add approver, Add, Create new doc, Save draft, Save to Job, Mark Ready for Payment |
 | `/app/Landing/ActivityFeed/Bill/{id}/{id}` | Bill, Lien Waiver | 14 | Apply filter, Reset approvals, Link schedule item, Add from catalog, Add, Create new doc, Add to Invoice, Save & Close |
 | `/app/Landing/ActivityFeed/Bill/{id}/{id} ⧉ Give feedback` | — | 1 | — |
 | `/app/Landing/ActivityFeed/Bill/{id}/{id} ⧉ Info` | — | 0 | — |
@@ -433,13 +446,15 @@ pnpm --filter gateway crawl-doc -- --run <run-dir>
 | `/app/Landing/ActivityFeed/Bill/0/{id}` | Bill, Lien Waiver | 16 | Apply filter, Link schedule item, Add from catalog, + Add approver, Add, Create new doc, Save draft, Save to Job, Mark Ready for Payment, More › Delete item |
 | `/app/Landing/ActivityFeed/Bill/0/{id} ⧉ Info` | — | 0 | — |
 | `/app/Landing/ActivityFeed/PurchaseOrder/{id}/{id}/Bill/{id}/{id}` | — | 0 | — |
+| `/app/Landing/ActivityFeed/PurchaseOrder/0/{id}/Bill/{id}/{id}` | — | 0 | — |
 | `/app/Landing/QuickAction/Bill/0/{id}` | Bill, Lien Waiver | 16 | Apply filter, Link schedule item, Add from catalog, + Add approver, Add, Create new doc, Save draft, Save to Job, Mark Ready for Payment |
 | `/app/Landing/QuickAction/Bill/0/{id} ⧉ Info` | — | 0 | — |
 | `/app/PurchaseOrders/PurchaseOrder/{id}/{id}/Bill/{id}/{id}` | Purchase Orders, Bills, Bill, Lien Waiver | 29 | Apply filter, Add, Create new doc, Create RFI, Mark Work Complete, Recall, Link schedule item, Add to Invoice, Save & Close |
+| `/app/PurchaseOrders/PurchaseOrder/0/{id}/Bill/{id}/{id}` | Purchase Orders, Bills, Bill, Lien Waiver | 25 | Apply filter, Add, Create new doc, Add From, New Bill, Save, Link schedule item, Add to Invoice, Save & Close |
 
 ### Fields (UI)
 
-Actions (column) · Actual costs (column) · Amount (column) · Amount paid (column) · BCC (select) · Bill # (column) · Bill # (text) · Bill amount (column) · Bill title (column) · Billed Amount (column) · Billed Percent (column) · Builder Cost (column) · Builder cost (column) · CC (select) · Column with Header Selection (checkbox) · Columns (select) · Committed costs (column) · Cost categories (column) · Cost code (column) · Cost codes (column) · Cost type (column) · Date Paid (column) · Date paid (date) · Description (column) · Due Date (column) · Due date (date) · ID# (column) · Invoice Date (column) · Invoice date (date) · Items (column) · Job (column) · Job (select) · Job costing (column) · Linked To (column) · Materials Only (checkbox) · Name (text) · Original budget costs (column) · PO # (column) · PO Status (column) · Paid By (column) · Pay to (column) · Pay to (select) · Pending costs (column) · Press Space to toggle row selection (unchecked) (checkbox) · Purchase Order (select) · Quantity (column) · Remaining balance (column) · Revised budget costs (column) · Row Selection is disabled for this row (unchecked) (checkbox) · Send to Xero (checkbox) · Status (column) · Subject (text) · Title (column) · Title (text) · To (select) · Type (select) · Unit (column) · Unit cost (column) · View (select) · Work Status (column) · feedbackText (textarea)
+Actions (column) · Actual costs (column) · Amount (column) · Amount paid (column) · Assigned to (select) · BCC (select) · Bill # (column) · Bill # (text) · Bill amount (column) · Bill title (column) · Billed Amount (column) · Billed Percent (column) · Builder Cost (column) · Builder cost (column) · CC (select) · Choose date (radio) · Column with Header Selection (checkbox) · Columns (select) · Committed costs (column) · Cost categories (column) · Cost code (column) · Cost codes (column) · Cost type (column) · Date Paid (column) · Date paid (date) · Description (column) · Due Date (column) · Due date (date) · ID# (column) · Internal Notes (textarea) · Invoice Date (column) · Invoice date (date) · Items (column) · Job (column) · Job (select) · Job costing (column) · Linked To (column) · Mark as a Variance PO (checkbox) · Materials Only (checkbox) · Name (text) · Original budget costs (column) · PO # (column) · PO Status (column) · Paid By (column) · Pay to (column) · Pay to (select) · Pending costs (column) · Press Space to toggle row selection (unchecked) (checkbox) · Purchase Order # (text) · Purchase Order (select) · Quantity (column) · Remaining balance (column) · Revised budget costs (column) · Row Selection is disabled for this row (unchecked) (checkbox) · Send to Xero (checkbox) · Status (column) · Subject (text) · Title (column) · Title (text) · To (select) · Type (select) · Unit (column) · Unit cost (column) · View (select) · Work Status (column) · feedbackText (textarea)
 
 ### Enums and dropdown options
 
@@ -507,15 +522,18 @@ Actions (column) · Actual costs (column) · Amount (column) · Amount paid (col
 
 - **VIABUILD equivalent:** `purchase_orders`, `purchase_order_line_items`, `po_responses`, `purchase_order_documents`
 - **Gateway verbs:** `pos.list`, `pos.get`, `pos.linkedBills`, `pos.linkedBids`, `pos.approvals`, `pos.create` (not_captured), `pos.update`
-- **Coverage:** 38 screens/modals · 6 read endpoints · 0 blocked writes · bundle APIs reached 6/31
+- **Coverage:** 45 screens/modals · 6 read endpoints · 0 blocked writes · bundle APIs reached 6/31
 
 ### Screens
 
 | Screen | Tabs | Fields | Write actions seen (not clicked) |
 | --- | --- | --- | --- |
 | `/app/Comments/Comment/RecentComments/PurchaseOrder/{id}/{id}` | Conversations, Comments, Internal, Subs/vendors ({n}) | 7 | Apply filter, Add, Create new doc, New Bill, Create RFI, Mark Work Complete, Recall |
+| `/app/Comments/Comment/RecentComments/PurchaseOrder/0/{id}` | Conversations, Comments, Internal, Clients, Subs/vendors | 13 | Apply filter, Add, Create new doc, Add From, New Bill, Save |
 | `/app/Comments/Conversation/RecentComments/PurchaseOrder/{id}/{id}` | Conversations, Comments, Internal, Subs/vendors ({n}) | 7 | Apply filter, Add, Create new doc, New Bill, Create RFI, Mark Work Complete, Recall |
+| `/app/Comments/Conversation/RecentComments/PurchaseOrder/0/{id}` | Conversations, Comments, Internal, Clients, Subs/vendors | 13 | Apply filter, Add, Create new doc, Add From, New Bill, Save |
 | `/app/JobCostingBudget/PurchaseOrder/{id}/{id}` | — | 24 | Apply filter, Add, Create new doc, Add From, New Bill, Create RFI, Mark Work Complete, Save |
+| `/app/JobCostingBudget/PurchaseOrder/0/{id}` | — | 24 | Apply filter, Add, Create new doc, Add From, New Bill, Save |
 | `/app/Landing/ActivityFeed/PurchaseOrder/{id}/{id}` | — | 17 | Apply filter, Add, Create new doc, Create RFI, Mark Work Complete, Recall |
 | `/app/Landing/ActivityFeed/PurchaseOrder/{id}/{id} ⧉ Info` | — | 0 | — |
 | `/app/Landing/ActivityFeed/PurchaseOrder/{id}/{id} ⧉ View Plans and Specs` | Plans, Specs | 0 | Add, Create new doc, Create RFI, Mark Work Complete, Recall |
@@ -529,6 +547,7 @@ Actions (column) · Actual costs (column) · Amount (column) · Amount paid (col
 | `/app/Landing/ActivityFeed/PurchaseOrder/0/{id} ⧉ Add` | — | 1 | Drop files here to upload, or browse for files Browse device |
 | `/app/Landing/ActivityFeed/PurchaseOrder/0/{id} ⧉ Create new doc` | — | 0 | — |
 | `/app/Landing/ActivityFeed/PurchaseOrder/0/{id} ⧉ Info` | — | 0 | — |
+| `/app/Landing/ActivityFeed/PurchaseOrder/0/{id}/RFI/0/{id}` | — | 13 | Apply filter, Add, Create new doc, Add From, New Bill, Save |
 | `/app/Landing/QuickAction/PurchaseOrder/0/{id}` | — | 13 | Apply filter, Add, Create new doc, Add From, New Bill, Save |
 | `/app/Landing/QuickAction/PurchaseOrder/0/{id} ⧉ Add` | — | 1 | Drop files here to upload, or browse for files Browse device |
 | `/app/Landing/QuickAction/PurchaseOrder/0/{id} ⧉ Create new doc` | — | 0 | — |
@@ -549,8 +568,11 @@ Actions (column) · Actual costs (column) · Amount (column) · Amount paid (col
 | `/app/PurchaseOrders/PurchaseOrder/{id}/{id}/RFI/0/{id}` | Purchase Orders, Bills | 27 | Apply filter, Add, Create new doc, Create RFI, Mark Work Complete, Recall |
 | `/app/PurchaseOrders/PurchaseOrder/{id}/{id}/RFI/0/{id} ⧉ Info` | — | 0 | — |
 | `/app/PurchaseOrders/PurchaseOrder/0/{id}` | Purchase Orders, Bills | 18 | Apply filter, Add, Create new doc, Add From, New Bill, Save |
+| `/app/PurchaseOrders/PurchaseOrder/0/{id}/RFI/0/{id}` | Purchase Orders, Bills | 18 | Apply filter, Add, Create new doc, Add From, New Bill, Save |
 | `/app/Settings/BudgetSettings/PurchaseOrderPaymentsCustomField/{id}` | — | 26 | — |
+| `/app/Settings/BudgetSettings/PurchaseOrderPaymentsCustomField/0` | — | 26 | — |
 | `/app/Settings/BudgetSettings/PurchaseOrdersCustomField/{id}` | — | 28 | — |
+| `/app/Settings/BudgetSettings/PurchaseOrdersCustomField/0` | — | 28 | — |
 
 ### Fields (UI)
 
@@ -671,7 +693,7 @@ Allow multiple approved bids (checkbox) · Choose date (radio) · Cost type (col
 
 - **VIABUILD equivalent:** `estimates`, `estimate_sections`, `estimate_line_items`, `estimate_templates`
 - **Gateway verbs:** `estimates.worksheet`, `estimates.updateLine` (not_captured), `estimates.addLines` (not_captured), `estimates.sendToBudget` (send, locked)
-- **Coverage:** 44 screens/modals · 18 read endpoints · 0 blocked writes · bundle APIs reached 15/80
+- **Coverage:** 53 screens/modals · 18 read endpoints · 0 blocked writes · bundle APIs reached 15/80
 
 ### Screens
 
@@ -693,6 +715,7 @@ Allow multiple approved bids (checkbox) · Choose date (radio) · Cost type (col
 | `/app/Estimate/0/Proposals/0/Print` | — | 0 | — |
 | `/app/JobCostingBudget/Estimate/{id}/{id}/{id}` | — | 12 | Apply filter |
 | `/app/JobCostingBudget/Estimate/{id}/{id}/{id} ⧉ Total revised price info` | — | 0 | — |
+| `/app/JobCostingBudget/Estimate/0/{id}/{id}` | — | 11 | Apply filter |
 | `/app/Landing/QuickAction/Lead/{id}/LeadProposal/0` | — | 0 | Apply filter |
 | `/app/LeadProposal/0/0/0` | — | 0 | — |
 | `/app/LeadProposal/0/checkout` | — | 0 | — |
@@ -704,6 +727,7 @@ Allow multiple approved bids (checkbox) · Choose date (radio) · Cost type (col
 | `/app/LeadProposalTemplate/{id}/Estimate/0/{id}/{id}` | Worksheet, Format, Preview | 24 | Import, Add from, Add new cost, Add Group, Save and close |
 | `/app/LeadProposalTemplate/{id}/Estimate/0/{id}/{id} ⧉ Info` | — | 0 | — |
 | `/app/LeadProposalTemplate/0` | — | 0 | — |
+| `/app/LeadProposalTemplate/0/Estimate/0/{id}/{id}` | — | 0 | — |
 | `/app/leads/proposals` | List view, Activity view, Activity calendar, Activity templates, Lead proposals, Proposal templates, Map | 46 | Apply filter |
 | `/app/leads/proposals/Lead/{id}` | List view, Activity view, Activity calendar, Activity templates, Lead proposals, Proposal templates, Map, General, Activities, Proposals ({n}) | 13 | Apply filter, Import, Save |
 | `/app/leads/proposals/Lead/{id}/LeadActivity/0/{id}/{id}` | List view, Activity view, Activity calendar, Activity templates, Lead proposals, Proposal templates, Map, General, Activities, Proposals ({n}) | 14 | Apply filter, Add, Create new doc, Save, Mark complete |
@@ -711,9 +735,16 @@ Allow multiple approved bids (checkbox) · Choose date (radio) · Cost type (col
 | `/app/leads/proposals/Lead/{id}/LeadProposal/{id}/{id}/false ⧉ More › Manage saved views` | — | 1 | Apply View, Add New Saved View, Add a new saved view |
 | `/app/leads/proposals/Lead/{id}/LeadProposal/{id}/{id}/false/Estimate/{id}/{id}/{id}` | List view, Activity view, Activity calendar, Activity templates, Lead proposals, Proposal templates, Map, General, Activities, Proposals ({n}), Worksheet, Format, Preview | 35 | — |
 | `/app/leads/proposals/Lead/{id}/LeadProposal/{id}/{id}/false/Estimate/0/{id}/{id}` | List view, Activity view, Activity calendar, Activity templates, Lead proposals, Proposal templates, Map, General, Activities, Proposals ({n}), Worksheet, Format, Preview | 27 | Apply filter, Add, Create new doc, Save, Takeoff sync, Import, Add from, Add new cost, Add Assembly, Decline, Approve, Send, Save and close |
+| `/app/leads/proposals/Lead/0` | List view, Activity view, Activity calendar, Activity templates, Lead proposals, Proposal templates, Map, General, Activities, Proposals | 13 | Apply filter, Import, Save |
+| `/app/leads/proposals/Lead/0/LeadActivity/0/{id}/{id}` | List view, Activity view, Activity calendar, Activity templates, Lead proposals, Proposal templates, Map, General, Activities, Proposals | 28 | Apply filter, Add, Create new doc, Save, Takeoff sync, Import, Add from, Add new cost, Add Assembly, Decline, Approve, Send, Save and close |
 | `/app/leads/proposals/Lead/0/LeadProposal/{id}/{id}/false` | List view, Activity view, Activity calendar, Activity templates, Lead proposals, Proposal templates, Map, General, Activities, Proposals ({n}) | 24 | — |
-| `/app/leads/proposalTemplates/LeadProposalTemplate/{id}` | List view, Activity view, Activity calendar, Activity templates, Lead proposals, Proposal templates, Map, Worksheet, Format, Preview | 22 | Apply filter |
+| `/app/leads/proposals/Lead/0/LeadProposal/{id}/{id}/false/Estimate/{id}/{id}/{id}` | List view, Activity view, Activity calendar, Activity templates, Lead proposals, Proposal templates, Map, General, Activities, Proposals, Worksheet, Format, Preview | 35 | — |
+| `/app/leads/proposals/Lead/0/LeadProposal/{id}/{id}/false/Estimate/0/{id}/{id}` | List view, Activity view, Activity calendar, Activity templates, Lead proposals, Proposal templates, Map, General, Activities, Proposals, Worksheet, Format, Preview | 27 | Apply filter, Add, Create new doc, Save, Takeoff sync, Import, Add from, Add new cost, Add Assembly, Decline, Approve, Send, Save and close |
+| `/app/leads/proposalTemplates/LeadProposalTemplate/{id}` | List view, Activity view, Activity calendar, Activity templates, Lead proposals, Proposal templates, Map, Worksheet, Format, Preview | 23 | Apply filter |
 | `/app/leads/proposalTemplates/LeadProposalTemplate/{id} ⧉ More › Manage saved views` | — | 1 | Apply View, Add New Saved View, Add a new saved view |
+| `/app/leads/proposalTemplates/LeadProposalTemplate/{id}/Estimate/0/{id}/{id}` | List view, Activity view, Activity calendar, Activity templates, Lead proposals, Proposal templates, Map, Worksheet, Format, Preview | 27 | Apply filter, Import, Add from, Add new cost, Add Group, Save and close, Add, Save |
+| `/app/leads/proposalTemplates/LeadProposalTemplate/0` | — | 0 | — |
+| `/app/leads/proposalTemplates/LeadProposalTemplate/0/Estimate/0/{id}/{id}` | — | 16 | — |
 | `/app/PreliminaryEstimate/0` | — | 0 | — |
 | `/app/Proposal/0/{id}` | — | 0 | — |
 | `/app/Proposal/Print/0` | — | 0 | — |
@@ -824,7 +855,7 @@ Allow multiple approved bids (checkbox) · Choose date (radio) · Cost type (col
 
 - **VIABUILD equivalent:** `job_budgets`, `job_budget_lines`, `cost_codes`
 - **Gateway verbs:** `costing.header`, `costing.views`, `costing.lines`, `costing.searchCostCodes`
-- **Coverage:** 17 screens/modals · 16 read endpoints · 0 blocked writes · bundle APIs reached 15/68
+- **Coverage:** 18 screens/modals · 17 read endpoints · 0 blocked writes · bundle APIs reached 16/68
 
 ### Screens
 
@@ -847,6 +878,7 @@ Allow multiple approved bids (checkbox) · Choose date (radio) · Cost type (col
 | `/app/Reporting/LaborActualsVsBudgetedReport` | — | 0 | — |
 | `/app/Settings/BudgetSettings` | — | 22 | — |
 | `/app/Settings/BudgetSettings/LienWaiverForm/{id}` | — | 25 | — |
+| `/app/Settings/BudgetSettings/LienWaiverForm/0` | — | 25 | — |
 
 ### Fields (UI)
 
@@ -867,6 +899,7 @@ Allow multiple approved bids (checkbox) · Choose date (radio) · Cost type (col
 | GET | `/api/CostCodeItems/{id}?isMobile=` | — | data, catalogsExist, costCode, costCode.validators, costCode.validators[].errorMessage, costCode.validators[].type, costCode.validators[].value, costCode.value, costCode.value[].disableIndividualSelection, costCode.value[].disabled, costCode.value[].extraData, costCode.value[].id, costCode.value[].key, costCode.value[].name, costCode.value[].secondaryName, costCode.value[].selected, costCodeItemId, costTypes, costTypes.options, costTypes.options[].name, costTypes.options[].options, costTypes.options[].type, costTypes.title, costTypes.type, costTypes.validators, costTypes.validators[].errorMessage, costTypes.validators[].type, costTypes.validators[].value, costTypes.value, hasCostCodesFeature, includeOwnerPrice, includeQuantity, internalNotes, internalNotes.validators, internalNotes.validators[].errorMessage, internalNotes.validators[].type, internalNotes.validators[].value, internalNotes.value, isCostCodeItem, keysThatBreakCostLink, … (+137) |
 | GET | `/api/CostCodeItems/DefaultInfo` | — | data, costCodes, costCodes[].disableIndividualSelection, costCodes[].disabled, costCodes[].extraData, costCodes[].extraData.costCategoryId, costCodes[].extraData.displayInactiveTag, costCodes[].extraData.flatRateCode, costCodes[].extraData.hasPurchaseTax, costCodes[].extraData.hasSalesTax, costCodes[].extraData.isActive, costCodes[].extraData.isTaxable, costCodes[].id, costCodes[].key, costCodes[].name, costCodes[].secondaryName, costCodes[].selected, costTypes, costTypes.options, costTypes.options[].name, costTypes.options[].options, costTypes.options[].type, costTypes.title, costTypes.type, costTypes.validators, costTypes.value, hasCostCodesFeature, markedAs, markedAs.options, markedAs.options[].name, markedAs.options[].options, markedAs.options[].type, markedAs.title, markedAs.type, markedAs.validators, markedAs.value |
 | GET | `/api/CostCodeItems/GetPendingUpdateCountForEntities?entityIds=&entityType=&jobId=` | — | data, costItemUpdateMessage, hasPendingUpdates, pendingCostItemUpdates |
+| GET | `/api/CostCodes?costCodeId=&currentType=&isLabor=` | — | data, byUserHourlyTracking, canDelete, canSave, categoryList, categoryList[].disableIndividualSelection, categoryList[].disabled, categoryList[].extraData, categoryList[].id, categoryList[].key, categoryList[].name, categoryList[].secondaryName, categoryList[].selected, costCode, costCode.builderId, costCode.categoryId, costCode.costCodeId, costCode.defaultUnitCost, costCode.details, costCode.inactivationDate, costCode.isActive, costCode.isCustomerVariance, costCode.isFlatRateCode, costCode.isHomeDepotCostCode, costCode.isLaborCode, costCode.isVariance, costCode.parentCostCodeId, costCode.title, currentType, friendlyName, isVariance, parentList, parentList[].categoryId, parentList[].disableIndividualSelection, parentList[].disabled, parentList[].extraData, parentList[].id, parentList[].isDisabled, parentList[].key, parentList[].name, … (+4) |
 | GET | `/api/CostCodes/{id}/GetCostItems?formatType=` | — | data, costCode, costCode.CostCodeId, costCode.builderID, costCode.isActive, costCode.title, costCodes, costCodes[].costCodeId, costCodes[].isDisabled, costCodes[].isSelected, costCodes[].title, costItems, costItems[].BuilderID, costItems[].CostCodeId, costItems[].CostCodeTitle, costItems[].Description, costItems[].FileCount, costItems[].Id, costItems[].Margin, costItems[].MarkedAs, costItems[].MarkupColumn, costItems[].MarkupColumnEnum, costItems[].MarkupPerUnit, costItems[].MarkupPercentage, costItems[].MarkupPrice, costItems[].Notes, costItems[].OwnerPrice, costItems[].ProductTitle, costItems[].Quantity, costItems[].UnitType, costItems[].unitCost, hasCostCodesFeature |
 | GET | `/api/CostCodes/0/GetCostItems?formatType=` | — | data |
 | GET | `/api/costCodes/AccountingLink` | — | data, accountingIntegrationTypeName, acctCostCodes, acctCostCodes[].disableIndividualSelection, acctCostCodes[].disabled, acctCostCodes[].extraData, acctCostCodes[].extraData.isActive, acctCostCodes[].extraData.isServiceItem, acctCostCodes[].extraData.markedForPurchasing, acctCostCodes[].extraData.stringId, acctCostCodes[].id, acctCostCodes[].key, acctCostCodes[].name, acctCostCodes[].secondaryName, acctCostCodes[].selected, btCostCodes, btCostCodes[].acctCostCodeLink, btCostCodes[].id, btCostCodes[].isActive, btCostCodes[].name, inactiveCostCodePostFix, noExpenseAccountAlertMessage |
@@ -930,7 +963,7 @@ Allow multiple approved bids (checkbox) · Choose date (radio) · Cost type (col
 
 - **VIABUILD equivalent:** `schedule_phases`, `schedule_tasks`, `schedule_task_dependencies`, `schedule_templates`
 - **Gateway verbs:** none
-- **Coverage:** 34 screens/modals · 9 read endpoints · 5 blocked writes · bundle APIs reached 13/47
+- **Coverage:** 44 screens/modals · 9 read endpoints · 5 blocked writes · bundle APIs reached 13/47
 
 ### Screens
 
@@ -963,13 +996,23 @@ Allow multiple approved bids (checkbox) · Choose date (radio) · Cost type (col
 | `/app/Schedules/0` | Schedule, Baseline, Workday Exceptions | 10 | — |
 | `/app/Schedules/0/Schedule/{id}/{id}` | Schedule, Workday Exceptions, Schedule Item Details, Related Items, Predecessors & Links ({n} new), Phases & Tags, Viewing, Notes, Shifts ({n} new), Files, RFIs, Confirmations ({n} new) | 26 | Apply filter |
 | `/app/Schedules/0/ScheduleHistory/{id}` | Schedule, Workday Exceptions | 0 | Apply filter |
+| `/app/Schedules/0/ScheduleHistory/{id}/Schedule/{id}/{id}` | Schedule, Workday Exceptions, Schedule Item Details, Related Items, Predecessors & Links, Phases & Tags, Viewing, Notes, Shifts ({n} new), Files, RFIs, Confirmations ({n} new) | 26 | Apply filter |
 | `/app/Schedules/0/ScheduleSettings` | Schedule, Workday Exceptions | 9 | Apply filter |
+| `/app/Schedules/0/ScheduleSettings/PhaseDetails/{id}` | Schedule, Workday Exceptions | 10 | Apply filter |
+| `/app/Schedules/0/ScheduleSettings/PhaseDetails/0` | Schedule, Workday Exceptions | 10 | Apply filter |
 | `/app/Schedules/0/viewSettings` | Schedule, Baseline, Workday Exceptions | 10 | Apply filter |
 | `/app/Schedules/External/0/0` | Schedule, Baseline, Workday Exceptions | 11 | Apply filter |
 | `/app/Schedules/External/ScheduleHistory/{id}` | Schedule, Workday Exceptions | 1 | Apply filter |
+| `/app/Schedules/External/ScheduleHistory/{id}/Schedule/{id}/{id}` | Schedule, Workday Exceptions, Schedule Item Details, Related Items, Predecessors & Links, Phases & Tags, Viewing, Notes, Shifts ({n} new), Files, RFIs, Confirmations ({n} new) | 27 | Apply filter |
+| `/app/Schedules/External/ScheduleHistory/0` | Schedule, Workday Exceptions | 1 | Apply filter |
+| `/app/Schedules/External/ScheduleHistory/0/Schedule/{id}/{id}` | Schedule, Workday Exceptions, Schedule Item Details, Related Items, Predecessors & Links, Phases & Tags, Viewing, Notes, Shifts ({n} new), Files, RFIs, Confirmations ({n} new) | 27 | Apply filter |
 | `/app/Schedules/External/ScheduleSettings` | Schedule, Workday Exceptions | 10 | Apply filter |
+| `/app/Schedules/External/ScheduleSettings/PhaseDetails/{id}` | Schedule, Workday Exceptions | 11 | Apply filter |
+| `/app/Schedules/External/ScheduleSettings/PhaseDetails/0` | Schedule, Workday Exceptions | 11 | Apply filter |
 | `/app/ScheduleWorkdayExceptions/0/{id}` | — | 0 | — |
 | `/app/Settings/ScheduleSettings` | — | 9 | — |
+| `/app/Settings/ScheduleSettings/PhaseDetails/{id}` | — | 10 | — |
+| `/app/Settings/ScheduleSettings/PhaseDetails/0` | — | 10 | Add Phase, Save |
 
 ### Fields (UI)
 
@@ -1000,7 +1043,7 @@ Allow multiple approved bids (checkbox) · Choose date (radio) · Cost type (col
 | --- | --- | --- | --- |
 | GET | `/apix/v3/Reporting/schedule-percent-complete-by-job` | blocked during crawl | — (via nav:/app/Reporting/SchedulePercentCompleteByJob, select:Search) |
 | POST | `/api/Calendar/GanttChart` | blocked during crawl | filters, jobIds, showBaseline, showJobs, showPhases (via nav:/app/Schedules/0, nav:/app/Schedules/0/viewSettings) |
-| POST | `/api/WorkdayExceptions/Defaults` | blocked during crawl | — (via nav:/app/{id}/WorkdayException/0/{id}/true) |
+| POST | `/api/WorkdayExceptions/Defaults` | blocked during crawl | — (via nav:/app/{id}/WorkdayException/0/{id}/true, nav:/app/0/WorkdayException/0/{id}/true) |
 | POST | `/apix/v2/Tasks/workday-exceptions/list` | blocked during crawl | includeExceptionNames, jobIds (via btn:Tasks) |
 | PUT | `/api/Calendar/SetBaseline?jobId=` | blocked during crawl | — (via btn:Set Baseline) |
 | PUT | `/api/Calendar/Phase` | app bundle (not fired) | — |
@@ -1030,7 +1073,7 @@ Allow multiple approved bids (checkbox) · Choose date (radio) · Cost type (col
 
 - **VIABUILD equivalent:** `project_feed_entries` (+ `project_feed_media`, `project_feed_comments`) — closest; no dedicated site diary table
 - **Gateway verbs:** none
-- **Coverage:** 24 screens/modals · 4 read endpoints · 1 blocked writes · bundle APIs reached 3/7
+- **Coverage:** 28 screens/modals · 4 read endpoints · 1 blocked writes · bundle APIs reached 3/7
 
 ### Screens
 
@@ -1038,6 +1081,7 @@ Allow multiple approved bids (checkbox) · Choose date (radio) · Cost type (col
 | --- | --- | --- | --- |
 | `/app/DailyLog/{id}/{id}` | — | 5 | Add, Create new doc |
 | `/app/DailyLog/{id}/{id} ⧉ Create new doc` | — | 0 | — |
+| `/app/DailyLog/{id}/{id}/Tag/{id}/0` | — | 5 | — |
 | `/app/DailyLog/0/{id}` | — | 5 | Add, Create new doc |
 | `/app/DailyLog/0/{id}/Tag/{id}/0` | — | 5 | — |
 | `/app/DailyLogAdd/{id}` | — | 5 | Add, Create new doc |
@@ -1045,6 +1089,7 @@ Allow multiple approved bids (checkbox) · Choose date (radio) · Cost type (col
 | `/app/DailyLogAdd/{id} ⧉ Info` | — | 0 | — |
 | `/app/DailyLogAdd/{id}/Tag/{id}/0` | — | 5 | — |
 | `/app/DailyLogAdd/0` | — | 1 | — |
+| `/app/DailyLogAdd/0/Tag/{id}/0` | — | 1 | — |
 | `/app/DailyLogs` | — | 1 | Publish info, Apply filter |
 | `/app/DailyLogs ⧉ View all (3)` | — | 0 | — |
 | `/app/DailyLogs ⧉ View all (36)` | — | 0 | — |
@@ -1060,10 +1105,12 @@ Allow multiple approved bids (checkbox) · Choose date (radio) · Cost type (col
 | `/app/Reporting/DailyLogCreationByJobReport` | Columns, Filters | 11 | — |
 | `/app/Reporting/DailyLogsByUserReport` | Columns, Filters | 9 | — |
 | `/app/Settings/DailyLogSettings` | — | 9 | — |
+| `/app/Settings/DailyLogSettings/DailyLogsCustomField/{id}` | — | 15 | — |
+| `/app/Settings/DailyLogSettings/DailyLogsCustomField/0` | — | 15 | — |
 
 ### Fields (UI)
 
-BCC (select) · CC (select) · Client Meeting? (checkbox) · Daily log count (column) · Data type (column) · Date (date) · Display order (column) · Filter Columns Input (text) · Include Weather Condition Notes (Default) (checkbox) · Include Weather Conditions (Default) (checkbox) · Include in filters (column) · Job (select) · Job name (column) · Job status (column) · Label (column) · Last Daily Log (column) · Last log date (column) · Press SPACE to toggle visibility (hidden) (checkbox) · Press SPACE to toggle visibility (indeterminate) (checkbox) · Press SPACE to toggle visibility (visible) (checkbox) · Project manager (column) · Required (column) · Select a Job (select) · Stamp Location (checkbox) · Subject (text) · Tags (select) · To (select) · Total logs (column) · Total work days (column) · User (column) · Work days since last log (column) · calendarDefaultDailyLogText (textarea) · notes (textarea)
+Allow permitted sub/vendor to view? (checkbox) · BCC (select) · CC (select) · Checked by default (checkbox) · Client Meeting? (checkbox) · Daily log count (column) · Data type (column) · Date (date) · Display order (column) · Filter Columns Input (text) · Include In My Filters (checkbox) · Include Weather Condition Notes (Default) (checkbox) · Include Weather Conditions (Default) (checkbox) · Include in filters (column) · Job (select) · Job name (column) · Job status (column) · Label (column) · Last Daily Log (column) · Last log date (column) · Press SPACE to toggle visibility (hidden) (checkbox) · Press SPACE to toggle visibility (indeterminate) (checkbox) · Press SPACE to toggle visibility (visible) (checkbox) · Project manager (column) · Required (column) · Required? (checkbox) · Select a Job (select) · Show clients? (checkbox) · Stamp Location (checkbox) · Subject (text) · Tags (select) · To (select) · Total logs (column) · Total work days (column) · User (column) · Work days since last log (column) · calendarDefaultDailyLogText (textarea) · customField.displayOrder (number) · customField.toolTipText (textarea) · notes (textarea)
 
 ### Enums and dropdown options
 
@@ -1304,7 +1351,7 @@ Allowance (column) · Allowance managementAllowances on new jobsShow allowances 
 
 - **VIABUILD equivalent:** `defects`
 - **Gateway verbs:** none
-- **Coverage:** 21 screens/modals · 5 read endpoints · 0 blocked writes · bundle APIs reached 5/18
+- **Coverage:** 22 screens/modals · 5 read endpoints · 0 blocked writes · bundle APIs reached 5/18
 
 ### Screens
 
@@ -1330,6 +1377,7 @@ Allowance (column) · Allowance managementAllowances on new jobsShow allowances 
 | `/app/WarrantyAdd/{id} ⧉ Info` | — | 0 | — |
 | `/app/WarrantyAdd/{id}/category/0/{id}` | Internal, Clients, Subs/vendors | 9 | — |
 | `/app/WarrantyAdd/0` | — | 1 | — |
+| `/app/WarrantyAdd/0/category/0/{id}` | — | 1 | — |
 | `/app/WarrantyService/0/{id}/0/0` | — | 0 | — |
 
 ### Fields (UI)
@@ -1380,7 +1428,7 @@ Added cost (text) · Allow subs/vendors and clients to print warranty claims (ch
 
 - **VIABUILD equivalent:** none
 - **Gateway verbs:** none
-- **Coverage:** 15 screens/modals · 5 read endpoints · 0 blocked writes · bundle APIs reached 5/11
+- **Coverage:** 16 screens/modals · 5 read endpoints · 0 blocked writes · bundle APIs reached 5/11
 
 ### Screens
 
@@ -1400,6 +1448,7 @@ Added cost (text) · Allow subs/vendors and clients to print warranty claims (ch
 | `/app/RFIs ⧉ More › Manage saved views` | — | 1 | Apply View, Add New Saved View, Add a new saved view |
 | `/app/RFIs/RFI/{id}/{id}` | — | 12 | Apply filter |
 | `/app/RFIs/RFI/{id}/{id} ⧉ More › Manage saved views` | — | 1 | Apply View, Add New Saved View, Add a new saved view |
+| `/app/RFIs/RFI/0/{id}` | — | 17 | Apply filter |
 | `/app/Settings/RFISettings` | — | 0 | — |
 
 ### Fields (UI)
@@ -1419,7 +1468,7 @@ Assigned To (column) · Assignee (select) · Choose date (radio) · Columns (sel
 | --- | --- | --- | --- |
 | GET | `/api/Rfi/{id}?jobsiteId=` | — | data, assignedToId, assignedToId.title, assignedToId.unselectedId, assignedToId.validators, assignedToId.validators[].errorMessage, assignedToId.validators[].type, assignedToId.validators[].value, assignedToId.value, assignedToId.value[].name, assignedToId.value[].options, assignedToId.value[].type, attachedFiles, attachedFiles.files, attachedFiles.newFileOptions, attachedFiles.newFileOptions.canEdit, attachedFiles.newFileOptions.defaultValue, attachedFiles.newFileOptions.fileOptionKey, attachedFiles.newFileOptions.loginType, attachedFiles.newFileOptions.options, attachedFiles.newFileOptions.title, attachedFiles.newFileOptions.visible, attachedFiles.title, attachedFiles.viewingPermissions, attachedFiles.viewingPermissions.allAllowedExtensions, attachedFiles.viewingPermissions.allowFullSizeImages, attachedFiles.viewingPermissions.allowedDocumentExtensions, attachedFiles.viewingPermissions.allowedPhotoExtensions, attachedFiles.viewingPermissions.allowedVideoExtensions, attachedFiles.viewingPermissions.blacklistedExtensions, attachedFiles.viewingPermissions.browseExistingDocs, attachedFiles.viewingPermissions.canAddFiles, attachedFiles.viewingPermissions.canUploadDocuments, attachedFiles.viewingPermissions.canUploadPhotos, attachedFiles.viewingPermissions.canUploadVideos, attachedFiles.viewingPermissions.documentListType, attachedFiles.viewingPermissions.ignoreBlacklist, attachedFiles.viewingPermissions.isFileReplaceMode, attachedFiles.viewingPermissions.jobsiteID, attachedFiles.viewingPermissions.leadId, … (+241) |
 | GET | `/api/Rfi/{id}/ResponseDefaults?loadAllSubsOverride=` | — | data, assignedToId, assignedToId.title, assignedToId.unselectedId, assignedToId.validators, assignedToId.validators[].errorMessage, assignedToId.validators[].type, assignedToId.validators[].value, assignedToId.value, assignedToId.value[].name, assignedToId.value[].options, assignedToId.value[].type, attachedFiles, attachedFiles.files, attachedFiles.newFileOptions, attachedFiles.newFileOptions.canEdit, attachedFiles.newFileOptions.defaultValue, attachedFiles.newFileOptions.fileOptionKey, attachedFiles.newFileOptions.loginType, attachedFiles.newFileOptions.options, attachedFiles.newFileOptions.title, attachedFiles.newFileOptions.visible, attachedFiles.title, attachedFiles.viewingPermissions, attachedFiles.viewingPermissions.allAllowedExtensions, attachedFiles.viewingPermissions.allowFullSizeImages, attachedFiles.viewingPermissions.allowedDocumentExtensions, attachedFiles.viewingPermissions.allowedPhotoExtensions, attachedFiles.viewingPermissions.allowedVideoExtensions, attachedFiles.viewingPermissions.blacklistedExtensions, attachedFiles.viewingPermissions.browseExistingDocs, attachedFiles.viewingPermissions.canAddFiles, attachedFiles.viewingPermissions.canUploadDocuments, attachedFiles.viewingPermissions.canUploadPhotos, attachedFiles.viewingPermissions.canUploadVideos, attachedFiles.viewingPermissions.documentListType, attachedFiles.viewingPermissions.ignoreBlacklist, attachedFiles.viewingPermissions.isFileReplaceMode, attachedFiles.viewingPermissions.jobsiteID, attachedFiles.viewingPermissions.leadId, … (+17) |
-| GET | `/api/Rfi/Defaults?jobsiteId=&linkedId=&linkedType=` | — | data, assignedToId, assignedToId.title, assignedToId.unselectedId, assignedToId.validators, assignedToId.validators[].errorMessage, assignedToId.validators[].type, assignedToId.validators[].value, assignedToId.value, assignedToId.value[].name, assignedToId.value[].options, assignedToId.value[].type, attachedFiles, attachedFiles.files, attachedFiles.newFileOptions, attachedFiles.newFileOptions.canEdit, attachedFiles.newFileOptions.defaultValue, attachedFiles.newFileOptions.fileOptionKey, attachedFiles.newFileOptions.loginType, attachedFiles.newFileOptions.options, attachedFiles.newFileOptions.title, attachedFiles.newFileOptions.visible, attachedFiles.title, attachedFiles.viewingPermissions, attachedFiles.viewingPermissions.allAllowedExtensions, attachedFiles.viewingPermissions.allowFullSizeImages, attachedFiles.viewingPermissions.allowedDocumentExtensions, attachedFiles.viewingPermissions.allowedPhotoExtensions, attachedFiles.viewingPermissions.allowedVideoExtensions, attachedFiles.viewingPermissions.blacklistedExtensions, attachedFiles.viewingPermissions.browseExistingDocs, attachedFiles.viewingPermissions.canAddFiles, attachedFiles.viewingPermissions.canUploadDocuments, attachedFiles.viewingPermissions.canUploadPhotos, attachedFiles.viewingPermissions.canUploadVideos, attachedFiles.viewingPermissions.documentListType, attachedFiles.viewingPermissions.ignoreBlacklist, attachedFiles.viewingPermissions.isFileReplaceMode, attachedFiles.viewingPermissions.jobsiteID, attachedFiles.viewingPermissions.leadId, … (+224) |
+| GET | `/api/Rfi/Defaults?jobsiteId=&linkedId=&linkedType=` | — | data, assignedToId, assignedToId.title, assignedToId.unselectedId, assignedToId.validators, assignedToId.validators[].errorMessage, assignedToId.validators[].type, assignedToId.validators[].value, assignedToId.value, assignedToId.value[].name, assignedToId.value[].options, assignedToId.value[].type, attachedFiles, attachedFiles.files, attachedFiles.newFileOptions, attachedFiles.newFileOptions.canEdit, attachedFiles.newFileOptions.defaultValue, attachedFiles.newFileOptions.fileOptionKey, attachedFiles.newFileOptions.loginType, attachedFiles.newFileOptions.options, attachedFiles.newFileOptions.title, attachedFiles.newFileOptions.visible, attachedFiles.title, attachedFiles.viewingPermissions, attachedFiles.viewingPermissions.allAllowedExtensions, attachedFiles.viewingPermissions.allowFullSizeImages, attachedFiles.viewingPermissions.allowedDocumentExtensions, attachedFiles.viewingPermissions.allowedPhotoExtensions, attachedFiles.viewingPermissions.allowedVideoExtensions, attachedFiles.viewingPermissions.blacklistedExtensions, attachedFiles.viewingPermissions.browseExistingDocs, attachedFiles.viewingPermissions.canAddFiles, attachedFiles.viewingPermissions.canUploadDocuments, attachedFiles.viewingPermissions.canUploadPhotos, attachedFiles.viewingPermissions.canUploadVideos, attachedFiles.viewingPermissions.documentListType, attachedFiles.viewingPermissions.ignoreBlacklist, attachedFiles.viewingPermissions.isFileReplaceMode, attachedFiles.viewingPermissions.jobsiteID, attachedFiles.viewingPermissions.leadId, … (+225) |
 | GET | `/api/RFI/Setup` | — | data, customFields, customFields.addNewCustomFieldTitle, customFields.associatedType, customFields.customFields, customFields.headerTitle, customFields.includeModalNameInNewCustomFieldTitle, dailyReminderOptions, dailyReminderOptions[].disableIndividualSelection, dailyReminderOptions[].disabled, dailyReminderOptions[].extraData, dailyReminderOptions[].id, dailyReminderOptions[].key, dailyReminderOptions[].name, dailyReminderOptions[].secondaryName, dailyReminderOptions[].selected, defaultRfiPastDue, defaultRfiPastDue[].disableIndividualSelection, defaultRfiPastDue[].disabled, defaultRfiPastDue[].extraData, defaultRfiPastDue[].id, defaultRfiPastDue[].key, defaultRfiPastDue[].name, defaultRfiPastDue[].secondaryName, defaultRfiPastDue[].selected |
 | POST | `/api/RfI/Grid` | filters, gridRequest, gridRequest.emptyStateEntity, gridRequest.hasFooter, gridRequest.hideMultiJobsColumns, gridRequest.savedViewId, gridRequest.selectedColumns, gridRequest.sortColumn, gridRequest.sortDirection, jobIds, pagingData, pagingData.currentPage, pagingData.firstRow, pagingData.lastRow, pagingData.pageNumber | data, canAdd, canDelete, canUpdate, columnsList, columnsList[].align, columnsList[].columnType, columnsList[].customFieldMetadata, columnsList[].defaultWidth, columnsList[].enabled, columnsList[].id, columnsList[].isAlwaysIncluded, columnsList[].isAlwaysVisible, columnsList[].isCustomField, columnsList[].isExpandable, columnsList[].isFrozen, columnsList[].isHidden, columnsList[].isRemovableFromGrid, columnsList[].isResizeable, columnsList[].isSearchable, columnsList[].isSortable, columnsList[].jsonKey, columnsList[].name, columnsList[].order, columnsList[].toolTipHeader, columnsList[].type, columnsList[].width, data, data[].assignedTo, data[].builderId, data[].createdBy, data[].createdDate, data[].customFields, data[].dueDate, data[].dueDate.canEdit, data[].dueDate.date, data[].dueDate.displayTime, data[].dueDate.id, data[].dueDate.isPastDue, data[].dueDate.linkedScheduleInfo, … (+54) |
 
@@ -1443,7 +1492,7 @@ Assigned To (column) · Assignee (select) · Choose date (radio) · Columns (sel
 
 - **VIABUILD equivalent:** none (closest: `document_reviews`)
 - **Gateway verbs:** none
-- **Coverage:** 4 screens/modals · 4 read endpoints · 0 blocked writes · bundle APIs reached 4/37
+- **Coverage:** 5 screens/modals · 4 read endpoints · 0 blocked writes · bundle APIs reached 4/37
 
 ### Screens
 
@@ -1451,6 +1500,7 @@ Assigned To (column) · Assignee (select) · Choose date (radio) · Columns (sel
 | --- | --- | --- | --- |
 | `/app/Submittal/{guid}/{id}` | — | 0 | Add |
 | `/app/Submittal/{guid}/{id} ⧉ Add` | — | 1 | — |
+| `/app/Submittal/{guid}/0` | — | 0 | — |
 | `/app/Submittal/0/{id}` | — | 10 | — |
 | `/app/Submittals` | Submittal log, Packages | 11 | Apply filter |
 
@@ -1462,9 +1512,9 @@ Assigned To (column) · Assignee (select) · Choose date (radio) · Columns (sel
 
 | Method | Path | Request keys | Response keys |
 | --- | --- | --- | --- |
-| GET | `/apix/v2/Submittals/{guid}/attachments?job=` | — | files, files[].addedBy, files[].annotatedDocPath, files[].annotatedDocPathWithBranding, files[].annotationCount, files[].annotationGroupId, files[].annotationLinkCount, files[].attachedEntityPath, files[].builderId, files[].commentCount, files[].dateAttached, files[].docPath, files[].docPathWithBranding, files[].documentInstanceId, files[].downloadAnnotatedDocPath, files[].downloadDocPath, files[].duration, files[].entityId, files[].extension, files[].fileSize, files[].fileSizeFormatted, files[].folderType, files[].hasAnnotationLinks, files[].hasAnnotations, files[].id, files[].is360Media, files[].isMacroEnabledExcelFile, files[].isOriginalResolution, files[].isPhoto, files[].isTempFile, files[].jobsiteId, files[].lastModifiedOn, files[].mediaType, files[].permissions, files[].permissions.canAdd, files[].permissions.canAddRfis, files[].permissions.canAnnotate, files[].permissions.canComment, files[].permissions.canCopy, files[].permissions.canDelete, … (+73) |
-| GET | `/apix/v2/Submittals/{guid}/internal?job=` | — | addedByDate, addedById, addedByName, assignees, assignees[].externalId, assignees[].globalUserId, assignees[].name, builderId, currentUserExternalId, description, divisionCodeExternalId, dueDate, externalBuilderId, externalId, externalJobId, hasActiveBluebeamSession, isPublished, jobId, jobName, modifiedById, modifiedDate, packageId, specSection, status, subTradePartnerId, submittalId, submittalManagerId, submittalNumberDisplay, submittalType, submittalUsers, submittalUsers[].externalId, submittalUsers[].globalUserId, submittalUsers[].name, submittalWorkflowSteps, submittalWorkflowSteps[].actionTimestamp, submittalWorkflowSteps[].actionTimestampUtc, submittalWorkflowSteps[].actionType, submittalWorkflowSteps[].approvalIndex, submittalWorkflowSteps[].completedAtUtc, submittalWorkflowSteps[].dueDateUtc, … (+26) |
-| GET | `/apix/v2/Submittals/defaults?job=` | — | attachedFiles, attachedFiles.files, attachedFiles.newFileOptions, attachedFiles.newFileOptions.canEdit, attachedFiles.newFileOptions.defaultValue, attachedFiles.newFileOptions.fileOptionKey, attachedFiles.newFileOptions.loginType, attachedFiles.newFileOptions.options, attachedFiles.newFileOptions.title, attachedFiles.newFileOptions.visible, attachedFiles.title, attachedFiles.viewingPermissions, attachedFiles.viewingPermissions.allAllowedExtensions, attachedFiles.viewingPermissions.allowFullSizeImages, attachedFiles.viewingPermissions.allowedDocumentExtensions, attachedFiles.viewingPermissions.allowedPhotoExtensions, attachedFiles.viewingPermissions.allowedVideoExtensions, attachedFiles.viewingPermissions.blacklistedExtensions, attachedFiles.viewingPermissions.browseExistingDocs, attachedFiles.viewingPermissions.canAddFiles, attachedFiles.viewingPermissions.canUploadDocuments, attachedFiles.viewingPermissions.canUploadPhotos, attachedFiles.viewingPermissions.canUploadVideos, attachedFiles.viewingPermissions.documentListType, attachedFiles.viewingPermissions.ignoreBlacklist, attachedFiles.viewingPermissions.isFileReplaceMode, attachedFiles.viewingPermissions.jobsiteID, attachedFiles.viewingPermissions.leadId, attachedFiles.viewingPermissions.maxFileSize, attachedFiles.viewingPermissions.maxFiles, attachedFiles.viewingPermissions.minFileSize, attachedFiles.viewingPermissions.videoDurationLimit, attachedFiles.viewingPermissions.videoMaxSizeMB, divisionCodes, divisionCodes[].code, divisionCodes[].externalId, submittalPackages, submittalPackages[].externalId, submittalPackages[].submittalPackageId, submittalPackages[].title, … (+23) |
+| GET | `/apix/v2/Submittals/{guid}/attachments?job=` | — | detail, files, files[].addedBy, files[].annotatedDocPath, files[].annotatedDocPathWithBranding, files[].annotationCount, files[].annotationGroupId, files[].annotationLinkCount, files[].attachedEntityPath, files[].builderId, files[].commentCount, files[].dateAttached, files[].docPath, files[].docPathWithBranding, files[].documentInstanceId, files[].downloadAnnotatedDocPath, files[].downloadDocPath, files[].duration, files[].entityId, files[].extension, files[].fileSize, files[].fileSizeFormatted, files[].folderType, files[].hasAnnotationLinks, files[].hasAnnotations, files[].id, files[].is360Media, files[].isMacroEnabledExcelFile, files[].isOriginalResolution, files[].isPhoto, files[].isTempFile, files[].jobsiteId, files[].lastModifiedOn, files[].mediaType, files[].permissions, files[].permissions.canAdd, files[].permissions.canAddRfis, files[].permissions.canAnnotate, files[].permissions.canComment, files[].permissions.canCopy, … (+75) |
+| GET | `/apix/v2/Submittals/{guid}/internal?job=` | — | addedByDate, addedById, addedByName, assignees, assignees[].externalId, assignees[].globalUserId, assignees[].name, builderId, currentUserExternalId, description, detail, divisionCodeExternalId, dueDate, externalBuilderId, externalId, externalJobId, hasActiveBluebeamSession, isPublished, jobId, jobName, modifiedById, modifiedDate, packageId, reasonCode, specSection, status, subTradePartnerId, submittalId, submittalManagerId, submittalNumberDisplay, submittalType, submittalUsers, submittalUsers[].externalId, submittalUsers[].globalUserId, submittalUsers[].name, submittalWorkflowSteps, submittalWorkflowSteps[].actionTimestamp, submittalWorkflowSteps[].actionTimestampUtc, submittalWorkflowSteps[].actionType, submittalWorkflowSteps[].approvalIndex, … (+28) |
+| GET | `/apix/v2/Submittals/defaults?job=` | — | attachedFiles, attachedFiles.files, attachedFiles.newFileOptions, attachedFiles.newFileOptions.canEdit, attachedFiles.newFileOptions.defaultValue, attachedFiles.newFileOptions.fileOptionKey, attachedFiles.newFileOptions.loginType, attachedFiles.newFileOptions.options, attachedFiles.newFileOptions.title, attachedFiles.newFileOptions.visible, attachedFiles.title, attachedFiles.viewingPermissions, attachedFiles.viewingPermissions.allAllowedExtensions, attachedFiles.viewingPermissions.allowFullSizeImages, attachedFiles.viewingPermissions.allowedDocumentExtensions, attachedFiles.viewingPermissions.allowedPhotoExtensions, attachedFiles.viewingPermissions.allowedVideoExtensions, attachedFiles.viewingPermissions.blacklistedExtensions, attachedFiles.viewingPermissions.browseExistingDocs, attachedFiles.viewingPermissions.canAddFiles, attachedFiles.viewingPermissions.canUploadDocuments, attachedFiles.viewingPermissions.canUploadPhotos, attachedFiles.viewingPermissions.canUploadVideos, attachedFiles.viewingPermissions.documentListType, attachedFiles.viewingPermissions.ignoreBlacklist, attachedFiles.viewingPermissions.isFileReplaceMode, attachedFiles.viewingPermissions.jobsiteID, attachedFiles.viewingPermissions.leadId, attachedFiles.viewingPermissions.maxFileSize, attachedFiles.viewingPermissions.maxFiles, attachedFiles.viewingPermissions.minFileSize, attachedFiles.viewingPermissions.videoDurationLimit, attachedFiles.viewingPermissions.videoMaxSizeMB, detail, divisionCodes, divisionCodes[].code, divisionCodes[].externalId, reasonCode, submittalPackages, submittalPackages[].externalId, … (+25) |
 | POST | `/apix/v2/Submittals/list` | filters, filters.filterTree, filters.filterTree.groups, filters.filterTree.groups[].booleanOperator, filters.filterTree.groups[].filters, filters.filterTree.groups[].filters[].field, filters.filterTree.groups[].filters[].operator, filters.filterTree.groups[].filters[].value, filters.version, gridRequest, gridRequest.sortColumn, gridRequest.sortDirection, jobIds, pagingData, pagingData.currentPage | canAdd, canDelete, canUpdate, columnsList, data, jobs, jobs[].jobId, jobs[].name, packages, packages[].submittalPackageId, packages[].title, submittals, submittals[].addedByDate, submittals[].addedById, submittals[].addedByName, submittals[].assignees, submittals[].assignees[].externalId, submittals[].assignees[].globalUserId, submittals[].assignees[].name, submittals[].builderId, submittals[].currentUserExternalId, submittals[].description, submittals[].divisionCode, submittals[].divisionCodeExternalId, submittals[].dueDate, submittals[].externalBuilderId, submittals[].externalId, submittals[].externalJobId, submittals[].hasActiveBluebeamSession, submittals[].isPublished, submittals[].jobId, submittals[].modifiedById, submittals[].modifiedDate, submittals[].packageId, submittals[].specSection, submittals[].status, submittals[].subTradePartnerId, submittals[].submittalId, submittals[].submittalManagerId, submittals[].submittalNumberDisplay, … (+14) |
 
 ### Write endpoints
@@ -1576,7 +1626,7 @@ Active users (column) · Automatically end breaks after (checkbox) · Automatica
 
 - **VIABUILD equivalent:** `plans`, `plan_pages`, `plan_analysis`, `takeoffs`
 - **Gateway verbs:** none
-- **Coverage:** 17 screens/modals · 13 read endpoints · 0 blocked writes · bundle APIs reached 9/66
+- **Coverage:** 18 screens/modals · 13 read endpoints · 0 blocked writes · bundle APIs reached 9/66
 
 ### Screens
 
@@ -1597,6 +1647,7 @@ Active users (column) · Automatically end breaks after (checkbox) · Automatica
 | `/app/Specifications/External/View/0` | — | 0 | — |
 | `/app/Specifications/List` | Plans, Specs | 5 | Add column, Add column › Created by, Add column › Created Date, Add column › Modified by, Add column › Modified Date |
 | `/app/Specifications/List/Specification/{id}/{id}` | Plans, Specs | 5 | Add column, Add column › Created by, Add column › Created Date, Add column › Modified by, Add column › Modified Date |
+| `/app/Specifications/List/Specification/0/{id}` | Plans, Specs | 5 | Add column, Add column › Created by, Add column › Created Date, Add column › Modified by, Add column › Modified Date |
 | `/app/Specifications/List/View/0` | Plans, Specs | 5 | Add column, Add column › Created by, Add column › Created Date, Add column › Modified by, Add column › Modified Date |
 | `/app/Specifications/List/View/0/Specification/{id}/{id}` | Plans, Specs | 5 | Add column, Add column › Created by, Add column › Created Date, Add column › Modified by, Add column › Modified Date |
 
@@ -1738,7 +1789,7 @@ Modified On (column) · Name (column) · Size (column)
 
 - **VIABUILD equivalent:** `documents`, `document_folders`, `document_versions`, `document_share_links`
 - **Gateway verbs:** `docs.root`, `docs.folder`, `docs.file`, `docs.upload` (not_captured)
-- **Coverage:** 40 screens/modals · 29 read endpoints · 4 blocked writes · bundle APIs reached 18/95
+- **Coverage:** 44 screens/modals · 30 read endpoints · 4 blocked writes · bundle APIs reached 19/95
 
 ### Screens
 
@@ -1748,6 +1799,7 @@ Modified On (column) · Name (column) · Size (column)
 | `/app/Documents/0/0` | — | 6 | Add |
 | `/app/Documents/0/0 ⧉ More` | — | 0 | — |
 | `/app/Documents/AttachedFiles/{id}` | — | 0 | — |
+| `/app/Documents/GlobalDocs/{id}` | — | 6 | Apply filter, More › Delete |
 | `/app/Documents/GlobalDocs/0` | — | 6 | Add |
 | `/app/Documents/GlobalDocs/0 ⧉ More` | — | 0 | — |
 | `/app/Documents/Standard/{id}` | — | 6 | Add, Apply filter, More › Delete |
@@ -1755,7 +1807,9 @@ Modified On (column) · Name (column) · Size (column)
 | `/app/Documents/Standard/0 ⧉ More` | — | 0 | — |
 | `/app/Documents/Standard/0/Media/FolderProperties/{id}/{id}` | — | 10 | — |
 | `/app/Documents/Standard/0/Media/FolderViewingPermissions/{id}/{id}` | — | 8 | Add |
+| `/app/Documents/Trash/{id}` | — | 3 | More › Delete forever |
 | `/app/Landing/Media/Properties/{id}/{id}/{id}/{id}/{id}/0/{id}` | — | 0 | Apply filter |
+| `/app/Landing/Media/Properties/0/{id}/{id}/{id}/{id}/0/{id}` | — | 0 | Apply filter |
 | `/app/Media/Copy/{id}` | — | 0 | — |
 | `/app/Media/Copy/0` | — | 0 | — |
 | `/app/Media/Details/0/{id}/0/0/0` | — | 0 | — |
@@ -1774,6 +1828,7 @@ Modified On (column) · Name (column) · Size (column)
 | `/app/Photos/AttachedFiles/{id}` | — | 0 | — |
 | `/app/Photos/Standard/{id}` | — | 0 | Apply filter |
 | `/app/Photos/Standard/0` | — | 0 | — |
+| `/app/Photos/Trash/{id}` | — | 0 | — |
 | `/app/Settings/MediaSettings` | — | 5 | Save |
 | `/app/share` | — | 0 | — |
 | `/app/share/0/builder` | — | 0 | — |
@@ -1787,7 +1842,7 @@ Modified On (column) · Name (column) · Size (column)
 
 ### Fields (UI)
 
-Actions (column) · Added (column) · Auto-create folder for clients to upload photos (checkbox) · Auto-create folder for subs/vendors and clients to upload documents (checkbox) · Clients (checkbox) · Contents (column) · Modified (column) · Name (column) · Parent folder (select) · Shared with (column) · Subs/Vendors (checkbox) · Title (text) · pdfSignatureText (textarea)
+Actions (column) · Added (column) · Auto-create folder for clients to upload photos (checkbox) · Auto-create folder for subs/vendors and clients to upload documents (checkbox) · Clients (checkbox) · Contents (column) · Date Deleted (column) · Modified (column) · Name (column) · Parent folder (select) · Shared with (column) · Subs/Vendors (checkbox) · Title (text) · pdfSignatureText (textarea)
 
 ### Read endpoints (observed)
 
@@ -1821,6 +1876,7 @@ Actions (column) · Added (column) · Auto-create folder for clients to upload p
 | GET | `/api/messages/folders` | — | data, folders, folders[].canDelete, folders[].canForward, folders[].canMark, folders[].canMove, folders[].canReply, folders[].deleteIsPermanent, folders[].folderId, folders[].isDrafts, folders[].isEditable, folders[].isReadOnly, folders[].isSent, folders[].name, folders[].unreadCount, isOutOfOffice, isSearchEnabled, maxFolderNameLength |
 | GET | `/api/Photos/0/Preview?jobId=` | — | data |
 | GET | `/apix/v2/Documents/{id}` | — | annotationLayers, associatedType, builderId, canAdd, canAnnotate, canDelete, canEdit, description, description.validators, description.value, discussions, docLocation, docPath, documentId, documentListItem, documentListItem.annotationCount, documentListItem.annotationLinkCount, documentListItem.annotationReqAlert, documentListItem.canAnnotate, documentListItem.canRequestSignatures, documentListItem.canViewAnnotation, documentListItem.hasAnnotationLinks, documentListItem.layerCount, documentListItem.pdfSigReqAlert, documentListItem.showSignButton, documentListItem.signatureId, documentListItem.signatureRequestStatus, documentListItem.signatureRequestVersion, documentListItem.signatureStatus, documentListItem.signatureStatusText, documentListItem.signatureUserStatus, documentName, documentName.validators, documentName.value, downloadUrl, extension, file, file.fileTypes, file.selectedFile, file.selectedFile.brandedUrl, … (+118) |
+| GET | `/apix/v2/Documents/default-properties?folderId=&isFromGlobalDocs=&jobId=&templateId=&templateType=` | — | reason |
 | GET | `/apix/v2/Documents/templates?builderId=` | — | canEdit, templateList |
 
 ### Write endpoints
@@ -1883,13 +1939,13 @@ Actions (column) · Added (column) · Auto-create folder for clients to upload p
 
 ### Bundle read APIs not reached
 
-`POST /api/Documents/GetMetadataForProducts` · `GET /api/Documents/MediaForFeedItem` · `? /api/Documents/TempFileExternal` · `GET /api/Documents/Unread` · `GET /api/Documents/ViewDocInBrowser` · `? /api/Documents/{p}/TempFile${r` · `? /api/Documents/{p}/TempFile${s` · `GET /api/Media/FileUploader` · `GET /api/Media/MediaDetails` · `? /api/Media/VCardDownload` · `GET /api/Media/ViewingPermissions` · `GET /api/Photos/{p}` · `GET /api/Videos/GetDownloadLinks` · `GET /api/documents/BulkUploadData` · `GET /api/documents/GetSavedSignature` · `? /api/documents/{p}/tempFile{p}` · `? /api/files/{p}${e.dangerousDownload` · `GET /api/videos/GetResumableTicket` · `? /apix/v2.0/channels/org/{p}/media` · `GET /apix/v2/Documents/default-properties` · `GET /apix/v2/Documents/temp-files-from-existing-entity` · `GET /apix/v2/Documents/{p}/associated-entity-counts` · `GET /apix/v2/Documents/{p}/attached-to` · `GET /apix/v2/FinancialDocuments/RequestedDocuments` · `GET /apix/v2/Media/external-file-details` · `GET /apix/v2/Media/{p}/history` · `GET /apix/v2/MediaFolders/{p}` · `GET /apix/v2/PdfSignature/unsigned-documents` · `GET /apix/v2/PdfSignature/unsigned-documents/all` · `GET /apix/v2/Subs/{p}/attachments` · `GET /apix/v2/admin/BuilderSetup/{p}/files`
+`POST /api/Documents/GetMetadataForProducts` · `GET /api/Documents/MediaForFeedItem` · `? /api/Documents/TempFileExternal` · `GET /api/Documents/Unread` · `GET /api/Documents/ViewDocInBrowser` · `? /api/Documents/{p}/TempFile${r` · `? /api/Documents/{p}/TempFile${s` · `GET /api/Media/FileUploader` · `GET /api/Media/MediaDetails` · `? /api/Media/VCardDownload` · `GET /api/Media/ViewingPermissions` · `GET /api/Photos/{p}` · `GET /api/Videos/GetDownloadLinks` · `GET /api/documents/BulkUploadData` · `GET /api/documents/GetSavedSignature` · `? /api/documents/{p}/tempFile{p}` · `? /api/files/{p}${e.dangerousDownload` · `GET /api/videos/GetResumableTicket` · `? /apix/v2.0/channels/org/{p}/media` · `GET /apix/v2/Documents/temp-files-from-existing-entity` · `GET /apix/v2/Documents/{p}/associated-entity-counts` · `GET /apix/v2/Documents/{p}/attached-to` · `GET /apix/v2/FinancialDocuments/RequestedDocuments` · `GET /apix/v2/Media/external-file-details` · `GET /apix/v2/Media/{p}/history` · `GET /apix/v2/MediaFolders/{p}` · `GET /apix/v2/PdfSignature/unsigned-documents` · `GET /apix/v2/PdfSignature/unsigned-documents/all` · `GET /apix/v2/Subs/{p}/attachments` · `GET /apix/v2/admin/BuilderSetup/{p}/files`
 
 ## Messaging, comments, notifications
 
 - **VIABUILD equivalent:** `email_sends`, `project_feed_comments`, `schedule_task_messages`, `notifications`
 - **Gateway verbs:** none
-- **Coverage:** 31 screens/modals · 13 read endpoints · 1 blocked writes · bundle APIs reached 13/72
+- **Coverage:** 38 screens/modals · 14 read endpoints · 2 blocked writes · bundle APIs reached 15/72
 
 ### Screens
 
@@ -1897,7 +1953,9 @@ Actions (column) · Added (column) · Auto-create folder for clients to upload p
 | --- | --- | --- | --- |
 | `/app/Admin/BuilderNotificationHistory/0` | — | 0 | — |
 | `/app/Chat` | — | 0 | New chat |
+| `/app/Chat/Channel/Create` | — | 0 | New chat, Send |
 | `/app/Chat/Channel/Create/{id}/{text}` | — | 0 | New chat, Send |
+| `/app/Chat/Channel/Create/0/{text}` | — | 0 | New chat, Send |
 | `/app/Chat/Search` | — | 1 | New chat |
 | `/app/Chat/Search ⧉ Chat search` | — | 0 | — |
 | `/app/Comments/0` | — | 0 | — |
@@ -1917,9 +1975,14 @@ Actions (column) · Added (column) · Auto-create folder for clients to upload p
 | `/app/NotificationHistory/NotificationDetails/{id}/{id}/{date}/true ⧉ More › Manage saved views` | — | 1 | Apply View, Add New Saved View, Add a new saved view |
 | `/app/NotificationHistory/NotificationDetails/{id}/{id}/2026-10-29T17:33:18Z/true` | — | 6 | Apply filter |
 | `/app/NotificationHistory/NotificationDetails/{id}/{id}/2026-10-29T17:33:18Z/true ⧉ More › Manage saved views` | — | 1 | Apply View, Add New Saved View, Add a new saved view |
+| `/app/NotificationHistory/NotificationDetails/0/{id}/{date}/true` | — | 6 | Apply filter |
 | `/app/NotificationPanel` | — | 0 | — |
 | `/app/RecentComments` | — | 0 | — |
 | `/app/Settings/SurveySettings` | — | 11 | — |
+| `/app/Settings/SurveySettings/SurveyDefinition/{id}` | — | 11 | — |
+| `/app/Settings/SurveySettings/SurveyDefinition/0` | — | 11 | — |
+| `/app/Settings/SurveySettings/SurveyQuestion/{id}` | — | 14 | — |
+| `/app/Settings/SurveySettings/SurveyQuestion/0` | — | 15 | — |
 | `/app/Survey/0` | — | 0 | — |
 | `/app/Survey/0/{id}/0` | — | 1 | — |
 | `/app/SurveyDefinition/0` | — | 0 | — |
@@ -1929,12 +1992,13 @@ Actions (column) · Added (column) · Auto-create folder for clients to upload p
 
 ### Fields (UI)
 
-# Completed (column) · # Released (column) · # Unreleased (column) · BCC (select) · CC (select) · Columns (select) · Created (column) · Date Received (column) · Date Sent (column) · Default all questions to have N/A option (checkbox) · Default all questions to require an answer (checkbox) · Delivery Method (column) · From (column) · Job (column) · Label (column) · Number of Surveys Included (column) · Question (column) · Search (text) · Select a Survey (select) · Subject (column) · Subject (text) · Survey Title (column) · To (column) · To (select) · Type (column)
+# Completed (column) · # Released (column) · # Unreleased (column) · Answer Format (select) · BCC (select) · CC (select) · Columns (select) · Created (column) · Date Received (column) · Date Sent (column) · Default all questions to have N/A option (checkbox) · Default all questions to require an answer (checkbox) · Delivery Method (column) · From (column) · Job (column) · Label (column) · Number of Surveys Included (column) · Question (column) · Question (text) · Report Label (text) · Search (text) · Select a Survey (select) · Subject (column) · Subject (text) · Survey Title (column) · Tags (select) · To (column) · To (select) · Type (column)
 
 ### Enums and dropdown options
 
 - Columns: Check All / To / Type / Subject / Job / Date Sent / Delivery Method
 - data.columnsList: To / Type / Subject / Job / Date Sent / Delivery Method
+- data.potentialQuestionTypes: Stars / 1 to 10 / Yes/No / Open Ended
 
 ### Read endpoints (observed)
 
@@ -1948,6 +2012,7 @@ Actions (column) · Added (column) · Auto-create folder for clients to upload p
 | GET | `/api/PushNotifications/toggle` | — | data, hasPushNotificationsOn, options, options[].name, options[].showMassUpdate, options[].values, options[].values[].id, options[].values[].isOn, options[].values[].name |
 | GET | `/api/Survey/GetSurveyDefinitionsList` | — | data, surveyDefinitionsList, surveyDefinitionsList.title, surveyDefinitionsList.unselectedId, surveyDefinitionsList.validators, surveyDefinitionsList.validators[].errorMessage, surveyDefinitionsList.validators[].type, surveyDefinitionsList.validators[].value, surveyDefinitionsList.value, surveyDefinitionsList.value[].disableIndividualSelection, surveyDefinitionsList.value[].disabled, surveyDefinitionsList.value[].extraData, surveyDefinitionsList.value[].id, surveyDefinitionsList.value[].key, surveyDefinitionsList.value[].name, surveyDefinitionsList.value[].secondaryName, surveyDefinitionsList.value[].selected |
 | GET | `/api/Survey/Setup` | — | data, questionList, questionList[].id, questionList[].includedSurveysCount, questionList[].label, questionList[].question, questionList[].questionType, surveyDefaults, surveyDefaults.doesRequireAnswer, surveyDefaults.hasNaOption, surveyDefaults.notificationText, surveyList, surveyList[].completedCount, surveyList[].createdBy, surveyList[].createdDate, surveyList[].id, surveyList[].releasedCount, surveyList[].title, surveyList[].unreleasedCount |
+| GET | `/api/SurveyQuestions/SurveySetupQuestion?surveyQuestionID=` | — | data, builderID, isBTQuestion, isInUse, isInactiveDate, label, potentialQuestionTypes, potentialQuestionTypes[].disableIndividualSelection, potentialQuestionTypes[].disabled, potentialQuestionTypes[].extraData, potentialQuestionTypes[].id, potentialQuestionTypes[].key, potentialQuestionTypes[].name, potentialQuestionTypes[].secondaryName, potentialQuestionTypes[].selected, question, questionType, surveyQuestionID, tags |
 | GET | `/apix/v2/Notifications/panel-info` | — | hasNotificationsSinceLastOpened |
 | POST | `/api/Comments/Grid` | filters, filters.{key}, gridRequest, gridRequest.emptyStateEntity, gridRequest.hideMultiJobsColumns, jobIds, pagingData, pagingData.currentPage, pagingData.firstRow, pagingData.lastRow, pagingData.pageNumber, pagingData.pageSize, pagingData.resetScroll, pagingData.totalRowsAllPages | data, canAdd, canDelete, canUpdate, columnsList, columnsList[].align, columnsList[].columnType, columnsList[].customFieldMetadata, columnsList[].defaultWidth, columnsList[].enabled, columnsList[].id, columnsList[].isAlwaysIncluded, columnsList[].isAlwaysVisible, columnsList[].isCustomField, columnsList[].isExpandable, columnsList[].isFrozen, columnsList[].isHidden, columnsList[].isRemovableFromGrid, columnsList[].isResizeable, columnsList[].isSearchable, columnsList[].isSortable, columnsList[].jsonKey, columnsList[].name, columnsList[].order, columnsList[].toolTipHeader, columnsList[].type, columnsList[].width, data, data[].addedByID, data[].builderId, data[].canDelete, data[].commentCount, data[].commentDate, data[].commentDateUtc, data[].commentId, data[].commentJson, data[].commentJson.content, data[].commentJson.schemaVersion, data[].commentText, data[].documentInstanceId, … (+36) |
 | POST | `/api/messages/Grid` | filters, gridRequest, gridRequest.emptyStateEntity, gridRequest.hideMultiJobsColumns, gridRequest.sortColumn, gridRequest.sortDirection, jobIds, pagingData, pagingData.currentPage, pagingData.firstRow, pagingData.lastRow, pagingData.pageNumber, pagingData.pageSize, pagingData.resetScroll, pagingData.totalRowsAllPages | data, canAdd, canDelete, canUpdate, columnsList, columnsList[].align, columnsList[].columnType, columnsList[].customFieldMetadata, columnsList[].defaultWidth, columnsList[].enabled, columnsList[].id, columnsList[].isAlwaysIncluded, columnsList[].isAlwaysVisible, columnsList[].isCustomField, columnsList[].isExpandable, columnsList[].isFrozen, columnsList[].isHidden, columnsList[].isRemovableFromGrid, columnsList[].isResizeable, columnsList[].isSearchable, columnsList[].isSortable, columnsList[].jsonKey, columnsList[].name, columnsList[].order, columnsList[].toolTipHeader, columnsList[].type, columnsList[].width, data, data[].attachedFiles, data[].attachedFiles.docCount, data[].attachedFiles.entityId, data[].attachedFiles.entityType, data[].body, data[].builderId, data[].emailMessageFolderId, data[].from, data[].id, data[].isForwarded, data[].isRead, data[].isReply, … (+26) |
@@ -1958,6 +2023,7 @@ Actions (column) · Added (column) · Auto-create folder for clients to upload p
 
 | Method | Path | Source | Body keys / trigger |
 | --- | --- | --- | --- |
+| GET | `/api/Survey/DefinitionEdit?SurveyDefinitionId=` | blocked during crawl | — (via nav:/app/Settings/SurveySettings/SurveyDefinition/0, nav:/app/Settings/SurveySettings/SurveyDefinition/{id}) |
 | POST | `/apix/v2.0/NotificationPreferences` | blocked during crawl | notificationType, users, users[].builderId, users[].entityId (via nav:/app/Chat, btn:Chat search) |
 | POST | `/api/Channels/{p}/Messages` | app bundle (not fired) | — |
 | PUT | `/api/Comments/Setup` | app bundle (not fired) | — |
@@ -2004,19 +2070,39 @@ Actions (column) · Added (column) · Auto-create folder for clients to upload p
 
 ### Bundle read APIs not reached
 
-`GET /api/Channels/MessageableUsers` · `GET /api/Channels/{p}/MessageableUsers` · `GET /api/LeadMessages/{p}/OwnEmail` · `GET /api/Messages/JobsiteForwardAddress` · `? /api/Notifications/ExportToExcel` · `GET /api/Notifications/NotificationPreferences` · `GET /api/Survey/DefinitionEdit` · `GET /api/Survey/GetBuilderSurvey` · `GET /api/Survey/GetNewSurvey` · `POST /api/Survey/GridGrouped` · `POST /api/Survey/GridIndividual` · `GET /api/Survey/Print` · `GET /api/Survey/QuestionsPrint` · `? /api/SurveyQuestions/ExportToExcel` · `POST /api/SurveyQuestions/Grid` · `GET /api/calendar/PendingNotifications` · `? /apix/v1/EmailLinkClicked` · `? /apix/v1/emaillinkclicked` · `GET /apix/v2.0/Channels/Events/Messages/{p}/Cursor` · `GET /apix/v2/NotificationTemplates/user-activation-invite` · `GET /apix/v2/admin/NotificationTemplates`
+`GET /api/Channels/MessageableUsers` · `GET /api/Channels/{p}/MessageableUsers` · `GET /api/LeadMessages/{p}/OwnEmail` · `GET /api/Messages/JobsiteForwardAddress` · `? /api/Notifications/ExportToExcel` · `GET /api/Notifications/NotificationPreferences` · `GET /api/Survey/GetBuilderSurvey` · `GET /api/Survey/GetNewSurvey` · `POST /api/Survey/GridGrouped` · `POST /api/Survey/GridIndividual` · `GET /api/Survey/Print` · `GET /api/Survey/QuestionsPrint` · `? /api/SurveyQuestions/ExportToExcel` · `POST /api/SurveyQuestions/Grid` · `GET /api/calendar/PendingNotifications` · `? /apix/v1/EmailLinkClicked` · `? /apix/v1/emaillinkclicked` · `GET /apix/v2.0/Channels/Events/Messages/{p}/Cursor` · `GET /apix/v2/NotificationTemplates/user-activation-invite` · `GET /apix/v2/admin/NotificationTemplates`
 
 ## Leads (sales)
 
 - **VIABUILD equivalent:** none in construction-OS (HubSpot deals via `jobs.hubspot_deal_id`)
 - **Gateway verbs:** `leads.list`, `leads.get`, `leads.defaults`, `leads.create` (not_captured), `leads.update` (not_captured), `leads.convertToJob` (send, locked)
-- **Coverage:** 42 screens/modals · 13 read endpoints · 0 blocked writes · bundle APIs reached 13/44
+- **Coverage:** 85 screens/modals · 15 read endpoints · 0 blocked writes · bundle APIs reached 15/44
 
 ### Screens
 
 | Screen | Tabs | Fields | Write actions seen (not clicked) |
 | --- | --- | --- | --- |
 | `/app/Contacts/Contact/{id}/false/Lead/{id}` | General, Activities ({n}), Proposals ({n}) | 27 | Apply filter, Remove, Import, Save |
+| `/app/Contacts/Contact/{id}/false/Lead/{id}/LeadActivity/{id}/{id}/{id}` | General, Activities ({n}), Proposals ({n}) | 25 | Apply filter, Remove, Copy from contact, Add, Create new doc, Save, Add follow-up |
+| `/app/Contacts/Contact/{id}/false/Lead/{id}/LeadActivity/0/{id}/{id}` | General, Activities ({n}), Proposals ({n}) | 25 | Apply filter, Remove, Copy from contact, Add, Create new doc, Save, Mark complete |
+| `/app/Contacts/Contact/0/false/Lead/{id}` | — | 9 | Apply filter |
+| `/app/Contacts/Contact/0/false/Lead/{id} ⧉ More › Manage saved views` | — | 1 | Apply View, Add New Saved View, Add a new saved view |
+| `/app/Contacts/Contact/0/false/Lead/{id}/LeadActivity/{id}/{id}/{id}` | — | 9 | Apply filter |
+| `/app/Contacts/Contact/0/false/Lead/{id}/LeadActivity/{id}/{id}/{id} ⧉ More › Manage saved views` | — | 1 | Apply View, Add New Saved View, Add a new saved view |
+| `/app/Contacts/Contact/0/false/Lead/{id}/LeadActivity/0/{id}/{id}` | — | 9 | Apply filter |
+| `/app/Contacts/Contact/0/false/Lead/{id}/LeadActivity/0/{id}/{id} ⧉ More › Manage saved views` | — | 1 | Apply View, Add New Saved View, Add a new saved view |
+| `/app/JobPage/{id}/{id}/Contact/{id}/false/Lead/{id}` | Job details, Clients, Internal users, Subs/vendors, Advanced settings, General, Activities ({n}), Proposals ({n}) | 44 | Remove, Import, Save, Apply filter |
+| `/app/JobPage/{id}/{id}/Contact/{id}/false/Lead/{id}/LeadActivity/{id}/{id}/{id}` | Job details, Clients, Internal users, Subs/vendors, Advanced settings, General, Activities ({n}), Proposals ({n}) | 35 | Remove, Copy from contact, Add, Create new doc, Save, Add follow-up |
+| `/app/JobPage/{id}/{id}/Contact/{id}/false/Lead/{id}/LeadActivity/0/{id}/{id}` | Job details, Clients, Internal users, Subs/vendors, Advanced settings, General, Activities ({n}), Proposals ({n}) | 35 | Remove, Copy from contact, Add, Create new doc, Save, Mark complete |
+| `/app/JobPage/0/{id}/Contact/{id}/false/Lead/{id}` | Job details, Clients, Internal users, Subs/vendors, Advanced settings, General, Activities ({n}), Proposals ({n}) | 44 | Remove, Import, Save, Apply filter |
+| `/app/JobPage/0/{id}/Contact/{id}/false/Lead/{id}/LeadActivity/{id}/{id}/{id}` | Job details, Clients, Internal users, Subs/vendors, Advanced settings, General, Activities ({n}), Proposals ({n}) | 35 | Remove, Copy from contact, Add, Create new doc, Save, Add follow-up |
+| `/app/JobPage/0/{id}/Contact/{id}/false/Lead/{id}/LeadActivity/0/{id}/{id}` | Job details, Clients, Internal users, Subs/vendors, Advanced settings, General, Activities ({n}), Proposals ({n}) | 35 | Remove, Copy from contact, Add, Create new doc, Save, Mark complete |
+| `/app/Jobs/List/Contact/{id}/false/Lead/{id}` | List, Map, General, Activities ({n}), Proposals ({n}) | 40 | Apply filter, Remove, Import, Save |
+| `/app/Jobs/List/Contact/{id}/false/Lead/{id}/LeadActivity/{id}/{id}/{id}` | List, Map, General, Activities ({n}), Proposals ({n}) | 31 | Apply filter, Remove, Copy from contact, Add, Create new doc, Save, Add follow-up |
+| `/app/Jobs/List/Contact/{id}/false/Lead/{id}/LeadActivity/0/{id}/{id}` | List, Map, General, Activities ({n}), Proposals ({n}) | 31 | Apply filter, Remove, Copy from contact, Add, Create new doc, Save, Mark complete |
+| `/app/Jobs/List/Contact/0/false/Lead/{id}` | List, Map | 17 | Apply filter |
+| `/app/Jobs/List/Contact/0/false/Lead/{id}/LeadActivity/{id}/{id}/{id}` | List, Map | 17 | Apply filter |
+| `/app/Jobs/List/Contact/0/false/Lead/{id}/LeadActivity/0/{id}/{id}` | List, Map | 17 | Apply filter |
 | `/app/Landing/QuickAction/Lead/0` | General, Activities, Proposals | 7 | Import, Save, Apply filter |
 | `/app/Landing/QuickAction/Lead/0 ⧉ Job` | General, Activities, Proposals | 7 | Import, Save |
 | `/app/Landing/QuickAction/Lead/0/ContactSearch` | General, Activities, Proposals | 18 | — |
@@ -2032,25 +2118,43 @@ Actions (column) · Added (column) · Auto-create folder for clients to upload p
 | `/app/LeadPage/0` | — | 0 | — |
 | `/app/Leads/0` | List view, Activity view, Activity calendar, Activity templates, Lead proposals, Proposal templates, Map | 46 | Apply filter |
 | `/app/Leads/0/Contact/{id}/false` | List view, Activity view, Activity calendar, Activity templates, Lead proposals, Proposal templates, Map | 45 | Apply filter |
+| `/app/Leads/0/Contact/{id}/false/Lead/{id}` | List view, Activity view, Activity calendar, Activity templates, Lead proposals, Proposal templates, Map, General, Activities, Proposals ({n}) | 59 | Apply filter, Remove, Import, Save |
+| `/app/Leads/0/Contact/{id}/false/Lead/{id}/LeadActivity/0/{id}/{id}` | List view, Activity view, Activity calendar, Activity templates, Lead proposals, Proposal templates, Map, General, Activities, Proposals ({n}) | 53 | Apply filter, Remove, Copy from contact, Add, Create new doc, Save, Mark complete |
 | `/app/Leads/0/Lead/{id}` | List view, Activity view, Activity calendar, Activity templates, Lead proposals, Proposal templates, Map, General, Activities, Proposals ({n}) | 52 | Apply filter, Remove, Import, Save |
 | `/app/Leads/0/Lead/{id}/LeadActivity/0/{id}/{id}` | List view, Activity view, Activity calendar, Activity templates, Lead proposals, Proposal templates, Map, General, Activities, Proposals ({n}) | 46 | Apply filter, Remove, Copy from contact, Add, Create new doc, Save, Mark complete |
 | `/app/leads/activities` | List view, Activity view, Activity calendar, Activity templates, Lead proposals, Proposal templates, Map | 46 | Apply filter |
 | `/app/leads/calendar` | List view, Activity view, Activity calendar, Activity templates, Lead proposals, Proposal templates, Map | 46 | Apply filter |
 | `/app/Leads/EmailWizard/0` | List view, Activity view, Activity calendar, Activity templates, Lead proposals, Proposal templates, Map | 46 | Apply filter |
 | `/app/Leads/EmailWizard/Contact/{id}/false` | List view, Activity view, Activity calendar, Activity templates, Lead proposals, Proposal templates, Map | 45 | Apply filter |
+| `/app/Leads/EmailWizard/Contact/{id}/false/Lead/{id}` | List view, Activity view, Activity calendar, Activity templates, Lead proposals, Proposal templates, Map, General, Activities, Proposals ({n}) | 59 | Apply filter, Remove, Import, Save |
+| `/app/Leads/EmailWizard/Contact/{id}/false/Lead/{id}/LeadActivity/0/{id}/{id}` | List view, Activity view, Activity calendar, Activity templates, Lead proposals, Proposal templates, Map, General, Activities, Proposals ({n}) | 53 | Apply filter, Remove, Copy from contact, Add, Create new doc, Save, Mark complete |
+| `/app/Leads/EmailWizard/Contact/0/false` | List view, Activity view, Activity calendar, Activity templates, Lead proposals, Proposal templates, Map | 38 | Apply filter |
+| `/app/Leads/EmailWizard/Contact/0/false/Lead/{id}` | List view, Activity view, Activity calendar, Activity templates, Lead proposals, Proposal templates, Map | 38 | Apply filter |
+| `/app/Leads/EmailWizard/Contact/0/false/Lead/{id}/LeadActivity/0/{id}/{id}` | List view, Activity view, Activity calendar, Activity templates, Lead proposals, Proposal templates, Map | 38 | Apply filter |
 | `/app/Leads/EmailWizard/Lead/{id}` | List view, Activity view, Activity calendar, Activity templates, Lead proposals, Proposal templates, Map, General, Activities, Proposals ({n}) | 52 | Apply filter, Remove, Import, Save |
 | `/app/Leads/EmailWizard/Lead/{id}/LeadActivity/0/{id}/{id}` | List view, Activity view, Activity calendar, Activity templates, Lead proposals, Proposal templates, Map, General, Activities, Proposals ({n}) | 46 | Apply filter, Remove, Copy from contact, Add, Create new doc, Save, Mark complete |
+| `/app/Leads/EmailWizard/Lead/0` | List view, Activity view, Activity calendar, Activity templates, Lead proposals, Proposal templates, Map, General, Activities, Proposals | 45 | Apply filter, Import, Save |
+| `/app/Leads/EmailWizard/Lead/0/LeadActivity/0/{id}/{id}` | List view, Activity view, Activity calendar, Activity templates, Lead proposals, Proposal templates, Map, General, Activities, Proposals | 46 | Apply filter, Add, Create new doc, Save, Mark complete |
 | `/app/leads/map` | List view, Activity view, Activity calendar, Activity templates, Lead proposals, Proposal templates, Map | 46 | Apply filter |
 | `/app/leads/map/Lead/{id}` | List view, Activity view, Activity calendar, Activity templates, Lead proposals, Proposal templates, Map, General, Activities, Proposals ({n}) | 14 | Apply filter, Remove, Import, Save, More › Delete, Related actions › Import from template |
+| `/app/leads/map/Lead/{id}/Contact/{id}/true` | List view, Activity view, Activity calendar, Activity templates, Lead proposals, Proposal templates, Map, General, Activities, Proposals ({n}) | 18 | Apply filter, Remove, Copy from contact, Add, Create new doc, Save |
+| `/app/leads/map/Lead/{id}/LeadActivity/0/{id}/{id}` | List view, Activity view, Activity calendar, Activity templates, Lead proposals, Proposal templates, Map, General, Activities, Proposals ({n}) | 8 | Apply filter, Remove, Copy from contact, Add, Create new doc, Save, Mark complete |
+| `/app/leads/map/Lead/0` | List view, Activity view, Activity calendar, Activity templates, Lead proposals, Proposal templates, Map, General, Activities, Proposals | 7 | Apply filter, Import, Save |
+| `/app/leads/map/Lead/0/Contact/{id}/true` | List view, Activity view, Activity calendar, Activity templates, Lead proposals, Proposal templates, Map, General, Activities, Proposals | 18 | Apply filter, Add, Create new doc, Save |
+| `/app/leads/map/Lead/0/LeadActivity/0/{id}/{id}` | List view, Activity view, Activity calendar, Activity templates, Lead proposals, Proposal templates, General, Map, Activities, Proposals, Worksheet, Format | 8 | Apply filter, Add, Create new doc, Save, Mark complete |
 | `/app/leads/opportunities` | List view, Activity view, Activity calendar, Activity templates, Lead proposals, Proposal templates, Map | 46 | Apply filter |
 | `/app/leads/opportunities/Contact/{id}/false` | List view, Activity view, Activity calendar, Activity templates, Lead proposals, Proposal templates, Map | 45 | Apply filter |
 | `/app/leads/opportunities/Contact/{id}/false ⧉ Info` | — | 0 | — |
 | `/app/leads/opportunities/Contact/{id}/false/Lead/{id}` | List view, Activity view, Activity calendar, Activity templates, Lead proposals, Proposal templates, Map, General, Activities, Proposals ({n}) | 59 | Apply filter, Remove, Import, Save |
+| `/app/leads/opportunities/Contact/{id}/false/Lead/{id}/LeadActivity/0/{id}/{id}` | List view, Activity view, Activity calendar, Activity templates, Lead proposals, Proposal templates, Map, General, Activities, Proposals ({n}) | 53 | Apply filter, Remove, Copy from contact, Add, Create new doc, Save, Mark complete |
 | `/app/leads/opportunities/Contact/0/false` | List view, Activity view, Activity calendar, Activity templates, Lead proposals, Proposal templates, Map | 38 | Apply filter |
+| `/app/leads/opportunities/Contact/0/false/Lead/{id}` | List view, Activity view, Activity calendar, Activity templates, Lead proposals, Proposal templates, Map | 38 | Apply filter |
+| `/app/leads/opportunities/Contact/0/false/Lead/{id}/LeadActivity/0/{id}/{id}` | List view, Activity view, Activity calendar, Activity templates, Lead proposals, Proposal templates, Map | 38 | Apply filter |
 | `/app/leads/opportunities/Lead/{id}` | List view, Activity view, Activity calendar, Activity templates, Lead proposals, Proposal templates, Map, General, Activities, Proposals ({n}) | 52 | Apply filter, Remove, Import, Save |
 | `/app/leads/opportunities/Lead/{id}/Contact/{id}/true` | List view, Activity view, Activity calendar, Activity templates, Lead proposals, Proposal templates, Map, General, Activities, Proposals ({n}) | 52 | Apply filter, Remove, Copy from contact, Add, Create new doc, Save |
 | `/app/leads/opportunities/Lead/{id}/LeadActivity/0/{id}/{id}` | List view, Activity view, Activity calendar, Activity templates, Lead proposals, Proposal templates, Map, General, Activities, Proposals ({n}) | 46 | Apply filter, Remove, Copy from contact, Add, Create new doc, Save, Mark complete |
 | `/app/leads/opportunities/Lead/0` | List view, Activity view, Activity calendar, Activity templates, Lead proposals, Proposal templates, Map, General, Activities, Proposals | 45 | Apply filter, Import, Save |
+| `/app/leads/opportunities/Lead/0/Contact/{id}/true` | List view, Activity view, Activity calendar, Activity templates, Lead proposals, Proposal templates, Map, General, Activities, Proposals | 52 | Apply filter, Add, Create new doc, Save |
 | `/app/leads/opportunities/Lead/0/LeadActivity/0/{id}/{id}` | List view, Activity view, Activity calendar, Activity templates, Lead proposals, Proposal templates, Map, General, Activities, Proposals | 46 | Apply filter, Add, Create new doc, Save, Mark complete |
 | `/app/LeadSource/0` | — | 0 | — |
 | `/app/LeadToJob/0` | — | 0 | — |
@@ -2058,13 +2162,19 @@ Actions (column) · Added (column) · Auto-create folder for clients to upload p
 | `/app/Reporting/LeadCountBySalespersonReport` | Columns, Filters | 11 | — |
 | `/app/Reporting/LeadStatusBySourceReport` | Columns, Filters | 11 | — |
 | `/app/Settings/LeadGenerationSettings` | — | 2 | — |
+| `/app/Settings/LeadGenerationSettings/Leads/WebsiteContactForm` | — | 3 | Save |
+| `/app/Settings/LeadGenerationSettings/Leads/WebsiteContactForm/CustomFields/0/{id}` | — | 7 | — |
+| `/app/Settings/LeadGenerationSettings/Leads/WebsiteContactForm/CustomFields/0/0` | — | 7 | — |
+| `/app/Settings/SalesSettings/LeadCustomField/{id}` | — | 23 | — |
+| `/app/Settings/SalesSettings/LeadCustomField/0` | — | 23 | — |
 
 ### Fields (UI)
 
-Activation Status (column) · Activity Links Clicked (column) · Address (column) · Age (column) · Cell (column) · Cell Phone (column) · City (column) · Client Contact (column) · Client Price (column) · Client price (column) · Communication (column) · Confidence (column) · Contact form recipient (select) · Created Date (column) · Custom page redirect URL (text) · Date (column) · Display Name (column) · Email (column) · Email Address (column) · Emails (column) · Estimated Revenue (column) · Estimated Revenue Max (column) · Estimated Revenue Min (column) · Excel (column) · Files (column) · Filter Columns Input (text) · First Name (column) · Follow-ups (column) · In progress (column) · Job Name (column) · Jobs (column) · Last Activity Link Click (column) · Last Contacted (column) · Last Name (column) · Last updated (column) · Last viewed (column) · Lead Opportunities (column) · Lead Proposals (column) · Lead Status (column) · Lead source (column) · Lost (column) · Map (column) · Markup (column) · Meetings (column) · Name (column) · Next Activity (column) · No opportunity (column) · Notes (column) · Oct 25 - {date} (date) · On hold (column) · Open (column) · Opportunity Title (column) · Page Size (select) · Pending (column) · Phone (column) · Phone calls (column) · Postal Code (column) · Press SPACE to toggle visibility (visible) (checkbox) · Primary Phone (column) · Project Manager (column) · Project Type (column) · Project type (select) · Projected Sales Date (column) · Projected sales date (date) · Proposal (column) · Proposal Last Viewed (column) · Proposal Status (column) · Proposal Title (column) · Proposal status (column) · Related Job (column) · Salespeople (select) · Salesperson (column) · Salesperson (radio) · Select a Lead (select) · Sold (column) · Sold Date (column) · Source (column) · Sources (select) · State (Contact) (column) · State (Opportunity) (column) · State (column) · Status (column) · Status (select) · Street (Contact) (column) · Street (Opportunity) (column) · Street Address (column) · Suburb (Contact) (column) · Suburb (Opportunity) (column) · Suburb (column) · Tags (column) · Tags (select) · Template Description (column) · Template Name (column) · Title (column) · Title (text) · Total (column) · Total Builder Cost (column) · Total activities (column) · Type (column) · Website forms (column) · Zip (column) · Zip Code (Contact) (column) · Zip Code (Opportunity) (column)
+Activation Status (column) · Activity Links Clicked (column) · Address (column) · Age (column) · Budget difference (checkbox) · Builder Cost (checkbox) · Cell (column) · Cell Phone (column) · Change Order requests (checkbox) · City (column) · Client Contact (column) · Client Email (column) · Client Phone (column) · Client Postal Code (column) · Client Price (checkbox) · Client Price (column) · Client State (column) · Client Street Address (column) · Client Suburb (column) · Client price (column) · Clients (column) · Columns (select) · Communication (column) · Confidence (column) · Contact form recipient (select) · Cost Type (checkbox) · Created Date (column) · Custom page redirect URL (text) · Data type (column) · Date (column) · Default Grouping (select) · Description (checkbox) · Display Name (column) · Display order (column) · Email (column) · Email Address (column) · Emails (column) · Estimated Revenue (column) · Estimated Revenue Max (column) · Estimated Revenue Min (column) · Excel (column) · Files (column) · Filter Columns Input (text) · First Name (column) · Follow-ups (column) · In progress (column) · Include In My Filters (checkbox) · Include in filters (column) · Internal Notes (checkbox) · Invoices (checkbox) · Job Color (column) · Job Costing Budget (checkbox) · Job Name (column) · Job Price Summary (checkbox) · Jobs (column) · Label (column) · Label (text) · Last Activity Link Click (column) · Last Contacted (column) · Last Name (column) · Last updated (column) · Last viewed (column) · Lead Opportunities (column) · Lead Proposals (column) · Lead Status (column) · Lead source (column) · Lined (radio) · Locked selections (checkbox) · Lost (column) · Map (column) · Map Status (column) · Margin (checkbox) · Markup (checkbox) · Markup (column) · Meetings (column) · Name (column) · Next Activity (column) · No opportunity (column) · Notes (column) · Oct 25 - {date} (date) · On hold (column) · Open (column) · Opportunity Title (column) · Page Size (select) · Pending (column) · Phone (column) · Phone calls (column) · Postal Code (column) · Press SPACE to toggle visibility (visible) (checkbox) · Primary Phone (column) · Profit (checkbox) · Project Manager (column) · Project Type (column) · Project manager's phone number (checkbox) · Project type (select) · Projected Sales Date (column) · Projected sales date (date) · Proposal (column) · Proposal Last Viewed (column) · Proposal Status (column) · Proposal Title (column) · Proposal status (column) · Purchase Orders/Bills (checkbox) · Push (column) · Quantity (checkbox) · Related Job (column) · Remaining Invoice Balance (checkbox) · Required (column) · Required? (checkbox) · Salespeople (select) · Salesperson (column) · Salesperson (radio) · Schedule Status (column) · Schedule items (checkbox) · Schedule phases (checkbox) · Select a Lead (select) · Sold (column) · Sold Date (column) · Sold date (date) · Source (column) · Sources (select) · State (Contact) (column) · State (Opportunity) (column) · State (column) · Status (column) · Status (select) · Street (Contact) (column) · Street (Opportunity) (column) · Street Address (column) · Suburb (Contact) (column) · Suburb (Opportunity) (column) · Suburb (column) · Tags (column) · Tags (select) · Template Description (column) · Template Name (column) · Text (column) · Title (column) · Title (text) · Total (column) · Total Builder Cost (column) · Total Sqm (column) · Total activities (column) · Type (column) · Unit (checkbox) · Unit Cost (checkbox) · Warranty claims (checkbox) · Website forms (column) · Zip (column) · Zip Code (Contact) (column) · Zip Code (Opportunity) (column) · customField.displayOrder (number) · customField.toolTipText (textarea) · defaultAdditionalText (textarea)
 
 ### Enums and dropdown options
 
+- Columns: Check All / Display Name / Activation Status / Primary Phone / Cell Phone / Street Address / State / Postal Code / Jobs / Lead Opportunities / Email / First Name / Last Name
 - data.columnsList: Template Name / Template Description / # of Activities / Created By / Created Date / Next Activity
 - data.general.contractType.value: Fixed Price / Open Book
 - data.general.projectType.value: -- None -- / Acreage / Double Storey / Duplex / Single Storey / Split Level
@@ -2079,8 +2189,10 @@ Activation Status (column) · Activity Links Clicked (column) · Address (column
 
 | Method | Path | Request keys | Response keys |
 | --- | --- | --- | --- |
+| GET | `/api/LeadActivities/{id}` | — | data, activityId, builderCoordinates, builderCoordinates.latitude, builderCoordinates.longitude, builderId, canAdd, canDelete, canEdit, canEmail, email, email.attachedFiles, email.attachedFiles.files, email.attachedFiles.newFileOptions, email.attachedFiles.title, email.attachedFiles.viewingPermissions, email.body, email.emailType, email.id, email.mailMergeTooltip, email.showBTButton, email.showOwnClientButton, email.signature, email.subject, emailLinkClickHistory, emailLinkClickHistory.clickHistory, emailLinkClickHistory.message, general, general.activityColor, general.activityColor.validators, general.activityColor.value, general.activityDate, general.activityDate.validators, general.activityDate.value, general.activityEndTime, general.activityEndTime.validators, general.activityEndTime.value, general.activityStartTime, general.activityStartTime.validators, general.activityStartTime.value, … (+82) |
 | GET | `/api/LeadActivities/Defaults?leadId=` | — | data, activityId, builderCoordinates, builderCoordinates.latitude, builderCoordinates.longitude, builderId, canAdd, canDelete, canEdit, canEmail, email, email.attachedFiles, email.attachedFiles.files, email.attachedFiles.newFileOptions, email.attachedFiles.title, email.attachedFiles.viewingPermissions, email.emailType, email.mailMergeTooltip, email.showBTButton, email.showOwnClientButton, email.signature, general, general.activityColor, general.activityColor.validators, general.activityColor.value, general.activityDate, general.activityDate.validators, general.activityDate.value, general.activityEndTime, general.activityEndTime.validators, general.activityEndTime.value, general.activityStartTime, general.activityStartTime.validators, general.activityStartTime.value, general.activityStatusType, general.assignedUser, general.assignedUser.validators, general.assignedUser.value, general.attendees, general.attendees.options, … (+72) |
-| GET | `/api/Leads/{id}` | — | data, activityCount, builderId, canAdd, canAddLeadProposal, canConvertToJob, canDelete, canEdit, canReassign, canViewEstimate, contact, contact.activationConfirmed, contact.activationSent, contact.activationStatus, contact.additionalEmails, contact.additionalEmails.validators, contact.additionalEmails.value, contact.address, contact.address.countryDropdown, contact.address.countryDropdownId, contact.address.fields, contact.address.formattedAddressNoStreet, contact.address.globalCountry, contact.address.layout, contact.address.location, contact.address.stateDropdown, contact.address.stateDropdownId, contact.address.validators, contact.builderId, contact.canAdd, contact.canDelete, contact.canEdit, contact.canEditPrimaryEmail, contact.canEditProfilePicture, contact.canEmailInternally, contact.canSendLeadEmail, contact.cellEmail, contact.cellEmail.validators, contact.cellEmail.value, contact.cellEmailLookupLoadData, … (+227) |
+| GET | `/api/LeadContactForm` | — | data, builderToken, contactFormCSS, fields, fields[].customFieldId, fields[].description, fields[].displayMode, fields[].displayOrder, fields[].displayText, fields[].forceRequired, fields[].id, fields[].isRemovable, fields[].isRequired, fields[].isSelected, fields[].propertyId, hasFullAdminPerms, isBTAdmin |
+| GET | `/api/Leads/{id}` | — | data, activityCount, builderId, canAdd, canAddLeadProposal, canConvertToJob, canDelete, canEdit, canReassign, canViewEstimate, contact, contact.activationConfirmed, contact.activationSent, contact.activationStatus, contact.additionalEmails, contact.additionalEmails.validators, contact.additionalEmails.value, contact.address, contact.address.countryDropdown, contact.address.countryDropdownId, contact.address.fields, contact.address.formattedAddressNoStreet, contact.address.globalCountry, contact.address.layout, contact.address.location, contact.address.stateDropdown, contact.address.stateDropdownId, contact.address.validators, contact.builderId, contact.canAdd, contact.canDelete, contact.canEdit, contact.canEditPrimaryEmail, contact.canEditProfilePicture, contact.canEmailInternally, contact.canSendLeadEmail, contact.cellEmail, contact.cellEmail.validators, contact.cellEmail.value, contact.cellEmailLookupLoadData, … (+231) |
 | GET | `/api/Leads/Defaults` | — | data, activityCount, builderId, canAdd, canAddLeadProposal, canConvertToJob, canDelete, canEdit, canReassign, canViewEstimate, contact, contact.activationConfirmed, contact.activationSent, contact.activationStatus, contact.additionalEmails, contact.additionalEmails.validators, contact.additionalEmails.value, contact.address, contact.address.countryDropdown, contact.address.countryDropdownId, contact.address.fields, contact.address.formattedAddressNoStreet, contact.address.globalCountry, contact.address.layout, contact.address.location, contact.address.stateDropdown, contact.address.stateDropdownId, contact.address.validators, contact.builderId, contact.canAdd, contact.canDelete, contact.canEdit, contact.canEditPrimaryEmail, contact.canEditProfilePicture, contact.canEmailInternally, contact.canSendLeadEmail, contact.cellEmail, contact.cellEmail.validators, contact.cellEmail.value, contact.cellEmailLookupLoadData, … (+203) |
 | GET | `/api/leads/dropdown` | — | data, data[].id, data[].name |
 | GET | `/api/Leads/Setup` | — | data, activitySettings, activitySettings.defaultLeadActivityCalendarSettings, activitySettings.hasCalendar, activitySettings.leadActivityCalendarSettingsSelection, activitySettings.leadActivityCalendarSettingsSelection[].disableIndividualSelection, activitySettings.leadActivityCalendarSettingsSelection[].disabled, activitySettings.leadActivityCalendarSettingsSelection[].extraData, activitySettings.leadActivityCalendarSettingsSelection[].id, activitySettings.leadActivityCalendarSettingsSelection[].key, activitySettings.leadActivityCalendarSettingsSelection[].name, activitySettings.leadActivityCalendarSettingsSelection[].secondaryName, activitySettings.leadActivityCalendarSettingsSelection[].selected, customFields, customFields.addNewCustomFieldTitle, customFields.associatedType, customFields.customFields, customFields.customFields[].customFieldID, customFields.customFields[].dataType, customFields.customFields[].displayOrder, customFields.customFields[].isCopied, customFields.customFields[].isRequired, customFields.customFields[].name, customFields.customFields[].useAsResultFilter, customFields.headerTitle, customFields.includeModalNameInNewCustomFieldTitle, hiddenBuilderId, layoutSettings, layoutSettings.contentLayoutSelection, layoutSettings.contentLayoutSelection[].disableIndividualSelection, layoutSettings.contentLayoutSelection[].disabled, layoutSettings.contentLayoutSelection[].extraData, layoutSettings.contentLayoutSelection[].id, layoutSettings.contentLayoutSelection[].key, layoutSettings.contentLayoutSelection[].name, layoutSettings.contentLayoutSelection[].secondaryName, layoutSettings.contentLayoutSelection[].selected, layoutSettings.defaultCompanyInfoLayout, layoutSettings.defaultContentLayout, layoutSettings.defaultHeaderLayout, … (+97) |
@@ -2131,7 +2243,7 @@ Activation Status (column) · Activity Links Clicked (column) · Address (column
 
 - **VIABUILD equivalent:** `entities` (`is_client`), `entity_persons`, `job_entities`
 - **Gateway verbs:** `contacts.list`, `contacts.get`, `contacts.create` (not_captured), `contacts.update` (not_captured)
-- **Coverage:** 5 screens/modals · 6 read endpoints · 1 blocked writes · bundle APIs reached 6/19
+- **Coverage:** 7 screens/modals · 6 read endpoints · 1 blocked writes · bundle APIs reached 6/19
 
 ### Screens
 
@@ -2141,6 +2253,8 @@ Activation Status (column) · Activity Links Clicked (column) · Address (column
 | `/app/Contacts ⧉ More › Manage saved views` | — | 1 | Apply View, Add New Saved View, Add a new saved view |
 | `/app/Contacts/Contact/{id}/false` | — | 17 | Apply filter |
 | `/app/Contacts/Contact/{id}/false ⧉ More › Manage saved views` | — | 1 | Apply View, Add New Saved View, Add a new saved view |
+| `/app/Contacts/Contact/0/false` | — | 9 | Apply filter |
+| `/app/Contacts/Contact/0/false ⧉ More › Manage saved views` | — | 1 | Apply View, Add New Saved View, Add a new saved view |
 | `/app/Landing/QuickAction/Contact/0/false` | — | 0 | — |
 
 ### Fields (UI)
@@ -2262,7 +2376,7 @@ ABN Details Received (checkbox) · Agreement/Info Pack Sent (checkbox) · Assign
 
 - **VIABUILD equivalent:** `profiles`, `custom_roles`, `job_role_assignments`
 - **Gateway verbs:** none
-- **Coverage:** 8 screens/modals · 12 read endpoints · 0 blocked writes · bundle APIs reached 12/54
+- **Coverage:** 15 screens/modals · 12 read endpoints · 0 blocked writes · bundle APIs reached 12/54
 
 ### Screens
 
@@ -2273,13 +2387,20 @@ ABN Details Received (checkbox) · Agreement/Info Pack Sent (checkbox) · Assign
 | `/app/InternalUsers ⧉ More › Manage saved views` | — | 1 | Apply View, Add New Saved View, Add a new saved view |
 | `/app/InternalUsers/InternalUser/{id}` | Overview, Permissions, Notifications, Messaging, Job Access ({n}), Security & Login, Other, Buildertrend Takeoff | 39 | Apply filter |
 | `/app/InternalUsers/InternalUser/{id} ⧉ More › Manage saved views` | — | 1 | Apply View, Add New Saved View, Add a new saved view |
+| `/app/InternalUsers/InternalUser/0` | Overview, Permissions, Notifications, Messaging, Job Access ({n}), Security & Login, Other | 28 | Apply filter |
 | `/app/Landing/MyUserDetails` | Overview, Permissions, Notifications, Messaging, Job Access ({n}), Security & Login, Other, Buildertrend Takeoff | 36 | Apply filter |
 | `/app/Landing/QuickAction/InternalUser/0` | Overview, Permissions, Notifications, Messaging, Job Access ({n}), Security & Login, Other | 22 | — |
 | `/app/Settings/InternalUserSettings` | — | 5 | — |
+| `/app/Settings/InternalUserSettings/InternalUsersCustomField/{id}` | — | 9 | Save, Delete |
+| `/app/Settings/InternalUserSettings/InternalUsersCustomField/0` | — | 9 | — |
+| `/app/Settings/RoleManagement/Role/{id}/{id}/InternalUser/{id}` | Overview, Permissions, Notifications, Messaging, Job Access ({n}), Security & Login, Other, Buildertrend Takeoff | 33 | — |
+| `/app/Settings/RoleManagement/Role/0/{id}/InternalUser/{id}` | — | 0 | — |
+| `/app/Settings/TakeoffSettings/InternalUser/{id}` | Overview, Permissions, Notifications, Messaging, Job Access ({n}), Security & Login, Other, Buildertrend Takeoff | 36 | — |
+| `/app/Settings/TakeoffSettings/InternalUser/0` | Overview, Permissions, Notifications, Messaging, Job Access ({n}), Security & Login, Other | 25 | — |
 
 ### Fields (UI)
 
-Access (column) · Accounting (column) · Active (checkbox) · Administrative (column) · Auto Access (column) · Columns (select) · Company Settings (column) · Contact Information (textarea) · Cost and/or price viewing (column) · Data type (column) · Date opened (column) · Default billable rate (text) · Default labor cost (text) · Default labor cost code (select) · Display order (column) · Email (column) · Files (column) · Financial (column) · First Name (text) · Grant access to all existing jobs and templates (checkbox) · Grant automatic access to new jobs and templates (checkbox) · Grant {person} automatic access to new jobs and templates (checkbox) · Group (column) · Include in filters (column) · Job name (column) · Job status (column) · Label (column) · Last Name (text) · Lead Activities (select) · Login (column) · Messaging (column) · Name (column) · Notifications (column) · Notify me when (checkbox) · Pay online (column) · Phone (column) · Phone Number (text) · Project management (column) · Push (column) · Require location on mobile and track when clocks in or out beyond the geofence. (checkbox) · Require location on mobile and track when {person} clocks in or out beyond the geo (checkbox) · Require location on mobile and track when {person} clocks in or out beyond the geofe (checkbox) · Required (column) · Role (column) · Role (select) · Sales (column) · Schedule Items (select) · Set Out of Office Status (checkbox) · Tasks (select) · Text (column) · conflictAlertMaxCount (number) · customFields.3.value (textarea) · customFields.5.value (textarea)
+Access (column) · Accounting (column) · Active (checkbox) · Administrative (column) · Auto Access (column) · Columns (select) · Company Settings (column) · Contact Information (textarea) · Cost and/or price viewing (column) · Data type (column) · Date Connected (column) · Date opened (column) · Default billable rate (text) · Default labor cost (text) · Default labor cost code (select) · Display order (column) · Email (column) · Files (column) · Financial (column) · First Name (text) · Grant access to all existing jobs and templates (checkbox) · Grant automatic access to new jobs and templates (checkbox) · Grant {person} automatic access to new jobs and templates (checkbox) · Group (column) · Include In My Filters (checkbox) · Include in filters (column) · Internal User (column) · Job name (column) · Job status (column) · Label (column) · Last Name (text) · Lead Activities (select) · Login (column) · Messaging (column) · Name (column) · Notifications (column) · Notify me when (checkbox) · Pay online (column) · Phone (column) · Phone Number (text) · Project management (column) · Push (column) · Require location on mobile and track when clocks in or out beyond the geofence. (checkbox) · Require location on mobile and track when {person} clocks in or out beyond the geo (checkbox) · Require location on mobile and track when {person} clocks in or out beyond the geof (checkbox) · Require location on mobile and track when {person} clocks in or out beyond the geofe (checkbox) · Required (column) · Required? (checkbox) · Role (column) · Role (select) · Sales (column) · Schedule Items (select) · Set Out of Office Status (checkbox) · Tasks (select) · Text (column) · conflictAlertMaxCount (number) · customField.displayOrder (number) · customField.toolTipText (textarea) · customFields.3.value (textarea) · customFields.5.value (textarea)
 
 ### Enums and dropdown options
 
@@ -2348,7 +2469,7 @@ Access (column) · Accounting (column) · Active (checkbox) · Administrative (c
 
 - **VIABUILD equivalent:** `jobs`, `contracts`, `job_entities`, `xero_sync_log`
 - **Gateway verbs:** `jobs.picker.list`, `jobs.picker.select`, `jobs.picker.existing`, `jobs.list`, `jobs.get`, `jobs.accountingLink`, `jobs.create` (not_captured), `jobs.update` (not_captured), `sync.pull`, `sync.status`
-- **Coverage:** 26 screens/modals · 27 read endpoints · 0 blocked writes · bundle APIs reached 24/116
+- **Coverage:** 32 screens/modals · 27 read endpoints · 0 blocked writes · bundle APIs reached 24/116
 
 ### Screens
 
@@ -2362,28 +2483,34 @@ Access (column) · Accounting (column) · Active (checkbox) · Administrative (c
 | `/app/JobPage/{id}/{id} ⧉ Preferences` | — | 0 | — |
 | `/app/JobPage/{id}/{id}/Contact/{id}/false` | Job details, Clients, Internal users, Subs/vendors, Advanced settings | 26 | — |
 | `/app/JobPage/{id}/{id}/JobSettings` | Job details, Clients, Internal users, Subs/vendors, Advanced settings | 27 | — |
+| `/app/JobPage/{id}/{id}/JobSettings/JobsJobInfoCustomField/{id}` | Job details, Clients, Internal users, Subs/vendors, Advanced settings | 31 | — |
 | `/app/JobPage/{id}/0` | Job details, Clients, Internal users, Subs/vendors, Advanced settings | 46 | — |
 | `/app/JobPage/{id}/0 ⧉ Preferences` | — | 0 | — |
 | `/app/JobPage/0/{id}` | Job details, Clients, Internal users, Subs/vendors, Advanced settings | 47 | — |
 | `/app/JobPage/0/{id} ⧉ Info` | — | 0 | — |
 | `/app/JobPage/0/{id} ⧉ Preferences` | — | 0 | — |
+| `/app/JobPage/0/{id}/Contact/{id}/false` | Job details, Clients, Internal users, Subs/vendors, Advanced settings | 26 | — |
 | `/app/JobPage/0/{id}/JobSettings` | Job details, Clients, Internal users, Subs/vendors, Advanced settings | 26 | — |
+| `/app/JobPage/0/{id}/JobSettings/JobsJobInfoCustomField/{id}` | Job details, Clients, Internal users, Subs/vendors, Advanced settings | 31 | — |
 | `/app/JobPage/0/0` | Job details, Clients, Internal users, Subs/vendors, Advanced settings | 47 | — |
 | `/app/JobPage/0/0 ⧉ Preferences` | — | 0 | — |
 | `/app/JobPicker/SelectJob` | — | 0 | — |
 | `/app/JobPickerActions` | — | 0 | — |
 | `/app/Jobs/List` | List, Map | 17 | Apply filter |
 | `/app/Jobs/List/Contact/{id}/false` | List, Map | 22 | Apply filter |
+| `/app/Jobs/List/Contact/0/false` | List, Map | 17 | Apply filter |
 | `/app/Jobs/Map` | List, Map | 17 | — |
 | `/app/Landing/JobPickerActions/Compose/0/{id}` | — | 4 | — |
 | `/app/Landing/QuickAction/JobFromTemplate/0/0/0/{id}` | — | 7 | Apply filter |
 | `/app/RiskInsurance/JobsiteRequestForm/{id}` | — | 0 | — |
 | `/app/RiskInsurance/JobsiteRequestForm/0` | — | 0 | — |
 | `/app/Settings/JobSettings` | — | 8 | — |
+| `/app/Settings/JobSettings/JobsJobInfoCustomField/{id}` | — | 13 | — |
+| `/app/Settings/JobSettings/JobsJobInfoCustomField/0` | — | 13 | — |
 
 ### Fields (UI)
 
-Actual completion (date) · Actual start (date) · Allow creation of allowances (checkbox) · BCC (select) · Budget difference (checkbox) · CC (select) · Change Order requests (checkbox) · Client Email (column) · Client Phone (column) · Client Postal Code (column) · Client State (column) · Client Street Address (column) · Client Suburb (column) · Clients (column) · Contact (select) · Contract price (text) · Created Date (column) · Customize client email invite text (checkbox) · Data type (column) · Default labor cost (column) · Display order (column) · Email (column) · Enable geofencing on Time Clock shifts (checkbox) · Fixed priceYou will set the contract price for the client (radio) · Include Time Clock Labor in the Job Costing Budget on new jobs (checkbox) · Include Time Clock labor in the Job Costing Budget (checkbox) · Include in filters (column) · Individual Purchase Order limit (text) · Invoices (checkbox) · Job Color (column) · Job Costing Budget (checkbox) · Job Name (column) · Job Price Summary (checkbox) · Job billable rate (column) · Job type (select) · Label (column) · Locked selections (checkbox) · Lot info (textarea) · Make this job a working template (checkbox) · Map Status (column) · Name (column) · New Job name (text) · Notes for internal users (textarea) · Notes for subs/vendors (textarea) · Notifications (column) · Percentage (text) · Percentage type (select) · Permit number (text) · Postal Code (column) · Prefix (text) · Project Manager (column) · Project manager's phone number (checkbox) · Project managers (select) · Projected completion (date) · Projected start (date) · Projected start date (date) · Purchase Orders/Bills (checkbox) · Push (column) · Remaining Invoice Balance (checkbox) · Required (column) · Salesperson (column) · Schedule Status (column) · Schedule color (select) · Schedule items (checkbox) · Schedule phases (checkbox) · Sold Date (column) · Source Template (select) · Square meters (number) · State (column) · Status (column) · Status (select) · Status access (column) · Street Address (column) · Subject (text) · Suburb (column) · Text (column) · Title (column) · To (select) · Total Job Purchase Order limit (text) · Total Sqm (column) · Turn schedule online (checkbox) · Type (select) · Update actual dates based on Schedule (checkbox) · Warranty claims (checkbox) · Work days (select) · Yes (radio) · {date} (date)
+Actual completion (date) · Actual start (date) · Allow creation of allowances (checkbox) · Allow permitted sub/vendor to view? (checkbox) · BCC (select) · Budget difference (checkbox) · CC (select) · Change Order requests (checkbox) · Client Email (column) · Client Phone (column) · Client Postal Code (column) · Client State (column) · Client Street Address (column) · Client Suburb (column) · Clients (column) · Contact (select) · Contract price (text) · Created Date (column) · Customize client email invite text (checkbox) · Data type (column) · Default labor cost (column) · Display order (column) · Email (column) · Enable geofencing on Time Clock shifts (checkbox) · Fixed priceYou will set the contract price for the client (radio) · Include In My Filters (checkbox) · Include Time Clock Labor in the Job Costing Budget on new jobs (checkbox) · Include Time Clock labor in the Job Costing Budget (checkbox) · Include in filters (column) · Individual Purchase Order limit (text) · Invoices (checkbox) · Job Color (column) · Job Costing Budget (checkbox) · Job Name (column) · Job Price Summary (checkbox) · Job billable rate (column) · Job type (select) · Label (column) · Locked selections (checkbox) · Lot info (textarea) · Make this job a working template (checkbox) · Map Status (column) · Name (column) · New Job name (text) · Notes for internal users (textarea) · Notes for subs/vendors (textarea) · Notifications (column) · Percentage (text) · Percentage type (select) · Permit number (text) · Postal Code (column) · Prefix (text) · Project Manager (column) · Project manager's phone number (checkbox) · Project managers (select) · Projected completion (date) · Projected start (date) · Projected start date (date) · Purchase Orders/Bills (checkbox) · Push (column) · Remaining Invoice Balance (checkbox) · Required (column) · Required? (checkbox) · Salesperson (column) · Schedule Status (column) · Schedule color (select) · Schedule items (checkbox) · Schedule phases (checkbox) · Sold Date (column) · Source Template (select) · Square meters (number) · State (column) · Status (column) · Status (select) · Status access (column) · Street Address (column) · Subject (text) · Suburb (column) · Text (column) · Title (column) · To (select) · Total Job Purchase Order limit (text) · Total Sqm (column) · Turn schedule online (checkbox) · Type (select) · Update actual dates based on Schedule (checkbox) · Warranty claims (checkbox) · Work days (select) · Yes (radio) · customField.displayOrder (number) · customField.toolTipText (textarea) · {date} (date)
 
 ### Enums and dropdown options
 
@@ -2551,7 +2678,7 @@ Actual completion (date) · Actual start (date) · Allow creation of allowances 
 
 - **VIABUILD equivalent:** `organizations`, `gst_codes`, `cost_codes`, `xero_integration_settings`
 - **Gateway verbs:** none
-- **Coverage:** 49 screens/modals · 14 read endpoints · 0 blocked writes · bundle APIs reached 14/77
+- **Coverage:** 70 screens/modals · 15 read endpoints · 0 blocked writes · bundle APIs reached 14/77
 
 ### Screens
 
@@ -2592,27 +2719,49 @@ Actual completion (date) · Actual start (date) · Allow creation of allowances 
 | `/app/Settings/BrandingSettings` | — | 0 | — |
 | `/app/Settings/CompanySettings` | — | 7 | — |
 | `/app/Settings/CostCatalogSettings` | Cost Items, Cost Groups, Specs | 13 | — |
+| `/app/Settings/CostCatalogSettings/CostCatalog/CostCode/{id}` | Cost Items, Cost Groups, Specs | 16 | Save and close, Delete |
+| `/app/Settings/CostCatalogSettings/CostCatalog/CostCode/{id}/CostCatalog/CostItem/{id}` | Cost Items, Cost Groups, Specs | 26 | — |
+| `/app/Settings/CostCatalogSettings/CostCatalog/CostCode/0/CostCatalog/CostItem/{id}` | Cost Items, Cost Groups, Specs | 0 | — |
+| `/app/Settings/CostCatalogSettings/CostCatalog/CostGroup/{id}` | Cost Items, Cost Groups, Specs | 31 | — |
+| `/app/Settings/CostCatalogSettings/CostCatalog/CostGroup/{id}/CostCatalog/CostItem/{id}` | Cost Items, Cost Groups, Specs | 39 | — |
+| `/app/Settings/CostCatalogSettings/CostCatalog/CostGroup/0/CostCatalog/CostItem/{id}` | Cost Items, Cost Groups, Specs | 27 | — |
+| `/app/Settings/CostCatalogSettings/CostCatalog/CostItem/{id}` | Cost Items, Cost Groups, Specs | 23 | Save and close, Delete |
 | `/app/Settings/CostCodes` | Cost codes, Variances | 4 | — |
 | `/app/Settings/CostCodes/Category/Cost/{id}` | Cost codes, Variances | 4 | — |
+| `/app/Settings/CostCodes/Category/Cost/0` | Cost codes, Variances | 4 | — |
 | `/app/Settings/CostCodes/Category/Variance/{id}` | Cost codes, Variances | 5 | — |
+| `/app/Settings/CostCodes/Category/Variance/0` | Cost codes, Variances | 4 | — |
+| `/app/Settings/CostCodes/CostCode/Code/Cost/{id}` | Cost codes, Variances | 5 | — |
+| `/app/Settings/CostCodes/CostCode/Code/Cost/0` | Cost codes, Variances | 5 | — |
+| `/app/Settings/CostCodes/CostCode/Code/Variance/{id}` | Cost codes, Variances | 5 | — |
+| `/app/Settings/CostCodes/CostCode/Code/Variance/0` | Cost codes, Variances | 5 | — |
 | `/app/Settings/CustomerContactSettings` | — | 0 | — |
 | `/app/Settings/IntegrationsSettings/{id}` | — | 0 | — |
+| `/app/Settings/IntegrationsSettings/0` | — | 0 | — |
 | `/app/Settings/PayrollSettings` | — | 0 | — |
 | `/app/Settings/RoleManagement` | — | 0 | — |
 | `/app/Settings/RoleManagement/Role/{id}/{id}` | — | 9 | — |
+| `/app/Settings/RoleManagement/Role/0/{id}` | — | 0 | — |
 | `/app/Settings/SalesSettings` | — | 19 | — |
+| `/app/Settings/SalesSettings/activity/{id}` | — | 19 | — |
+| `/app/Settings/SalesSettings/activity/0` | — | 19 | — |
 | `/app/Settings/Settings/Accounting` | — | 0 | — |
 | `/app/Settings/SubSettings` | — | 5 | — |
+| `/app/Settings/SubSettings/SubsCustomField/{id}` | — | 9 | — |
+| `/app/Settings/SubSettings/SubsCustomField/0` | — | 9 | — |
 | `/app/Settings/TakeoffSettings` | — | 3 | — |
 | `/app/Settings/TaxesSettings` | Tax rates, Tax groups | 8 | Apply filter |
+| `/app/Settings/TaxesSettings/Tax/TaxRate/{id}` | Tax rates, Tax groups | 11 | Apply filter, Save |
+| `/app/Settings/TaxesSettings/Tax/TaxRate/0` | Tax rates, Tax groups | 11 | Add rate, Save, Apply filter |
 | `/app/SubscriptionSettings/0/0` | — | 0 | — |
 
 ### Fields (UI)
 
-$/Unit (column) · Accounting (column) · Actions (column) · Administrative (column) · Bluebeam server (select) · Budget difference (checkbox) · Builder Cost (checkbox) · Builder Cost (column) · Buildertrend Cost Codes (column) · By checking this box I confirm that the information provided is accurate and und (checkbox) · Category (column) · Change Order requests (checkbox) · Client Price (checkbox) · Client Price (column) · Company's legal name (text) · Cost Type (checkbox) · Cost Type (column) · Cost and/or price viewing (column) · Data type (column) · Date Connected (column) · Default Grouping (select) · Description (checkbox) · Description (column) · Display order (column) · Email address (text) · Fax (text) · Field 1 (text) · Files (column) · Financial (column) · First name (text) · Include all {person} information on Printout (checkbox) · Include in filters (column) · Include on Printouts (checkbox) · Include on Printouts (text) · Internal Notes (checkbox) · Internal User (column) · Invoices (checkbox) · Item (column) · Job Costing Budget (checkbox) · Job Price Summary (checkbox) · Label (column) · Last name (text) · Last updated (column) · Lined (radio) · Locked selections (checkbox) · Margin % (column) · Margin (checkbox) · Marked As (column) · Markup % (column) · Markup (checkbox) · Markup (column) · Messaging (column) · Open job count (column) · Part of group (column) · Pay online (column) · Percentage (column) · Phone (text) · Phone number (text) · Profit (checkbox) · Project management (column) · Project manager's phone number (checkbox) · Purchase Orders/Bills (checkbox) · Quantity (checkbox) · Quantity (column) · Rate name (column) · Remaining Invoice Balance (checkbox) · Required (column) · Role (column) · Sales (column) · Schedule items (checkbox) · Schedule phases (checkbox) · Status (column) · Tax agency (column) · Title (column) · Unit (checkbox) · Unit (column) · Unit Cost (checkbox) · Unit Cost (column) · Updated by (column) · Variance type (column) · Warranty claims (checkbox) · Website (text) · Xero Products/Services (column) · Yes (radio) · defaultAdditionalText (textarea) · details (textarea) · yearsInBusiness (number)
+$/Unit (column) · Accounting (column) · Actions (column) · Administrative (column) · Attachments (column) · Bluebeam server (select) · Budget difference (checkbox) · Builder Cost (checkbox) · Builder Cost (column) · Buildertrend Cost Codes (column) · By checking this box I confirm that the information provided is accurate and und (checkbox) · Category (column) · Change Order requests (checkbox) · Checked by default (checkbox) · Client Price (checkbox) · Client Price (column) · Company's legal name (text) · Cost Code (select) · Cost Group (column) · Cost Items (column) · Cost Type (checkbox) · Cost Type (column) · Cost Type (select) · Cost and/or price viewing (column) · Customer variance (checkbox) · Data type (column) · Date Connected (column) · Default Grouping (select) · Description (checkbox) · Description (column) · Description (textarea) · Display order (column) · Email address (text) · Fax (text) · Field 1 (text) · Files (column) · Financial (column) · First name (text) · Include Client Price (checkbox) · Include In My Filters (checkbox) · Include Quantity (checkbox) · Include all {person} information on Printout (checkbox) · Include in filters (column) · Include on Printouts (checkbox) · Include on Printouts (text) · Internal Notes (checkbox) · Internal Notes (textarea) · Internal User (column) · Invoices (checkbox) · Item (column) · Job Costing Budget (checkbox) · Job Price Summary (checkbox) · Label (column) · Last name (text) · Last updated (column) · Lined (radio) · Linked Specs (column) · Locked selections (checkbox) · Margin % (column) · Margin (checkbox) · Mark As (select) · Marked As (column) · Markup $/unit (column) · Markup % (column) · Markup (checkbox) · Markup (column) · Markup Type (column) · Messaging (column) · Open job count (column) · Part of group (column) · Pay online (column) · Percentage (column) · Percentage (text) · Phone (text) · Phone number (text) · Profit (checkbox) · Project management (column) · Project manager's phone number (checkbox) · Purchase Orders/Bills (checkbox) · Quantity (checkbox) · Quantity (column) · Rate name (column) · Rate name (text) · Remaining Invoice Balance (checkbox) · Required (column) · Required? (checkbox) · Role (column) · Sales (column) · Schedule items (checkbox) · Schedule phases (checkbox) · Status (column) · Tax agency (column) · Tax agency (select) · Time clock labor code (checkbox) · Title (column) · Title (text) · Unit (checkbox) · Unit (column) · Unit (text) · Unit Cost (checkbox) · Unit Cost (column) · Unit Cost (text) · Updated by (column) · Variance type (column) · Warranty claims (checkbox) · Website (text) · Xero Products/Services (column) · Yes (radio) · costItems.0.costGroupQuantity (number) · costItems.1.costGroupQuantity (number) · costItems.10.costGroupQuantity (number) · costItems.11.costGroupQuantity (number) · costItems.2.costGroupQuantity (number) · costItems.3.costGroupQuantity (number) · costItems.4.costGroupQuantity (number) · costItems.5.costGroupQuantity (number) · costItems.6.costGroupQuantity (number) · costItems.7.costGroupQuantity (number) · costItems.8.costGroupQuantity (number) · costItems.9.costGroupQuantity (number) · customField.displayOrder (number) · customField.toolTipText (textarea) · defaultAdditionalText (textarea) · details (textarea) · yearsInBusiness (number)
 
 ### Enums and dropdown options
 
+- Tax agency: Unassigned / ATO
 - data.acceptedFileTypes: All Files / Excel Document (.xls, .xlsx) / Image (.jpg, .jpeg, .gif, .png, .tif, .tiff) / PDF (.pdf) / Word Document (.doc, .docx)
 - data.columnsList: Group name / Tax agencies / Percentage / Last updated / Status / Updated by / Open job count
 - data.copyOptions: None / Job Info / Client Contacts
@@ -2627,7 +2776,8 @@ $/Unit (column) · Accounting (column) · Actions (column) · Administrative (co
 | GET | `/api/Builder/Setup` | — | data, addressWithoutStreet, builderLogo, builderName, country, faxNumber, hasSetupInboundOrOutboundPayments, phoneNumber, settingsControl, settingsControl.accountSecurity, settingsControl.accountSecurity.disabled, settingsControl.accountSecurity.hidden, settingsControl.accountSecurity.iconImagePath, settingsControl.accountSecurity.jwt, settingsControl.accountSecurity.legacyPath, settingsControl.accountSecurity.tabPermission, settingsControl.accountSecurity.userId, settingsControl.accounting, settingsControl.accounting.disabled, settingsControl.accounting.hidden, settingsControl.accounting.iconImagePath, settingsControl.accounting.jwt, settingsControl.accounting.legacyPath, settingsControl.accounting.tabPermission, settingsControl.accounting.userId, settingsControl.bid, settingsControl.bid.disabled, settingsControl.bid.hidden, settingsControl.bid.iconImagePath, settingsControl.bid.jwt, settingsControl.bid.legacyPath, settingsControl.bid.tabPermission, settingsControl.bid.userId, settingsControl.bill, settingsControl.bill.disabled, settingsControl.bill.hidden, settingsControl.bill.iconImagePath, settingsControl.bill.jwt, settingsControl.bill.legacyPath, settingsControl.bill.tabPermission, … (+300) |
 | GET | `/api/Calendar/Setup` | — | data, miscOptions, miscOptions.autoMarkItemsComplete, miscOptions.defaultShowSubsOnNewSchedules, miscOptions.includeHeaderOnCalendarPrintouts, miscOptions.showHourlyItemsTimes, miscOptions.showJobNameWithTitleOnCalendar, notificationOptions, notificationOptions.defaultNotifyLinkedSubs, notificationOptions.sendConfirmationWithScheduleItems, notificationOptions.subRemindHours, notificationOptions.subRemindHours[].disableIndividualSelection, notificationOptions.subRemindHours[].disabled, notificationOptions.subRemindHours[].extraData, notificationOptions.subRemindHours[].id, notificationOptions.subRemindHours[].key, notificationOptions.subRemindHours[].name, notificationOptions.subRemindHours[].secondaryName, notificationOptions.subRemindHours[].selected, phases, phases[].defaultColor, phases[].displayOrder, phases[].phaseId, phases[].title, showPhases, viewingOptions, viewingOptions.calendarViews, viewingOptions.calendarViews[].disableIndividualSelection, viewingOptions.calendarViews[].disabled, viewingOptions.calendarViews[].extraData, viewingOptions.calendarViews[].id, viewingOptions.calendarViews[].key, viewingOptions.calendarViews[].name, viewingOptions.calendarViews[].secondaryName, viewingOptions.calendarViews[].selected, viewingOptions.ownerViews, viewingOptions.ownerViews[].disableIndividualSelection, viewingOptions.ownerViews[].disabled, viewingOptions.ownerViews[].extraData, viewingOptions.ownerViews[].id, … (+4) |
 | GET | `/api/CostCategories/Setup?categoryId=&categoryType=` | — | data, categoryDropdownItems, categoryDropdownItems[].disableIndividualSelection, categoryDropdownItems[].disabled, categoryDropdownItems[].extraData, categoryDropdownItems[].id, categoryDropdownItems[].key, categoryDropdownItems[].name, categoryDropdownItems[].secondaryName, categoryDropdownItems[].selected, categoryId, costType, details, isDefault, parentCategoryId, shouldLockCostCategory, title |
-| GET | `/api/CustomFields/{id}?associatedType=` | — | data, acceptedFileTypes, acceptedFileTypes[].disableIndividualSelection, acceptedFileTypes[].disabled, acceptedFileTypes[].extraData, acceptedFileTypes[].id, acceptedFileTypes[].key, acceptedFileTypes[].name, acceptedFileTypes[].secondaryName, acceptedFileTypes[].selected, allowSubToViewMessage, canCopyCustomFields, canToggleOwnerPermission, canToggleSubPermission, copyOptions, copyOptions[].disableIndividualSelection, copyOptions[].disabled, copyOptions[].extraData, copyOptions[].id, copyOptions[].key, copyOptions[].name, copyOptions[].secondaryName, copyOptions[].selected, customField, customField.acceptedFileTypes, customField.associatedType, customField.childCustomFieldAssociatedType, customField.customFieldId, customField.dataType, customField.defaultValue, customField.displayOnOwnerPortal, customField.displayOnSubsPortal, customField.displayOrder, customField.dropDownListValues, customField.dropDownListValues[].disableIndividualSelection, customField.dropDownListValues[].disabled, customField.dropDownListValues[].extraData, customField.dropDownListValues[].id, customField.dropDownListValues[].key, customField.dropDownListValues[].name, … (+40) |
+| GET | `/api/CustomFields/{id}?associatedType=` | — | data, acceptedFileTypes, acceptedFileTypes[].disableIndividualSelection, acceptedFileTypes[].disabled, acceptedFileTypes[].extraData, acceptedFileTypes[].id, acceptedFileTypes[].key, acceptedFileTypes[].name, acceptedFileTypes[].secondaryName, acceptedFileTypes[].selected, allowSubToViewMessage, canCopyCustomFields, canToggleOwnerPermission, canToggleSubPermission, copyOptions, copyOptions[].disableIndividualSelection, copyOptions[].disabled, copyOptions[].extraData, copyOptions[].id, copyOptions[].key, copyOptions[].name, copyOptions[].secondaryName, copyOptions[].selected, customField, customField.acceptedFileTypes, customField.associatedType, customField.childCustomFieldAssociatedType, customField.customFieldId, customField.dataType, customField.defaultValue, customField.displayOnOwnerPortal, customField.displayOnSubsPortal, customField.displayOrder, customField.dropDownListValues, customField.dropDownListValues[].disableIndividualSelection, customField.dropDownListValues[].disabled, customField.dropDownListValues[].extraData, customField.dropDownListValues[].id, customField.dropDownListValues[].key, customField.dropDownListValues[].name, … (+48) |
+| GET | `/api/CustomFields/0?associatedType=` | — | data, acceptedFileTypes, acceptedFileTypes[].disableIndividualSelection, acceptedFileTypes[].disabled, acceptedFileTypes[].extraData, acceptedFileTypes[].id, acceptedFileTypes[].key, acceptedFileTypes[].name, acceptedFileTypes[].secondaryName, acceptedFileTypes[].selected, allowSubToViewMessage, canCopyCustomFields, canToggleOwnerPermission, canToggleSubPermission, copyOptions, copyOptions[].disableIndividualSelection, copyOptions[].disabled, copyOptions[].extraData, copyOptions[].id, copyOptions[].key, copyOptions[].name, copyOptions[].secondaryName, copyOptions[].selected, customField, customField.acceptedFileTypes, customField.associatedType, customField.childCustomFieldAssociatedType, customField.customFieldId, customField.dataType, customField.defaultValue, customField.displayOnOwnerPortal, customField.displayOnSubsPortal, customField.displayOrder, customField.dropDownListValues, customField.fieldName, customField.isRequired, customField.resetOnImport, customField.toolTipText, customField.useAsResultFilter, dataTypes, … (+40) |
 | GET | `/api/Logs/Setup` | — | data, calendarDefaultDailyLogText, customFields, customFields.addNewCustomFieldTitle, customFields.associatedType, customFields.customFields, customFields.customFields[].customFieldID, customFields.customFields[].dataType, customFields.customFields[].displayOrder, customFields.customFields[].isCopied, customFields.customFields[].isRequired, customFields.customFields[].name, customFields.customFields[].useAsResultFilter, customFields.headerTitle, customFields.includeModalNameInNewCustomFieldTitle, dailyLogGpsOnChecked, dailyLogIncludeWeatherConditionNotes, dailyLogIncludeWeatherConditions, defaultSetupPerms, defaultSetupPerms.internalUserPreference, defaultSetupPerms.internalUserPreference.canNotify, defaultSetupPerms.internalUserPreference.canShare, defaultSetupPerms.internalUserPreference.notify, defaultSetupPerms.internalUserPreference.share, defaultSetupPerms.ownerPreference, defaultSetupPerms.ownerPreference.canNotify, defaultSetupPerms.ownerPreference.canShare, defaultSetupPerms.ownerPreference.notify, defaultSetupPerms.ownerPreference.share, defaultSetupPerms.subVendorPreference, defaultSetupPerms.subVendorPreference.canNotify, defaultSetupPerms.subVendorPreference.canShare, defaultSetupPerms.subVendorPreference.notify, defaultSetupPerms.subVendorPreference.share |
 | GET | `/api/PartnerAccounts/Settings?partnerId=` | — | data, account, account.dateConnected, account.partnerAccountId, connectedUsers, connectedUsers[].dateConnected, connectedUsers[].name, connectedUsers[].partnerUserId, connectedUsers[].roleName, connectedUsers[].userId, isConnected |
 | GET | `/api/Payroll/Settings` | — | data, authUrl, availableCompanies, companyUuid, connectedByName, connectedDate, errorMessage, isUserConnected, key, learnMoreUrl, planRequiredForPayroll |
@@ -2694,7 +2844,7 @@ $/Unit (column) · Accounting (column) · Actions (column) · Administrative (co
 
 - **VIABUILD equivalent:** n/a (navigation)
 - **Gateway verbs:** `session.status`
-- **Coverage:** 122 screens/modals · 75 read endpoints · 8 blocked writes · bundle APIs reached 73/351
+- **Coverage:** 126 screens/modals · 80 read endpoints · 8 blocked writes · bundle APIs reached 77/351
 
 ### Screens
 
@@ -2703,6 +2853,8 @@ $/Unit (column) · Accounting (column) · Actions (column) · Administrative (co
 | `/app/{id}/WorkdayException/{id}/0/true` | — | 3 | — |
 | `/app/{id}/WorkdayException/0/{id}/true` | — | 0 | — |
 | `/app/{token}` | — | 0 | — |
+| `/app/0/WorkdayException/{id}/0/true` | — | 3 | — |
+| `/app/0/WorkdayException/0/{id}/true` | — | 0 | — |
 | `/app/ActivityFeed` | — | 0 | — |
 | `/app/auth/step-up-callback` | — | 0 | — |
 | `/app/BillAdd/{id}` | Bill, Lien Waiver | 17 | Link schedule item, Add from catalog, + Add approver, Add, Create new doc, Save draft, Save to Job, Mark Ready for Payment |
@@ -2817,7 +2969,9 @@ $/Unit (column) · Accounting (column) · Actions (column) · Administrative (co
 | `/app/TemplateImport/0/{id}` | — | 0 | — |
 | `/app/Templates/0` | Selected Template, My Templates, Recommended Templates | 14 | Apply filter |
 | `/app/Templates/MyTemplates/Template/{id}` | Selected Template, My Templates, Recommended Templates, Template, Internal Users, Subs/Vendors | 22 | — |
+| `/app/Templates/MyTemplates/Template/0` | Selected Template, My Templates, Recommended Templates, Template, Internal Users, Subs/Vendors | 23 | — |
 | `/app/Templates/RecommendedTemplates/Template/{id}` | Selected Template, My Templates, Recommended Templates, Template, Internal Users, Subs/Vendors | 8 | — |
+| `/app/Templates/RecommendedTemplates/Template/0` | Selected Template, My Templates, Recommended Templates, Template, Internal Users, Subs/Vendors | 9 | — |
 | `/app/TradeAgreement/0/0` | — | 0 | — |
 | `/app/TradeAgreement/Print/0` | — | 0 | — |
 | `/app/VendorReceipt/0/0` | — | 0 | — |
@@ -2834,6 +2988,7 @@ All jobs (radio) · Amount (column) · Amount paid (column) · BCC (select) · B
 - data.categories.options[].options: Allowances / Bid Packages / Bills / Change Orders / Client Contacts / Daily Logs / Documents / Internal Users / Invoices / Jobs / Leads / Messages / Photos / Purchase Orders / RFIs / Schedules / Selections / Specifications / Submittals / Subs / Vendors / Tasks / Videos / Warranties
 - data.columnsList: Rate name / Tax agency / Percentage / Last updated / Status / Updated by / Part of group / Open job count
 - data.notify.shiftReason.value: -- None -- / Delayed product delivery
+- data.taxAgencies.options[].options: Unassigned / ATO
 
 ### Read endpoints (observed)
 
@@ -2846,11 +3001,13 @@ All jobs (radio) · Amount (column) · Amount paid (column) · BCC (select) · B
 | GET | `/api/BuilderAccount/PopulateBuilderRequest?builderID=&linkID=` | — | data |
 | GET | `/api/calendar/{id}` | — | data, affectedPredId, allNotes, allNotes.validators, allNotes.validators[].errorMessage, allNotes.validators[].type, allNotes.validators[].value, allNotes.value, assignedTo, assignedTo.validators, assignedTo.value, assignedTo.value[].name, assignedTo.value[].options, assignedTo.value[].type, attachedFiles, attachedFiles.files, attachedFiles.newFileOptions, attachedFiles.newFileOptions.canEdit, attachedFiles.newFileOptions.defaultValue, attachedFiles.newFileOptions.fileOptionKey, attachedFiles.newFileOptions.loginType, attachedFiles.newFileOptions.options, attachedFiles.newFileOptions.title, attachedFiles.newFileOptions.visible, attachedFiles.title, attachedFiles.viewingPermissions, attachedFiles.viewingPermissions.allAllowedExtensions, attachedFiles.viewingPermissions.allowFullSizeImages, attachedFiles.viewingPermissions.allowedDocumentExtensions, attachedFiles.viewingPermissions.allowedPhotoExtensions, attachedFiles.viewingPermissions.allowedVideoExtensions, attachedFiles.viewingPermissions.blacklistedExtensions, attachedFiles.viewingPermissions.browseExistingDocs, attachedFiles.viewingPermissions.canAddFiles, attachedFiles.viewingPermissions.canUploadDocuments, attachedFiles.viewingPermissions.canUploadPhotos, attachedFiles.viewingPermissions.canUploadVideos, attachedFiles.viewingPermissions.documentListType, attachedFiles.viewingPermissions.ignoreBlacklist, attachedFiles.viewingPermissions.isFileReplaceMode, … (+344) |
 | GET | `/api/calendar/DefaultInfo?jobId=` | — | data, affectedPredId, allNotes, allNotes.validators, allNotes.validators[].errorMessage, allNotes.validators[].type, allNotes.validators[].value, allNotes.value, assignedTo, assignedTo.validators, assignedTo.value, assignedTo.value[].name, assignedTo.value[].options, assignedTo.value[].type, attachedFiles, attachedFiles.files, attachedFiles.newFileOptions, attachedFiles.newFileOptions.canEdit, attachedFiles.newFileOptions.defaultValue, attachedFiles.newFileOptions.fileOptionKey, attachedFiles.newFileOptions.loginType, attachedFiles.newFileOptions.options, attachedFiles.newFileOptions.title, attachedFiles.newFileOptions.visible, attachedFiles.title, attachedFiles.viewingPermissions, attachedFiles.viewingPermissions.allAllowedExtensions, attachedFiles.viewingPermissions.allowFullSizeImages, attachedFiles.viewingPermissions.allowedDocumentExtensions, attachedFiles.viewingPermissions.allowedPhotoExtensions, attachedFiles.viewingPermissions.allowedVideoExtensions, attachedFiles.viewingPermissions.blacklistedExtensions, attachedFiles.viewingPermissions.browseExistingDocs, attachedFiles.viewingPermissions.canAddFiles, attachedFiles.viewingPermissions.canUploadDocuments, attachedFiles.viewingPermissions.canUploadPhotos, attachedFiles.viewingPermissions.canUploadVideos, attachedFiles.viewingPermissions.documentListType, attachedFiles.viewingPermissions.ignoreBlacklist, attachedFiles.viewingPermissions.isFileReplaceMode, … (+264) |
-| GET | `/api/Category/0?categoryType=` | — | data, canDelete, canEdit, categoryFriendlyName, categoryTitle, id, isAssociatedWithEntity, leadActivityColor, leadActivityIcons, onDeleteMessage, showLeadActivity |
+| GET | `/api/Category/{id}?categoryType=` | — | data, canDelete, canEdit, categoryFriendlyName, categoryTitle, id, isAssociatedWithEntity, leadActivityColor, leadActivityIcons, leadActivityIcons[].disableIndividualSelection, leadActivityIcons[].disabled, leadActivityIcons[].extraData, leadActivityIcons[].id, leadActivityIcons[].key, leadActivityIcons[].name, leadActivityIcons[].secondaryName, leadActivityIcons[].selected, onDeleteMessage, showLeadActivity |
+| GET | `/api/Category/0?categoryType=` | — | data, canDelete, canEdit, categoryFriendlyName, categoryTitle, id, isAssociatedWithEntity, leadActivityColor, leadActivityIcons, leadActivityIcons[].disableIndividualSelection, leadActivityIcons[].disabled, leadActivityIcons[].extraData, leadActivityIcons[].id, leadActivityIcons[].key, leadActivityIcons[].name, leadActivityIcons[].secondaryName, leadActivityIcons[].selected, onDeleteMessage, showLeadActivity |
 | GET | `/api/Channels?channelTypes=&exactMatchesOnly=&excludeTitledChannels=&includeReadOnly=&limit=&participantIds=` | — | data, data, nextCursor, previousCursor |
 | GET | `/api/Channels?channelTypes=&exactMatchesOnly=&includeReadOnly=&limit=` | — | data, data, data[].builderInfo, data[].builderInfo.accountFlags, data[].builderInfo.activityCalendarDefaultView, data[].builderInfo.builderId, data[].builderInfo.canUseExternalTemplates, data[].builderInfo.configFlags, data[].builderInfo.encryptedBuilderId, data[].builderInfo.flags, data[].builderInfo.hasJobGroups, data[].builderInfo.hasLegacySelectionsData, data[].builderInfo.isDemoAccount, data[].builderInfo.isFullySelectionsReimagined, data[].builderInfo.isInTaxesSupportedRegion, data[].builderInfo.locale, data[].builderInfo.loginsDisabled, data[].builderInfo.name, data[].builderInfo.newJobsUseSelectionsReimagined, data[].builderInfo.redirectToSetupExperience, data[].builderInfo.scheduleDefaultTabForCurrentPortal, data[].builderInfo.selectionDefaultBuilderView, data[].builderInfo.setupDate, data[].builderInfo.showAccountingBannerAd, data[].builderInfo.taxesEnabled, data[].builderInfo.taxesOptOut, data[].builderInfo.timeClockSettings, data[].builderInfo.useReactNativeDirectory, data[].builderInfo.weekStartDay, data[].channelId, data[].channelName, data[].channelType, data[].chatPreview, data[].chatPreview.eventDateTimeUtc, data[].chatPreview.eventId, data[].chatPreview.message, data[].chatPreview.type, data[].lastReadDateUtc, data[].latestMessageDateUtc, data[].participants, … (+6) |
 | GET | `/api/Channels/Events?afterDateUtc=&dir=&limit=` | — | data, data, nextCursor, previousCursor |
 | GET | `/api/CostCatalog?viewType=` | — | data, canAddCostGroups, canAddCostItems, canAddFromCatalog, hasCostCodesFeature, hasCostItemImport, showCostGroups, showCostItems, vendorCatalogInformation, vendorCatalogInformation.homeDepotCatalogInformation, vendorCatalogInformation.isHomeDepotCompatibleBuilderCountry, vendorCatalogInformation.isNewToHomeDepotCatalogSync |
+| GET | `/api/CostGroups/{id}` | — | data, attachedFiles, attachedFiles.files, attachedFiles.newFileOptions, attachedFiles.newFileOptions.canEdit, attachedFiles.newFileOptions.defaultValue, attachedFiles.newFileOptions.fileOptionKey, attachedFiles.newFileOptions.loginType, attachedFiles.newFileOptions.options, attachedFiles.newFileOptions.title, attachedFiles.newFileOptions.visible, attachedFiles.title, attachedFiles.viewingPermissions, attachedFiles.viewingPermissions.allAllowedExtensions, attachedFiles.viewingPermissions.allowFullSizeImages, attachedFiles.viewingPermissions.allowedDocumentExtensions, attachedFiles.viewingPermissions.allowedPhotoExtensions, attachedFiles.viewingPermissions.allowedVideoExtensions, attachedFiles.viewingPermissions.blacklistedExtensions, attachedFiles.viewingPermissions.browseExistingDocs, attachedFiles.viewingPermissions.canAddFiles, attachedFiles.viewingPermissions.canUploadDocuments, attachedFiles.viewingPermissions.canUploadPhotos, attachedFiles.viewingPermissions.canUploadVideos, attachedFiles.viewingPermissions.documentListType, attachedFiles.viewingPermissions.ignoreBlacklist, attachedFiles.viewingPermissions.isFileReplaceMode, attachedFiles.viewingPermissions.jobsiteID, attachedFiles.viewingPermissions.leadId, attachedFiles.viewingPermissions.maxFileSize, attachedFiles.viewingPermissions.maxFiles, attachedFiles.viewingPermissions.minFileSize, attachedFiles.viewingPermissions.videoDurationLimit, attachedFiles.viewingPermissions.videoMaxSizeMB, builderId, canDelete, canEdit, costCodeItems, costCodeItems[].builderCost, costCodeItems[].builderCost.scale, … (+31) |
 | GET | `/api/CostGroups/DefaultInfo` | — | data, attachedFiles, attachedFiles.files, attachedFiles.newFileOptions, attachedFiles.newFileOptions.canEdit, attachedFiles.newFileOptions.defaultValue, attachedFiles.newFileOptions.fileOptionKey, attachedFiles.newFileOptions.loginType, attachedFiles.newFileOptions.options, attachedFiles.newFileOptions.title, attachedFiles.newFileOptions.visible, attachedFiles.title, attachedFiles.viewingPermissions, attachedFiles.viewingPermissions.allAllowedExtensions, attachedFiles.viewingPermissions.allowFullSizeImages, attachedFiles.viewingPermissions.allowedDocumentExtensions, attachedFiles.viewingPermissions.allowedPhotoExtensions, attachedFiles.viewingPermissions.blacklistedExtensions, attachedFiles.viewingPermissions.browseExistingDocs, attachedFiles.viewingPermissions.canAddFiles, attachedFiles.viewingPermissions.canUploadDocuments, attachedFiles.viewingPermissions.canUploadPhotos, attachedFiles.viewingPermissions.canUploadVideos, attachedFiles.viewingPermissions.documentListType, attachedFiles.viewingPermissions.ignoreBlacklist, attachedFiles.viewingPermissions.isFileReplaceMode, attachedFiles.viewingPermissions.jobsiteID, attachedFiles.viewingPermissions.leadId, attachedFiles.viewingPermissions.maxFileSize, attachedFiles.viewingPermissions.maxFiles, attachedFiles.viewingPermissions.minFileSize, attachedFiles.viewingPermissions.videoDurationLimit, attachedFiles.viewingPermissions.videoMaxSizeMB, builderId, canDelete, canEdit, costCodeItems, description, externalId, hasCostCodesFeature, … (+2) |
 | GET | `/api/CreditMemos/Print?creditMemoId=&jobId=&showLineItems=` | — | data |
 | GET | `/api/Discussions?builderID=&jobId=&linkedId=&linkedType=` | — | data, channelId, comments, comments.channelId, comments.comments, comments.comments[].addedById, comments.comments[].builderId, comments.comments[].builderName, comments.comments[].byCurrentUser, comments.comments[].canDelete, comments.comments[].canNotifyOwner, comments.comments[].canNotifySubs, comments.comments[].canShowOwner, comments.comments[].canShowSubs, comments.comments[].commentDate, comments.comments[].commentDateForMobile, comments.comments[].commentDateFormatted, comments.comments[].commentDateUtc, comments.comments[].commentJson, comments.comments[].commentText, comments.comments[].commentTimeFormatted, comments.comments[].commentsExist, comments.comments[].contextMenu, comments.comments[].defaultNotifyOwner, comments.comments[].defaultNotifySubs, comments.comments[].defaultShowOwner, comments.comments[].defaultShowSubs, comments.comments[].documentLink, comments.comments[].isUnread, comments.comments[].jobName, comments.comments[].jobsiteId, comments.comments[].linkedID, comments.comments[].parentId, comments.comments[].photo, comments.comments[].reactions, comments.comments[].showCommentInfo, comments.comments[].showOwner, comments.comments[].showSubs, comments.comments[].sourceType, comments.comments[].sourceTypeId, … (+33) |
@@ -2862,6 +3019,7 @@ All jobs (radio) · Amount (column) · Amount paid (column) · BCC (select) · B
 | GET | `/api/LandingPage/Counts?countTypes=` | — | data, actionItems, actionItems.bidPackage, actionItems.bidRequest, actionItems.billsToApprove, actionItems.changeOrder, actionItems.estimate, actionItems.incompleteRfi, actionItems.ownerWarrantyRequests, actionItems.paymentsToAccept, actionItems.submittal, actionItems.unapprovedShifts, actionItems.unconfirmedSchedule, actionItems.unreadMessage, actionItems.warrantyFeedback, actionItems.warrantyReady, actionItems.warrantyReschedule, dueToday, dueToday.bidPackage, dueToday.changeOrder, dueToday.estimate, dueToday.leadActivity, dueToday.ownerInvoice, dueToday.poPayment, dueToday.purchaseOrder, dueToday.rfi, dueToday.schedule, dueToday.selection, dueToday.sub, dueToday.task, dueToday.taskTeam, dueToday.todo, pastDue, pastDue.bidPackage, pastDue.changeOrder, pastDue.estimate, pastDue.leadActivity, pastDue.ownerInvoice, pastDue.poPayment, pastDue.purchaseOrder, … (+7) |
 | GET | `/api/LienWaivers/0/Details` | — | reason |
 | GET | `/api/LienWaiversForms/{id}` | — | data, description, id, isDefault, lienWaiverType, title |
+| GET | `/api/LienWaiversForms/Defaults` | — | data, description, id, isDefault, lienWaiverType, title |
 | GET | `/api/Login/LoginWithAuth0?impCode=` | — | errors, extraInfo |
 | GET | `/api/login/loginwithauth0?state=&username=` | — | — |
 | GET | `/api/Login/LoginWithAuth0?state=&username=` | — | — |
@@ -2880,6 +3038,8 @@ All jobs (radio) · Amount (column) · Amount paid (column) · BCC (select) · B
 | GET | `/api/Signup/GetSignupFormEntity?isAutoCode=&quoteID=&rewinBuilderID=&salesforceAccountID=&salesforceOpportunityID=&sfRewinContactLoginID=&signupCode=&testExperience=&websiteTestExperience=` | — | data, accountType, actualDemoDate, address, billingAddress, billingFrequency, braintreeClientToken, businessName, code, codeDescription, desiredOutcomeList, displayError, displayName, estimatedAnnualRevenueList, hasTrainingContact, internalName, isIPAddressWhiteListedForCaptcha, isTradeShowSignup, originalAmount, primaryContact, quote, quote.accountID, quote.achSignup, quote.basePrice, quote.contractEndDate, quote.contractLength, quote.contractStartDate, quote.expirationDate, quote.firstContractRenewalPrice, quote.firstPaymentAmount, quote.initialPrice, quote.installmentDatesDisplay, quote.introPricePeriod, quote.isCoConstructMigration, quote.isDemo, quote.listPrice, quote.numberOfPayments, quote.opportunityId, quote.planItemPriceId, quote.quoteID, … (+25) |
 | GET | `/api/Signup/GetSignupFormEntity?isAutoCode=&quoteID=&rewinBuilderID=&sfRewinContactLoginID=&signupCode=&testExperience=` | — | data, accountType, actualDemoDate, address, billingAddress, billingFrequency, braintreeClientToken, businessName, code, codeDescription, desiredOutcomeList, displayError, displayName, estimatedAnnualRevenueList, hasTrainingContact, internalName, isIPAddressWhiteListedForCaptcha, isTradeShowSignup, originalAmount, primaryContact, quote, recurringFee, signupACH, signupACH.accountHolderType, signupACH.accountNumber, signupACH.accountType, signupACH.bankCity, signupACH.bankName, signupACH.bankState, signupACH.ipAddress, signupACH.nameOnAccount, signupACH.routingNumber, signupACH.userAgent, signupOrderSummary, signupPrimaryJobTypeID, signupPrimaryJobTypeList, timezoneID, timezoneList, trainingContact, website |
 | GET | `/api/Signup/GetSignupWhatsNext?builderId=&fromEmail=&isRewin=&loginId=` | — | data |
+| GET | `/api/TaxRates/{id}` | — | data, accountingType, builderId, deactivatedDate, isActive, isApplied, isCompoundRate, taxAgencies, taxAgencies.options, taxAgencies.options[].name, taxAgencies.options[].options, taxAgencies.options[].type, taxAgencies.title, taxAgencies.type, taxAgencies.validators, taxAgencies.value, taxGroupId, taxGroupMembershipId, taxRateId, taxRateInUseJobs, taxRateInUseJobs[].isJobDefault, taxRateInUseJobs[].jobId, taxRateInUseJobs[].jobName, taxRateInUseJobs[].taxGroupId, taxRateName, taxRatePercent |
+| GET | `/api/TaxRates/DefaultInfo` | — | data, accountingType, builderId, deactivatedDate, isActive, isApplied, isCompoundRate, taxAgencies, taxAgencies.options, taxAgencies.options[].name, taxAgencies.options[].options, taxAgencies.options[].type, taxAgencies.title, taxAgencies.type, taxAgencies.validators, taxAgencies.value, taxGroupId, taxGroupMembershipId, taxRateId, taxRateInUseJobs, taxRateName, taxRatePercent |
 | GET | `/api/TradeAgreement?builderId=&subId=` | — | data |
 | GET | `/api/TradeAgreement/0/Print` | — | reason |
 | GET | `/api/TradeAgreement/PastAgreements?subId=` | — | data, pastTradeAgreements |
@@ -3104,7 +3264,7 @@ All jobs (radio) · Amount (column) · Amount paid (column) · BCC (select) · B
 
 ### Bundle read APIs not reached
 
-`GET /api/AccountInfo/FrozenBuilder{p}` · `POST /api/AccountInfo/Grid` · `GET /api/Assemblies/DefaultInfo` · `GET /api/Builder/GetCurrentBuilderInformation` · `GET /api/Builder/{p}/DemoInfo` · `GET /api/BuilderAccount/GetAccountChangeRequest` · `GET /api/Calendar/AllConflicts` · `GET /api/Calendar/ComputeCopyDates` · `GET /api/Calendar/Conflicts` · `GET /api/Calendar/ConflictsByJob` · `GET /api/Calendar/ConflictsByUser` · `GET /api/Calendar/InlineEditAssignedUsers` · `GET /api/Calendar/MassAssignment` · `GET /api/Carrier/Lookup` · `GET /api/Channels/{p}` · `GET /api/Channels/{p}/Events` · `GET /api/ClientObservableBackgroundJobs` · `? /api/CostGroups/ExportToExcel` · `GET /api/CreditMemos/DefaultInfo` · `? /api/CreditMemos/ExportToExcel` · `GET /api/DataScienceInformation/LoadInitialDataScienceInfo` · `GET /api/DataScienceInformation/UpdateProjectDropdown` · `GET /api/FeatureFlag/ActionHistory` · `GET /api/FeatureFlag/List` · `POST /api/GridViews/GetGridViewsExternal` · `GET /api/LienWaivers/FormDefaults` · `GET /api/LienWaiversForms/Defaults` · `? /api/Login/EphemeralLogin` · `GET /api/Login/GenerateEphemeralUrl` · `GET /api/Login/ImpersonationCode` · `GET /api/Logs/NotifyUsers` · `GET /api/Mapping/GetUnmappedBuilderItems` · `GET /api/MarketPlaceToken/GetReconsentDetails` · `GET /api/Marketplace/GetParagonUserToken` · `GET /api/Options/Export` · `GET /api/Partners/GetPartnerRedirectInfo` · `GET /api/RebateSuppliers/Terms` · `GET /api/RebateSuppliers/{p}/SupplierDetails` · `? /api/Receipts/ExportToExcel` · `GET /api/RelatedEntities/Entities` · `GET /api/SalesTax/ResolveAddress` · `GET /api/Signup/GetAddressCountryChanged` · `GET /api/Tags/Edit` · `GET /api/TaxRates/DefaultInfo` · `? /api/TaxRates/ExportToExcel` · `GET /api/Time/BTTimezoneFromLatLong` · `GET /api/Time/CurrentTime` · `GET /api/builder/GetCurrentBuilderInformation` · `GET /api/builder/{p}/DemoInfo` · `POST /api/calendar` · `GET /api/calendar/{p}/LinkList` · `GET /api/channels/read` · `GET /api/discussions/Entities` · `GET /api/dynamicGrid/GetFullIDsListFromFilters` · `GET /api/login/GetAuthStoreForUsername` · `? /api/logout` · `GET /api/payroll/SelectPayrolls` · `GET /api/receipts/ForwardAddress` · `POST /api/receipts/grid` · `GET /api/share/{p}` · `? /api/v2/{p}` · `? /apix/btadmin/hangfire` · `? /apix/swagger/all/swagger.yaml` · `? /apix/swagger/legacy/swagger.yaml` · `? /apix/v1` · `? /apix/v1/Admin{p}${(i` · `GET /apix/v1/admin/Products/brands` · `GET /apix/v1/admin/Products/manufacturers/all` · `GET /apix/v2/AgentSessions/{p}` · `? /apix/v2/BluebeamSessions` · `GET /apix/v2/BluebeamSessions/{p}/{p}/details` · `GET /apix/v2/Builders/{p}/info` · `GET /apix/v2/Context/step-up-status` · `POST /apix/v2/Contracts/prime/list` · `GET /apix/v2/DivisionCodes/list` · `GET /apix/v2/EntityChangeTracking/external/{p}/entity-changes` · `GET /apix/v2/EntityRecords/search-available` · `GET /apix/v2/EntityRecords/{p}/attachable-entities` · `GET /apix/v2/EntitySnapshots/{p}/{p}` · `GET /apix/v2/LienWaivers/external/{p}` · `GET /apix/v2/LienWaivers/print` · `GET /apix/v2/PdfSignature/defaults` · `GET /apix/v2/ProofsOfPurchase` · `GET /apix/v2/Rebates/earnings` · `GET /apix/v2/Receipts/forward-address` · `GET /apix/v2/Suppliers` · `GET /apix/v2/Suppliers/logos` · `GET /apix/v2/WhatsNew` · `GET /apix/v2/admin/AgentSessions/{p}` · `GET /apix/v2/admin/Agents` · `GET /apix/v2/admin/FeaturesAndFlags/{p}` · `GET /apix/v2/admin/Feedback/export-csv` · `GET /apix/v2/admin/Feedback/feedback-ids` · `GET /apix/v2/admin/Feedback/list` · `GET /apix/v2/admin/LoginHistory` · `GET /apix/v2/admin/ProductMatches/Queues` · `GET /apix/v2/admin/ProductMatches/Queues/{p}/next` · `GET /apix/v2/admin/ProductMatches/history` · `GET /apix/v2/admin/ProductMatches/{p}` · `GET /apix/v2/admin/ProductMatches/{p}/related-reviews` · `GET /apix/v2/admin/Receipts/queues` · `GET /apix/v2/admin/ShareTokens/{p}` · `GET /apix/v2/admin/WhatsNew/feature-flags` · `? /apix/v2/admin/auth/logout` · `GET /apix/v2/admin/products/{p}` · `GET /apix/v2/admin/receipts/{p}` · `GET /apix/v2/external/{p}/BluebeamSessions/{p}` · `GET /apix/v2/external/{p}/custom-fields/definitions` · `GET /apix/v3/EntityApprovals/external/{p}` · `GET /apix/v3/PurchasingPaymentHistory` · `GET /apix/v3/PurchasingPaymentHistory/{p}` · `GET /apix/v3/Rebates` · `? /apix/v3/Rebates/purchasing-dashboard` · `GET /apix/v3/Rebates/{p}` · `GET /apix/v4/ProofsOfPurchase/{p}`
+`GET /api/AccountInfo/FrozenBuilder{p}` · `POST /api/AccountInfo/Grid` · `GET /api/Assemblies/DefaultInfo` · `GET /api/Builder/GetCurrentBuilderInformation` · `GET /api/Builder/{p}/DemoInfo` · `GET /api/BuilderAccount/GetAccountChangeRequest` · `GET /api/Calendar/AllConflicts` · `GET /api/Calendar/ComputeCopyDates` · `GET /api/Calendar/Conflicts` · `GET /api/Calendar/ConflictsByJob` · `GET /api/Calendar/ConflictsByUser` · `GET /api/Calendar/InlineEditAssignedUsers` · `GET /api/Calendar/MassAssignment` · `GET /api/Carrier/Lookup` · `GET /api/Channels/{p}` · `GET /api/Channels/{p}/Events` · `GET /api/ClientObservableBackgroundJobs` · `? /api/CostGroups/ExportToExcel` · `GET /api/CreditMemos/DefaultInfo` · `? /api/CreditMemos/ExportToExcel` · `GET /api/DataScienceInformation/LoadInitialDataScienceInfo` · `GET /api/DataScienceInformation/UpdateProjectDropdown` · `GET /api/FeatureFlag/ActionHistory` · `GET /api/FeatureFlag/List` · `POST /api/GridViews/GetGridViewsExternal` · `GET /api/LienWaivers/FormDefaults` · `? /api/Login/EphemeralLogin` · `GET /api/Login/GenerateEphemeralUrl` · `GET /api/Login/ImpersonationCode` · `GET /api/Logs/NotifyUsers` · `GET /api/Mapping/GetUnmappedBuilderItems` · `GET /api/MarketPlaceToken/GetReconsentDetails` · `GET /api/Marketplace/GetParagonUserToken` · `GET /api/Options/Export` · `GET /api/Partners/GetPartnerRedirectInfo` · `GET /api/RebateSuppliers/Terms` · `GET /api/RebateSuppliers/{p}/SupplierDetails` · `? /api/Receipts/ExportToExcel` · `GET /api/RelatedEntities/Entities` · `GET /api/SalesTax/ResolveAddress` · `GET /api/Signup/GetAddressCountryChanged` · `GET /api/Tags/Edit` · `? /api/TaxRates/ExportToExcel` · `GET /api/Time/BTTimezoneFromLatLong` · `GET /api/Time/CurrentTime` · `GET /api/builder/GetCurrentBuilderInformation` · `GET /api/builder/{p}/DemoInfo` · `POST /api/calendar` · `GET /api/calendar/{p}/LinkList` · `GET /api/channels/read` · `GET /api/discussions/Entities` · `GET /api/dynamicGrid/GetFullIDsListFromFilters` · `GET /api/login/GetAuthStoreForUsername` · `? /api/logout` · `GET /api/payroll/SelectPayrolls` · `GET /api/receipts/ForwardAddress` · `POST /api/receipts/grid` · `GET /api/share/{p}` · `? /api/v2/{p}` · `? /apix/btadmin/hangfire` · `? /apix/swagger/all/swagger.yaml` · `? /apix/swagger/legacy/swagger.yaml` · `? /apix/v1` · `? /apix/v1/Admin{p}${(i` · `GET /apix/v1/admin/Products/brands` · `GET /apix/v1/admin/Products/manufacturers/all` · `GET /apix/v2/AgentSessions/{p}` · `? /apix/v2/BluebeamSessions` · `GET /apix/v2/BluebeamSessions/{p}/{p}/details` · `GET /apix/v2/Builders/{p}/info` · `GET /apix/v2/Context/step-up-status` · `POST /apix/v2/Contracts/prime/list` · `GET /apix/v2/DivisionCodes/list` · `GET /apix/v2/EntityChangeTracking/external/{p}/entity-changes` · `GET /apix/v2/EntityRecords/search-available` · `GET /apix/v2/EntityRecords/{p}/attachable-entities` · `GET /apix/v2/EntitySnapshots/{p}/{p}` · `GET /apix/v2/LienWaivers/external/{p}` · `GET /apix/v2/LienWaivers/print` · `GET /apix/v2/PdfSignature/defaults` · `GET /apix/v2/ProofsOfPurchase` · `GET /apix/v2/Rebates/earnings` · `GET /apix/v2/Receipts/forward-address` · `GET /apix/v2/Suppliers` · `GET /apix/v2/Suppliers/logos` · `GET /apix/v2/WhatsNew` · `GET /apix/v2/admin/AgentSessions/{p}` · `GET /apix/v2/admin/Agents` · `GET /apix/v2/admin/FeaturesAndFlags/{p}` · `GET /apix/v2/admin/Feedback/export-csv` · `GET /apix/v2/admin/Feedback/feedback-ids` · `GET /apix/v2/admin/Feedback/list` · `GET /apix/v2/admin/LoginHistory` · `GET /apix/v2/admin/ProductMatches/Queues` · `GET /apix/v2/admin/ProductMatches/Queues/{p}/next` · `GET /apix/v2/admin/ProductMatches/history` · `GET /apix/v2/admin/ProductMatches/{p}` · `GET /apix/v2/admin/ProductMatches/{p}/related-reviews` · `GET /apix/v2/admin/Receipts/queues` · `GET /apix/v2/admin/ShareTokens/{p}` · `GET /apix/v2/admin/WhatsNew/feature-flags` · `? /apix/v2/admin/auth/logout` · `GET /apix/v2/admin/products/{p}` · `GET /apix/v2/admin/receipts/{p}` · `GET /apix/v2/external/{p}/BluebeamSessions/{p}` · `GET /apix/v2/external/{p}/custom-fields/definitions` · `GET /apix/v3/EntityApprovals/external/{p}` · `GET /apix/v3/PurchasingPaymentHistory` · `GET /apix/v3/PurchasingPaymentHistory/{p}` · `GET /apix/v3/Rebates` · `? /apix/v3/Rebates/purchasing-dashboard` · `GET /apix/v3/Rebates/{p}` · `GET /apix/v4/ProofsOfPurchase/{p}`
 
 
 ## VIABUILD ↔ Buildertrend gaps
