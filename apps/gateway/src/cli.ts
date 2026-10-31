@@ -54,6 +54,7 @@ async function main(): Promise<void> {
       headless: process.argv.includes("--headless"),
       jobText: arg("job"),
       inventoryOnly: process.argv.includes("--inventory-only"),
+      skip: arg("skip") ? new RegExp(arg("skip")!, "i") : undefined,
     });
     console.error(`REPORT ${await writeCrawlReport(rec.outDir)}`);
     const stopped = rec.checkpoint.stoppedReason;

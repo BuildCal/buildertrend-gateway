@@ -63,6 +63,8 @@ export interface CrawlOptions {
   screenBudgetMs: number;
   /** Sidebar job to select (text match). Default: the first job listed. */
   jobText?: string;
+  /** Queued URLs matching this are dropped (e.g. /print/ views). */
+  skip?: RegExp;
 }
 
 /**
@@ -659,6 +661,7 @@ export async function runCrawl(opts: CrawlOptions): Promise<CrawlRecorder> {
       const modalKey = nestedModalKey(qTmpl);
       if (
         isOtherPortalRoute(href) ||
+        opts.skip?.test(href) ||
         (modalKey !== null && (cp.templateVisits[`modal:${modalKey}`] ?? 0) >= 1) ||
         (cp.templateVisits[qTmpl] ?? 0) >= (qTmpl.includes("{") ? opts.perTemplate : 1)
       ) {
@@ -691,14 +694,14 @@ export async function runCrawl(opts: CrawlOptions): Promise<CrawlRecorder> {
         screenDeadline = Date.now() + opts.screenBudgetMs;
         const firstVisit = !rec.screen(currentScreen).explored;
         rec.screen(currentScreen).explored = true;
-        // Hard cap: the budget only stops new clicks, so allow it twice over.
+        // Hard cap: the budget only stops new clicks; allow 30 s to finish one.
         await withScreenTimeout(
           (async () => {
             await recordFields(null);
             if (firstVisit) await exploreHere(href);
             await exploreFirstRow(href);
           })(),
-          opts.screenBudgetMs * 2 + 60_000,
+          opts.screenBudgetMs + 30_000,
         );
       } catch (err) {
         if (!(err instanceof SkipScreen)) throw err;
