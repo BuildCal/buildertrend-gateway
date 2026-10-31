@@ -125,7 +125,7 @@ describe("crawl write-blocker policy", () => {
 
   it("guards UI labels", () => {
     for (const ok of ["Lines", "Files", "Related Items", "Job Info", "Overview"]) expect(isSafeTabLabel(ok), ok).toBe(true);
-    for (const bad of ["Save", "Save & Close", "Send", "Approve", "Delete", "Release", "Notify Owner", "Convert to Job", "Submit", "Pay Online", "Recall", "More › Recall", "Withdraw", "Revert", "Like", "Mark as read", "0", "12", "Rename", "More › Create QR code"]) {
+    for (const bad of ["Save", "Save & Close", "Send", "Approve", "Delete", "Release", "Notify Owner", "Convert to Job", "Submit", "Pay Online", "Recall", "More › Recall", "Withdraw", "Revert", "Like", "Mark as read", "0", "12", "Rename", "More › Create QR code", "Set Baseline", "Shift dates", "Push schedule"]) {
       expect(isSafeTabLabel(bad), bad).toBe(false);
       expect(isSafeNewFormLabel(bad), bad).toBe(false);
     }
