@@ -135,6 +135,10 @@ export class ProfileAdapter implements BtAdapter {
       if (this.page.url() !== `${BT_ORIGIN}${ANCHOR_PATH}`) {
         await this.page.goto(`${BT_ORIGIN}${ANCHOR_PATH}`, { waitUntil: "domcontentloaded" });
       }
+      // Redirected (to a login page, say): stop rather than run the call there.
+      if (this.page.url() !== `${BT_ORIGIN}${ANCHOR_PATH}`) {
+        throw new GatewayError("auth_required", "Gateway profile is not signed in. Run `pnpm --filter gateway login`.");
+      }
       return this.page;
     }
     this.opening ??= this.open().finally(() => {
