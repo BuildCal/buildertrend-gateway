@@ -301,6 +301,7 @@ const SYNC_SCHEMAS: Record<string, z.ZodTypeAny> = {
     maxPages: z.coerce.number().int().positive().optional(),
     pageSize: z.coerce.number().int().positive().max(1000).optional(),
     deliver: bool.optional(),
+    allowMassRemoval: bool.optional(),
   }),
   "changes.list": z.object({
     since: z.coerce.number().int().nonnegative().optional(),

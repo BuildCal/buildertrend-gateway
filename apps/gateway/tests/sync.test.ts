@@ -444,3 +444,34 @@ describe("list body quirks found live", () => {
     expect(body.pagingData.pageSize).toBe(50);
   });
 });
+
+describe("second review", () => {
+  const subsAdapter = (data: Record<string, unknown>) =>
+    new ScriptedAdapter((req) =>
+      req.path === "/api/Jobsites/Grid" ? json({ data: [{ jobId: 1 }], records: 1 }) : json(data),
+    );
+
+  it("does not trust hasMoreRows=false when the total says rows are missing", async () => {
+    const sync = new MemorySyncStore();
+    const config = testConfig({ syncDelayMs: 0 });
+    const rows = Array.from({ length: 4 }, (_, i) => ({ id: i + 1, company: `S${i}` }));
+    const run = async (data: Record<string, unknown>) =>
+      ((await invokeByName("sync.run", { config, adapter: subsAdapter(data), store: new MemoryStore(), sync, args: { types: ["sub"] } }))
+        .data as { results: { complete: boolean; removed: number }[] }).results[0]!;
+    await run({ data: rows, records: 4, hasMoreRows: false });
+    const short = await run({ data: rows.slice(0, 3), records: 5, hasMoreRows: false });
+    expect(short).toMatchObject({ complete: false, removed: 0 });
+    const capped = await run({ data: rows.slice(0, 3), records: 3, isRecordCountCapped: true });
+    expect(capped).toMatchObject({ complete: false, removed: 0 });
+  });
+
+  it("records a real bulk delete only when asked to", async () => {
+    const subs = Array.from({ length: 20 }, (_, i) => ({ id: i + 1, company: `S${i}` }));
+    const state = { subs, bills: [] };
+    const h = harness(state);
+    await h.invoke("sync.run", { types: ["sub"] });
+    state.subs = subs.slice(0, 2);
+    const run = (await h.invoke("sync.run", { types: ["sub"], allowMassRemoval: true })).data as { results: { removed: number }[] };
+    expect(run.results[0]!.removed).toBe(18);
+  });
+});

@@ -2,7 +2,7 @@
 // sync surface apps integrate against: sync.run, changes.list, records.*,
 // links.*, push and webhooks.deliver.
 
-import { unwrapData } from "./adapter.js";
+import { unwrapData, type BtAdapter } from "./adapter.js";
 import { GENERATED_VERBS, VERB_BY_NAME } from "./catalog.js";
 import { GatewayError } from "./errors.js";
 import { asRecord, numberish, pickId } from "./grids.js";
@@ -100,6 +100,7 @@ registerVerb("sync.run", async (ctx) => {
     maxHydrate: numberish(ctx.args.maxHydrate),
     maxPages: numberish(ctx.args.maxPages),
     pageSize: numberish(ctx.args.pageSize),
+    allowMassRemoval: ctx.args.allowMassRemoval === true,
   });
   const webhook = ctx.args.deliver === false ? undefined : await deliverWebhooks(ctx.config, requireSync(ctx));
   return { ...run, webhook };
@@ -225,8 +226,6 @@ export function createdIdFrom(data: unknown, idKey: string): string | undefined 
 const pendingKey = (key: { app: string; appType: string; appId: string }) =>
   `pending-create:${key.app}:${key.appType}:${key.appId}`;
 
-/** Errors raised before any request reaches Buildertrend: nothing can have been created. */
-const NOTHING_SENT = new Set(["validation", "not_captured", "sandbox_required", "send_disabled", "not_found"]);
 
 registerVerb("push", async (ctx) => {
   const def = requireType(ctx.args.btType);
@@ -294,13 +293,19 @@ async function pushLocked(
     await sync.setCursor(pendingKey(key), new Date().toISOString());
   }
 
+  // Count what actually went to Buildertrend: only a create that sent nothing may clear "pending".
+  let sent = 0;
+  const adapter: BtAdapter = {
+    request: (req) => {
+      if (req.method !== "GET") sent += 1;
+      return ctx.adapter.request(req);
+    },
+  };
   let result;
   try {
-    result = await invokeByName(verb, { config: ctx.config, adapter: ctx.adapter, store: ctx.store, sync, args });
+    result = await invokeByName(verb, { config: ctx.config, adapter, store: ctx.store, sync, args });
   } catch (err) {
-    if (realCreate && err instanceof GatewayError && NOTHING_SENT.has(err.code)) {
-      await sync.deleteCursor(pendingKey(key));
-    }
+    if (realCreate && sent === 0) await sync.deleteCursor(pendingKey(key));
     throw err;
   }
 

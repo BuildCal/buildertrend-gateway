@@ -130,7 +130,13 @@ export class ProfileAdapter implements BtAdapter {
   }
 
   private async ensurePage(): Promise<Page> {
-    if (this.page && !this.page.isClosed()) return this.page;
+    if (this.page && !this.page.isClosed()) {
+      // Never run a gateway call inside the live app: its scripts could see the tag.
+      if (this.page.url() !== `${BT_ORIGIN}${ANCHOR_PATH}`) {
+        await this.page.goto(`${BT_ORIGIN}${ANCHOR_PATH}`, { waitUntil: "domcontentloaded" });
+      }
+      return this.page;
+    }
     this.opening ??= this.open().finally(() => {
       this.opening = undefined;
     });
@@ -193,12 +199,15 @@ export class ProfileAdapter implements BtAdapter {
     const page = this.page;
     if (!page) return false;
     try {
-      await page.goto(`${BT_ORIGIN}/app/Landing`, { waitUntil: "networkidle", timeout: 45_000 });
-      await page.goto(`${BT_ORIGIN}${ANCHOR_PATH}`, { waitUntil: "domcontentloaded" });
+      await page.goto(`${BT_ORIGIN}/app/Landing`, { waitUntil: "networkidle", timeout: 45_000 }).catch(() => undefined);
+    } finally {
+      await page.goto(`${BT_ORIGIN}${ANCHOR_PATH}`, { waitUntil: "domcontentloaded" }).catch(() => undefined);
+    }
+    try {
       const probe = (await page.evaluate(
         `fetch(${JSON.stringify(ANCHOR_PATH)}, { credentials: "include", headers: { accept: "application/json", portaltype: "1" } }).then((r) => r.json()).catch(() => ({ needsToRelogin: true }))`,
       )) as Record<string, unknown>;
-      return probe.needsToRelogin !== true;
+      return page.url() === `${BT_ORIGIN}${ANCHOR_PATH}` && probe.needsToRelogin !== true;
     } catch {
       return false;
     }

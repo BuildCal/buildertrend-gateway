@@ -108,7 +108,7 @@ export interface ListPage {
   total?: number;
   /** The list's own "more rows" flag, when it reports one. */
   hasMore?: boolean;
-  /** The endpoint truncated this response. */
+  /** The endpoint truncated this response (or says its count is capped). */
   capped?: boolean;
 }
 
@@ -158,6 +158,7 @@ export async function fetchListPage(
     rows,
     total: numberish(data.records),
     hasMore: typeof data.hasMoreRows === "boolean" ? data.hasMoreRows : undefined,
+    capped: data.isRecordCountCapped === true,
   };
 }
 
@@ -199,16 +200,18 @@ export async function fetchAll(
         fresh += 1;
       }
       if (result.capped) break;
-      if (!paged || result.hasMore === false) {
+      const reachedTotal = result.total == null || rows.length >= result.total;
+      if (!paged || (result.hasMore === false && reachedTotal)) {
         batchComplete = true;
         break;
       }
       if (result.total != null) {
-        if (rows.length >= result.total) {
+        if (reachedTotal) {
           batchComplete = true;
           break;
         }
-        if (result.rows.length === 0) break;
+        // Short of the total but nothing more to page: an inconsistent list, not deletions.
+        if (result.rows.length === 0 || result.hasMore === false) break;
       } else if (result.hasMore === undefined && result.rows.length < pageSize) {
         batchComplete = true;
         break;
@@ -237,6 +240,8 @@ export interface SyncRunOptions {
   maxHydrate?: number;
   maxPages?: number;
   pageSize?: number;
+  /** Accept a pass that removes more than REMOVAL_GUARD.maxShare of a type (a real bulk delete). */
+  allowMassRemoval?: boolean;
 }
 
 export interface TypeResult {
@@ -275,7 +280,7 @@ export const REMOVAL_GUARD = { minRecords: 10, maxShare: 0.5 };
 
 export async function runSync(ctx: VerbContext, opts: SyncRunOptions = {}): Promise<SyncRunResult> {
   const sync = requireSync(ctx);
-  return withLease(sync, "sync", 2 * 60 * 60_000, () => runSyncLocked(ctx, sync, opts));
+  return withLease(sync, "sync", 30 * 60_000, () => runSyncLocked(ctx, sync, opts));
 }
 
 async function runSyncLocked(ctx: VerbContext, sync: SyncStore, opts: SyncRunOptions): Promise<SyncRunResult> {
@@ -347,8 +352,8 @@ async function runSyncLocked(ctx: VerbContext, sync: SyncStore, opts: SyncRunOpt
       if (!partial && listed.complete) {
         const gone = (await sync.recordIds(def.type)).filter((id) => !seen.has(id));
         const known = gone.length + seen.size;
-        if (gone.length >= REMOVAL_GUARD.minRecords && gone.length > known * REMOVAL_GUARD.maxShare) {
-          result.error = `removal guard: ${gone.length} of ${known} ${def.type} records missing from the list; not marking them removed`;
+        if (!opts.allowMassRemoval && gone.length >= REMOVAL_GUARD.minRecords && gone.length > known * REMOVAL_GUARD.maxShare) {
+          result.error = `removal guard: ${gone.length} of ${known} ${def.type} records missing from the list; not marking them removed (re-run with allowMassRemoval if this is a real bulk delete)`;
         } else {
           for (const id of gone) {
             const previous = await sync.getRecord(def.type, id);
