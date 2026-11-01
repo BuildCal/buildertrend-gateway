@@ -1,4 +1,4 @@
-import { CONTENT_JSON, CONTENT_MERGE_PATCH, unwrapData } from "./adapter.js";
+import { type BtRequest, CONTENT_JSON, CONTENT_MERGE_PATCH, unwrapData } from "./adapter.js";
 import { DRAFT_APPROVAL_STATUS } from "./config.js";
 import { GatewayError } from "./errors.js";
 import {
@@ -554,6 +554,7 @@ registerVerb("bills.file", async (ctx) => {
   const res = await bt(ctx, {
     method: "GET",
     path: preview ? `/api/files/${id}/preview` : `/api/files/${id}`,
+    query: await fileQuery(ctx, preview),
     raw: true,
   });
   return {
@@ -803,6 +804,7 @@ registerVerb("docs.file", async (ctx) => {
   const res = await bt(ctx, {
     method: "GET",
     path: preview ? `/api/files/${id}/preview` : `/api/files/${id}`,
+    query: await fileQuery(ctx, preview),
     raw: true,
   });
   return { status: res.status, contentType: res.contentType, bodyBase64: res.bodyBase64 };
@@ -1041,6 +1043,22 @@ async function attachBillPdf(
     tempDoc,
     entityDocs: unwrapData(attached),
     documentType: 58,
+  };
+}
+
+// Buildertrend refuses /api/files/{id} without the query its own docPath
+// carries (builderId, jobId, rowVersion). Callers pass them from the file
+// record; without them the request is sent bare, as before.
+async function fileQuery(ctx: VerbContext, preview: boolean): Promise<BtRequest["query"]> {
+  const jobId = optionalJob(ctx);
+  const rowVersion = typeof ctx.args.rowVersion === "string" ? ctx.args.rowVersion : undefined;
+  if (jobId === undefined && rowVersion === undefined) return undefined;
+  return {
+    builderId: ctx.args.builderId != null ? requireNumber(ctx.args, "builderId") : await requireBuilderId(ctx),
+    jobId,
+    rowVersion,
+    portalType: 1,
+    isAttachment: preview ? undefined : true,
   };
 }
 

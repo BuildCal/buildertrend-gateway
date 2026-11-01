@@ -643,3 +643,13 @@ describe("bill verbs (scripted adapter, no live network)", () => {
     expect(calls[0]!.method).toBe("GET");
   });
 });
+
+describe("file downloads", () => {
+  it("keeps the docPath query (builder, job, row version) for docs.file and bills.file", () => {
+    for (const verb of ["docs.file", "bills.file"] as const) {
+      expect(
+        parseVerbArgs(verb, { fileId: "100001", jobId: "200001", rowVersion: "AAAAAA==", builderId: 400001 }),
+      ).toMatchObject({ fileId: 100001, jobId: 200001, rowVersion: "AAAAAA==", builderId: 400001 });
+    }
+  });
+});

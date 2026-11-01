@@ -3,6 +3,13 @@ import { GENERATED_VERBS, VERBS } from "./catalog.js";
 import { GatewayError } from "./errors.js";
 
 const dry = { dry_run: z.coerce.boolean().optional() };
+// Buildertrend refuses /api/files/{id} without these; they come from the file
+// record's docPath (jobsiteId, rowVersion, builderId).
+const fileQueryArgs = {
+  jobId: z.coerce.number().int().positive().optional(),
+  rowVersion: z.string().max(64).optional(),
+  builderId: z.coerce.number().int().positive().optional(),
+};
 const billLineSchema = z.object({
   id: z.coerce.number().int().optional(),
   title: z.string().optional(),
@@ -158,6 +165,7 @@ const HAND_SCHEMAS = {
   "bills.file": z.object({
     fileId: z.coerce.number().int().positive(),
     preview: z.coerce.boolean().optional(),
+    ...fileQueryArgs,
   }),
   "bills.defaults": z.object({ jobId: z.coerce.number().int().positive() }),
   "bills.availablePurchaseOrders": z.object({
@@ -261,6 +269,7 @@ const HAND_SCHEMAS = {
   "docs.file": z.object({
     fileId: z.coerce.number().int().positive(),
     preview: z.coerce.boolean().optional(),
+    ...fileQueryArgs,
   }),
   "docs.upload": z.object({
     jobId: z.coerce.number().int().positive(),
