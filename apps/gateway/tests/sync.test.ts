@@ -354,6 +354,18 @@ describe("review hardening", () => {
     expect(await h.sync.getCursor("pending-create:a:bill:b2")).toBeUndefined();
   });
 
+  it("lists records without their stored detail when detail=false", async () => {
+    const h = harness({ subs: [{ id: 10, company: "A" }], bills: [] });
+    await h.invoke("sync.run", { types: ["sub"] });
+    const rec = (await h.sync.getRecord("sub", "10"))!;
+    await h.sync.putRecord({ ...rec, detail: { big: "x".repeat(1000) } });
+    const full = (await h.invoke("records.list", { type: "sub" })).data as { records: { detail?: unknown }[] };
+    expect(full.records[0]!.detail).toBeDefined();
+    const slim = (await h.invoke("records.list", { type: "sub", detail: false })).data as { records: { detail?: unknown; hash: string }[] };
+    expect(slim.records[0]!.detail).toBeUndefined();
+    expect(slim.records[0]!.hash).toBe(rec.hash);
+  });
+
   it("reads a fresh record without adding it to the mirror", async () => {
     const h = harness({ subs: [], bills: [] });
     const res = (await h.invoke("records.get", { type: "sub", id: "10", fresh: true })).data as { mirrored: boolean };

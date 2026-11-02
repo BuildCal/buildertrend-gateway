@@ -323,6 +323,8 @@ const SYNC_SCHEMAS: Record<string, z.ZodTypeAny> = {
     includeRemoved: bool.optional(),
     limit: z.coerce.number().int().positive().optional(),
     offset: z.coerce.number().int().nonnegative().optional(),
+    /** false leaves each record's stored detail out (keeps big pages small). */
+    detail: bool.optional(),
   }),
   "records.get": z.object({ type: z.string(), id: z.coerce.string().min(1), jobId: jobScope.jobId, fresh: bool.optional() }),
   "links.set": z.object({ ...linkKey, btType: z.string(), btId: z.coerce.string().min(1) }),

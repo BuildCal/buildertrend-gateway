@@ -134,7 +134,10 @@ registerVerb("records.list", async (ctx) => {
     limit: Math.min(numberish(ctx.args.limit) ?? 500, 5000),
     offset: numberish(ctx.args.offset) ?? 0,
   });
-  return { type: def.type, count: records.length, records };
+  // A refreshed detail can be large (a schedule item's is ~100 KB); a page of
+  // thousands of them overflows one response, so callers can leave it out.
+  const out = ctx.args.detail === false ? records.map(({ detail: _detail, ...r }) => r) : records;
+  return { type: def.type, count: out.length, records: out };
 });
 
 registerVerb("records.get", async (ctx) => {
